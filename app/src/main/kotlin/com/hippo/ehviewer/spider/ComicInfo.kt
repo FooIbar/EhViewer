@@ -106,8 +106,7 @@ fun ComicInfo.toSimpleTags() = listOfNotNull(
     teams,
 ).flatten().ifEmpty { null }
 
-context(info: ComicInfo)
-fun write(file: Path) = file.write { xml.encodeToSink(this, info) }
+fun writeComicInfo(info: ComicInfo, file: Path) = file.write { xml.encodeToSink(this, info) }
 
 fun readComicInfo(file: Path): ComicInfo? = runCatching {
     file.read {

@@ -25,9 +25,9 @@ val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptySet())
 @Stable
 value class TransitionsVisibilityScope(val scopes: Set<AnimatedVisibilityScope>)
 
-context(ctx: TransitionsVisibilityScope)
+context(visScope: TransitionsVisibilityScope)
 @Composable
-inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(ctx.scopes, scope) { TransitionsVisibilityScope(ctx.scopes + scope) })
+inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(visScope.scopes, scope) { TransitionsVisibilityScope(visScope.scopes + scope) })
 
 context(shareScope: SharedTransitionScope, visScope: TransitionsVisibilityScope, generator: SETNodeGenerator)
 @Composable

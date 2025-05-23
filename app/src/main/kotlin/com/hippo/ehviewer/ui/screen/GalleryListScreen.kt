@@ -414,7 +414,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                             val builder = ListUrlBuilder(item).apply {
                                                 language = languageFilter
                                             }
-                                            navigator.navigate(builder.asDst())
+                                            navigate(builder.asDst())
                                         } else {
                                             urlBuilder = ListUrlBuilder(item).apply {
                                                 language = languageFilter

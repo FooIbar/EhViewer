@@ -48,6 +48,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.launchSnackbar
+import moe.tarsin.navigate
 import moe.tarsin.string
 
 private const val REPO_URL = "https://github.com/${BuildConfig.REPO_NAME}"
@@ -96,7 +97,7 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
                 url = REPO_URL,
             )
             Preference(title = stringResource(id = R.string.license)) {
-                navigator.navigate(LicenseScreenDestination)
+                navigate(LicenseScreenDestination)
             }
             Preference(
                 title = stringResource(id = R.string.settings_about_version),

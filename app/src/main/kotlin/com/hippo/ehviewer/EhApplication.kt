@@ -167,7 +167,7 @@ class EhApplication :
         AppConfig.externalTempDir?.deleteContent()
     }
 
-    override fun newImageLoader(context: Context) = imageLoader {
+    override fun newImageLoader(context: Context) = context.imageLoader {
         interceptorCoroutineContext(Dispatchers.Default)
         components {
             serviceLoaderEnabled(false)

@@ -57,6 +57,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
+import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable
@@ -135,11 +136,11 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 Preference(
                     title = stringResource(id = R.string.settings_u_config),
                     summary = stringResource(id = R.string.settings_u_config_summary),
-                ) { navigator.navigate(UConfigScreenDestination) }
+                ) { navigate(UConfigScreenDestination) }
                 Preference(
                     title = stringResource(id = R.string.settings_my_tags),
                     summary = stringResource(id = R.string.settings_my_tags_summary),
-                ) { navigator.navigate(MyTagsScreenDestination) }
+                ) { navigate(MyTagsScreenDestination) }
             }
             var defaultFavSlot by Settings::defaultFavSlot.observed
             val disabled = stringResource(id = R.string.disabled_nav)
@@ -258,7 +259,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
             Preference(
                 title = stringResource(id = R.string.settings_eh_filter),
                 summary = stringResource(id = R.string.settings_eh_filter_summary),
-            ) { navigator.navigate(FilterScreenDestination) }
+            ) { navigate(FilterScreenDestination) }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_metered_network_warning),
                 value = Settings.meteredNetworkWarning::value,

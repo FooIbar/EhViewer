@@ -100,6 +100,7 @@ import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
 import moe.tarsin.launch
+import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable
@@ -297,7 +298,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(info.asDst())
+                                navigate(info.asDst())
                             }
                         },
                         onLongClick = {
@@ -326,7 +327,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(info.asDst())
+                                navigate(info.asDst())
                             }
                         },
                         onLongClick = {
@@ -368,7 +369,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             if (isLocalFav) {
                 onClick(Icons.Default.Shuffle) {
                     EhDB.randomLocalFav()?.let { info ->
-                        withUIContext { navigator.navigate(info.asDst()) }
+                        withUIContext { navigate(info.asDst()) }
                     }
                 }
             }

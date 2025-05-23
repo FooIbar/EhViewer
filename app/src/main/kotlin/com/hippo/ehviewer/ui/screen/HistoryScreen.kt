@@ -69,6 +69,7 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import moe.tarsin.launch
+import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable
@@ -163,7 +164,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
                         enableDismissFromStartToEnd = false,
                     ) {
                         GalleryInfoListItem(
-                            onClick = { navigator.navigate(info.asDst()) },
+                            onClick = { navigate(info.asDst()) },
                             onLongClick = { launch { doGalleryInfoAction(info) } },
                             info = info,
                             showPages = showPages,

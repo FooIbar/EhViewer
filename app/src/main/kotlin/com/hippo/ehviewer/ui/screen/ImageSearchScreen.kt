@@ -44,6 +44,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import moe.tarsin.launch
 import moe.tarsin.launchSnackbar
 import moe.tarsin.launchUI
+import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable
@@ -65,7 +66,7 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
                     val uri = imageUri
                     if (uri != null) {
                         launchUI {
-                            navigator.navigate(
+                            navigate(
                                 ListUrlBuilder(
                                     mode = MODE_IMAGE_SEARCH,
                                     hash = withIOContext { uri.toOkioPath().sha1() },

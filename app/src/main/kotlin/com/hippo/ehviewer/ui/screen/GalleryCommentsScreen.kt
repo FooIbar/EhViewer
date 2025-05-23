@@ -120,6 +120,7 @@ import kotlin.math.roundToInt
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.launch
 import moe.tarsin.launchIO
+import moe.tarsin.navigate
 import moe.tarsin.snackbar
 
 private val URL_PATTERN = Regex("(http|https)://[a-z0-9A-Z%-]+(\\.[a-z0-9A-Z%-]+)+(:\\d{1,5})?(/[a-zA-Z0-9-_~:#@!&',;=%/*.?+$\\[\\]()]+)?/?")
@@ -408,7 +409,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         modifier = Modifier.thenIf(animateItems) { animateItem() },
                         comment = item,
                         onUserClick = {
-                            navigator.navigate(
+                            navigate(
                                 ListUrlBuilder(
                                     mode = ListUrlBuilder.MODE_UPLOADER,
                                     mKeyword = item.user,

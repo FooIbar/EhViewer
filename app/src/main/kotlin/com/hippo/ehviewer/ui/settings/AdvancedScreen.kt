@@ -78,7 +78,7 @@ import moe.tarsin.launchSnackbar
 import moe.tarsin.string
 
 context(ctx: Context)
-fun dumplog(uri: Uri): Unit = with(ctx) {
+private fun dumplog(uri: Uri): Unit = with(ctx) {
     grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
     contentResolver.openOutputStream(uri)?.use { outputStream ->
         val files = ArrayList<File>()
@@ -100,13 +100,13 @@ fun dumplog(uri: Uri): Unit = with(ctx) {
 }
 
 context(ctx: Context)
-fun exportDatabase(uri: Uri) {
+private fun exportDatabase(uri: Uri) {
     ctx.grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
     EhDB.exportDB(ctx, uri.toOkioPath())
 }
 
 context(ctx: Context)
-suspend fun importDatabase(uri: Uri) {
+private suspend fun importDatabase(uri: Uri) {
     ctx.grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
     EhDB.importDB(ctx, uri)
 }

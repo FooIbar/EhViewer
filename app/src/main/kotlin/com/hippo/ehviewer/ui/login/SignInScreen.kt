@@ -76,6 +76,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Job
 import moe.tarsin.launchIO
+import moe.tarsin.navigate
 
 @Destination<RootGraph>(start = true)
 @Composable
@@ -213,7 +214,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                     }
                     Row(modifier = Modifier.padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(
-                            onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                            onClick = { navigate(WebViewSignInScreenDestination) },
                             modifier = Modifier.weight(1f),
                         ) {
                             Text(
@@ -295,7 +296,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.Center) {
                             TextButton(
-                                onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                                onClick = { navigate(WebViewSignInScreenDestination) },
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(
