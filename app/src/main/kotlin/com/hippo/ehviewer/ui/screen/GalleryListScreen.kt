@@ -132,7 +132,7 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.delay
-import moe.tarsin.coroutines.flatMapLatestScoped
+import kotlinx.coroutines.flow.flatMapLatest
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.launch
@@ -195,7 +195,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val searchBarHint by rememberUpdatedState(if (EhUtils.isExHentai) exHint else ehHint)
     val suitableTitle = getSuitableTitleForUrlBuilder(urlBuilder)
     val data = rememberInVM {
-        snapshotFlow { urlBuilder }.flatMapLatestScoped { builder ->
+        snapshotFlow { urlBuilder }.flatMapLatest { builder ->
             Pager(PagingConfig(25)) {
                 object : PagingSource<String, BaseGalleryInfo>() {
                     override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
