@@ -333,7 +333,7 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
 }
 
 context(ctx: Context)
-fun openByDefaultSettings() = with(ctx) {
+private fun openByDefaultSettings() = with(ctx) {
     try {
         @SuppressLint("InlinedApi")
         val intent = Intent(
