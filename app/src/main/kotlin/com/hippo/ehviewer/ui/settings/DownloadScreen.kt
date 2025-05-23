@@ -75,8 +75,9 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.system.logcat
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.launch
 import moe.tarsin.launchIO
-import moe.tarsin.launchSnackbar
+import moe.tarsin.snackbar
 import moe.tarsin.string
 import okio.Path
 import okio.Path.Companion.toOkioPath
@@ -86,6 +87,7 @@ import splitties.init.appCtx
 @Composable
 fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    fun launchSnackbar(message: String) = launch { snackbar(message) }
     Scaffold(
         topBar = {
             TopAppBar(
