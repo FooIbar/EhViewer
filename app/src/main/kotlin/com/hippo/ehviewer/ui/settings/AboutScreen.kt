@@ -47,8 +47,9 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import moe.tarsin.coroutines.runSuspendCatching
-import moe.tarsin.launchSnackbar
+import moe.tarsin.launch
 import moe.tarsin.navigate
+import moe.tarsin.snackbar
 import moe.tarsin.string
 
 private const val REPO_URL = "https://github.com/${BuildConfig.REPO_NAME}"
@@ -66,6 +67,7 @@ private fun author() = AnnotatedString.fromHtml(stringResource(R.string.settings
 @Composable
 fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    fun launchSnackbar(message: String) = launch { snackbar(message) }
     Scaffold(
         topBar = {
             TopAppBar(

@@ -74,7 +74,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.merge
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.launch
-import moe.tarsin.launchSnackbar
+import moe.tarsin.snackbar
 import moe.tarsin.string
 
 context(ctx: Context)
@@ -115,6 +115,7 @@ private suspend fun importDatabase(uri: Uri) {
 @Composable
 fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    fun launchSnackbar(message: String) = launch { snackbar(message) }
     Scaffold(
         topBar = {
             TopAppBar(
