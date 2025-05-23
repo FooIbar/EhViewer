@@ -32,7 +32,7 @@ data class FavListUrlBuilder(
     val isLocal
         get() = favCat == FAV_CAT_LOCAL
 
-    fun moveToLastLoadAndMarkUsed() {
+    fun loadBackOrMarkUsed() {
         val tmp = next.orEmpty()
         next = prev
         prev = tmp

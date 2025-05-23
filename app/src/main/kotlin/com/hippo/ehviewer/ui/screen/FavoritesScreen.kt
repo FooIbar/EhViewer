@@ -158,7 +158,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                                 is LoadParams.Refresh -> if (builder.jumpTo != null) {
                                     builder.next ?: builder.setIndex("2", true)
                                 } else {
-                                    builder.moveToLastLoadAndMarkUsed()
+                                    builder.loadBackOrMarkUsed()
                                 }
                             }
                             runSuspendCatching {
