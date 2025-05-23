@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.client.data
 
-import android.os.Parcelable
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
@@ -26,9 +25,9 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.ui.main.AdvanceTable
 import io.ktor.http.Parameters
 import kotlin.text.toIntOrNull
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
+@Serializable
 data class ListUrlBuilder(
     var mode: Int = MODE_NORMAL,
     private var prev: String? = null,
@@ -44,7 +43,7 @@ data class ListUrlBuilder(
     var minRating: Int = -1,
     var pageFrom: Int = -1,
     var pageTo: Int = -1,
-) : Parcelable {
+) {
 
     fun setIndex(index: String, isNext: Boolean = true) {
         next = index.takeIf { isNext }

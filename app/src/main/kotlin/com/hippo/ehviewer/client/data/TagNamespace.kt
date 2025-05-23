@@ -1,10 +1,6 @@
 package com.hippo.ehviewer.client.data
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-
-@Parcelize
-sealed class TagNamespace(val value: String, val prefix: String?) : Parcelable {
+sealed class TagNamespace(val value: String, val prefix: String?) {
     object Artist : TagNamespace("artist", "a")
     object Cosplayer : TagNamespace("cosplayer", "cos")
     object Character : TagNamespace("character", "c")

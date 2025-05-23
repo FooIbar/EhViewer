@@ -186,7 +186,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
     val userCommentBackField = remember { mutableStateOf(TextFieldValue()) }
     var userComment by userCommentBackField
     var commentId by remember { mutableLongStateOf(-1) }
-    var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
+    var comments by remember(galleryDetail) { mutableStateOf(galleryDetail.comments) }
     LaunchedEffect(comments) {
         galleryDetail.comments = comments
     }
