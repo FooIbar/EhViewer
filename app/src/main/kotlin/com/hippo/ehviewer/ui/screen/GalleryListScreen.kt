@@ -132,6 +132,7 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.delay
+import moe.tarsin.coroutines.flatMapLatestScoped
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.launch
@@ -194,47 +195,49 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val searchBarHint by rememberUpdatedState(if (EhUtils.isExHentai) exHint else ehHint)
     val suitableTitle = getSuitableTitleForUrlBuilder(urlBuilder)
     val data = rememberInVM {
-        Pager(PagingConfig(25)) {
-            object : PagingSource<String, BaseGalleryInfo>() {
-                override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
-                override suspend fun load(params: LoadParams<String>) = withIOContext {
-                    if (urlBuilder.mode == MODE_TOPLIST) {
-                        // TODO: Since we know total pages, let pager support jump
-                        val key = (params.key ?: urlBuilder.jumpTo)?.toInt() ?: 0
-                        val prev = (key - 1).takeIf { it > 0 }
-                        val next = (key + 1).takeIf { it < TOPLIST_PAGES }
-                        runSuspendCatching {
-                            urlBuilder.setJumpTo(key)
-                            EhEngine.getGalleryList(urlBuilder.build())
-                        }.foldToLoadResult { result ->
-                            LoadResult.Page(result.galleryInfoList, prev?.toString(), next?.toString())
-                        }
-                    } else {
-                        when (params) {
-                            is LoadParams.Prepend -> urlBuilder.setIndex(params.key, isNext = false)
-                            is LoadParams.Append -> urlBuilder.setIndex(params.key, isNext = true)
-                            is LoadParams.Refresh -> {
-                                val key = params.key
-                                if (key.isNullOrBlank()) {
-                                    if (urlBuilder.jumpTo != null) {
-                                        urlBuilder.next ?: urlBuilder.setIndex("2", true)
+        snapshotFlow { urlBuilder }.flatMapLatestScoped { builder ->
+            Pager(PagingConfig(25)) {
+                object : PagingSource<String, BaseGalleryInfo>() {
+                    override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
+                    override suspend fun load(params: LoadParams<String>) = withIOContext {
+                        if (builder.mode == MODE_TOPLIST) {
+                            // TODO: Since we know total pages, let pager support jump
+                            val key = (params.key ?: builder.jumpTo)?.toInt() ?: 0
+                            val prev = (key - 1).takeIf { it > 0 }
+                            val next = (key + 1).takeIf { it < TOPLIST_PAGES }
+                            runSuspendCatching {
+                                builder.setJumpTo(key)
+                                EhEngine.getGalleryList(builder.build())
+                            }.foldToLoadResult { result ->
+                                LoadResult.Page(result.galleryInfoList, prev?.toString(), next?.toString())
+                            }
+                        } else {
+                            when (params) {
+                                is LoadParams.Prepend -> builder.setIndex(params.key, isNext = false)
+                                is LoadParams.Append -> builder.setIndex(params.key, isNext = true)
+                                is LoadParams.Refresh -> {
+                                    val key = params.key
+                                    if (key.isNullOrBlank()) {
+                                        if (builder.jumpTo != null) {
+                                            builder.next ?: builder.setIndex("2", true)
+                                        }
+                                    } else {
+                                        builder.setIndex(key, false)
                                     }
-                                } else {
-                                    urlBuilder.setIndex(key, false)
                                 }
                             }
-                        }
-                        runSuspendCatching {
-                            val url = urlBuilder.build()
-                            EhEngine.getGalleryList(url)
-                        }.foldToLoadResult { result ->
-                            urlBuilder.jumpTo = null
-                            LoadResult.Page(result.galleryInfoList, result.prev, result.next)
+                            runSuspendCatching {
+                                val url = builder.build()
+                                EhEngine.getGalleryList(url)
+                            }.foldToLoadResult { result ->
+                                builder.jumpTo = null
+                                LoadResult.Page(result.galleryInfoList, result.prev, result.next)
+                            }
                         }
                     }
                 }
-            }
-        }.flow.cachedIn(viewModelScope)
+            }.flow
+        }.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
     ReportDrawnWhen { data.loadState.refresh !is LoadState.Loading }
     FavouriteStatusRouter.Observe(data)
@@ -265,7 +268,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                     modifier = Modifier.padding(horizontal = 4.dp).clip(CardDefaults.shape).clickable {
                         Settings.recentToplist = keyword
                         urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
-                        data.refresh()
                         launch { sheetState.close() }
                     },
                     headlineContent = {
@@ -416,10 +418,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                             }
                                             navigate(builder.asDst())
                                         } else {
-                                            urlBuilder = ListUrlBuilder(item).apply {
-                                                language = languageFilter
-                                            }
-                                            data.refresh()
+                                            urlBuilder = ListUrlBuilder(item).apply { language = languageFilter }
                                         }
                                         launch { sheetState.close() }
                                     },
@@ -510,7 +509,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             }
             else -> {
                 urlBuilder = builder
-                data.refresh()
             }
         }
     }
@@ -595,10 +593,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 )
             },
             searchBarOffsetY = { searchBarOffsetY },
-            onRefresh = {
-                urlBuilder.setRange(0)
-                data.refresh()
-            },
+            onRefresh = { urlBuilder = urlBuilder.withRange(0) },
             onLoading = { searchBarOffsetY = 0 },
         )
     }
@@ -624,37 +619,33 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     ) {
         if (urlBuilder.mode in arrayOf(MODE_NORMAL, MODE_UPLOADER, MODE_TAG)) {
             onClick(Icons.Default.Shuffle) {
-                urlBuilder.setRange(Random.nextInt(100))
-                data.refresh()
+                urlBuilder = urlBuilder.withRange(Random.nextInt(100))
             }
         }
         onClick(Icons.Default.Refresh) {
-            urlBuilder.setRange(0)
-            data.refresh()
+            urlBuilder = urlBuilder.withRange(0)
         }
         if (urlBuilder.mode != MODE_WHATS_HOT) {
             onClick(EhIcons.Default.GoTo) {
-                if (isTopList) {
+                urlBuilder = if (isTopList) {
                     val page = urlBuilder.jumpTo?.toIntOrNull() ?: 0
                     val hint = string(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
                         val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum } - 1
                         ensure(goto in 0..<TOPLIST_PAGES) { outOfRange }
                     }.trim().toInt() - 1
-                    urlBuilder.setJumpTo(text)
+                    urlBuilder.withJumpTo(text)
                 } else {
                     val date = awaitSelectDate()
-                    urlBuilder.jumpTo = date
+                    urlBuilder.copy(jumpTo = date)
                 }
-                data.refresh()
             }
             onClick(Icons.AutoMirrored.Default.LastPage) {
-                if (isTopList) {
-                    urlBuilder.setJumpTo(TOPLIST_PAGES - 1)
+                urlBuilder = if (isTopList) {
+                    urlBuilder.withJumpTo(TOPLIST_PAGES - 1)
                 } else {
-                    urlBuilder.setIndex("1", false)
+                    urlBuilder.withIndex("1", false)
                 }
-                data.refresh()
             }
         }
     }
