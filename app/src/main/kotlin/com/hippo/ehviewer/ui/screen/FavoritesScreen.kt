@@ -86,6 +86,7 @@ import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitSelectItem
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.rememberSerializable
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.takeAndClear
@@ -114,7 +115,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
 
     // Meta State
-    var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
+    var urlBuilder by rememberSerializable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
 

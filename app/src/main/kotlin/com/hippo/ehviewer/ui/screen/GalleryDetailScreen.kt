@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.os.Parcelable
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.collection.SieveCache
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -75,7 +74,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.launchIO
 import moe.tarsin.snackbar
@@ -85,14 +84,15 @@ typealias VoteTag = suspend GalleryDetail.(String, Int) -> Unit
 
 val detailCache = SieveCache<Long, GalleryDetail>(25)
 
-sealed interface GalleryDetailScreenArgs : Parcelable
+@Serializable
+sealed interface GalleryDetailScreenArgs
 
-@Parcelize
+@Serializable
 data class GalleryInfoArgs(
     val galleryInfo: BaseGalleryInfo,
 ) : GalleryDetailScreenArgs
 
-@Parcelize
+@Serializable
 data class TokenArgs(
     val gid: Long,
     val token: String,
