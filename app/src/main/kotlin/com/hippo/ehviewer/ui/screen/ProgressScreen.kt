@@ -32,6 +32,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable
@@ -48,7 +49,7 @@ fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, 
                 }.onSuccess {
                     withUIContext {
                         navigator.popBackStack()
-                        navigator.navigate(gid asDstPageTo page with it)
+                        navigate(gid asDstPageTo page with it)
                     }
                 }.onFailure {
                     error = it.displayString()

@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
+import android.content.Context
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +18,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +30,7 @@ import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.includeFontPadding
 
+context(_: Context)
 @Composable
 fun GalleryTags(
     tagGroups: List<GalleryTagGroup>,
@@ -37,8 +38,7 @@ fun GalleryTags(
     onTagLongClick: (String, String, VoteStatus) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(context) && EhTagDatabase.initialized
+    val canTranslate = Settings.showTagTranslations && EhTagDatabase.translatable && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun TagNamespace.translate() = ehTags?.getTranslation(tag = value) ?: value
     fun String.translate(ns: TagNamespace) = ehTags?.getTranslation(prefix = ns.prefix, tag = this) ?: this

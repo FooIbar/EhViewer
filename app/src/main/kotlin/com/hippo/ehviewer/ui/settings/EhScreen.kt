@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.settings
 
-import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
@@ -44,7 +43,9 @@ import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
 import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
 import com.hippo.ehviewer.ui.destinations.UConfigScreenDestination
-import com.hippo.ehviewer.ui.screen.implicit
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitSelectItem
+import com.hippo.ehviewer.ui.tools.awaitSelectTime
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.copyTextToClipboard
@@ -56,6 +57,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
+import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable
@@ -70,7 +72,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.settings_eh)) },
                 navigationIcon = {
-                    IconButton(onClick = { popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },
@@ -134,11 +136,11 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 Preference(
                     title = stringResource(id = R.string.settings_u_config),
                     summary = stringResource(id = R.string.settings_u_config_summary),
-                ) { navigator.navigate(UConfigScreenDestination) }
+                ) { navigate(UConfigScreenDestination) }
                 Preference(
                     title = stringResource(id = R.string.settings_my_tags),
                     summary = stringResource(id = R.string.settings_my_tags_summary),
-                ) { navigator.navigate(MyTagsScreenDestination) }
+                ) { navigate(MyTagsScreenDestination) }
             }
             var defaultFavSlot by Settings::defaultFavSlot.observed
             val disabled = stringResource(id = R.string.disabled_nav)
@@ -243,7 +245,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                     value = Settings::commentThreshold,
                 )
             }
-            if (EhTagDatabase.isTranslatable(implicit<Context>())) {
+            if (EhTagDatabase.translatable) {
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_show_tag_translations),
                     summary = stringResource(id = R.string.settings_eh_show_tag_translations_summary),

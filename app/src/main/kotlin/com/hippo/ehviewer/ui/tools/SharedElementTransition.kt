@@ -25,33 +25,35 @@ val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptySet())
 @Stable
 value class TransitionsVisibilityScope(val scopes: Set<AnimatedVisibilityScope>)
 
-context(TransitionsVisibilityScope)
+context(visScope: TransitionsVisibilityScope)
 @Composable
-inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(scopes, scope) { TransitionsVisibilityScope(scopes + scope) })
+inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(visScope.scopes, scope) { TransitionsVisibilityScope(visScope.scopes + scope) })
 
-context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
+context(shareScope: SharedTransitionScope, visScope: TransitionsVisibilityScope, generator: SETNodeGenerator)
 @Composable
 fun Modifier.sharedBounds(
     key: String,
     enter: EnterTransition = fadeIn(),
     exit: ExitTransition = fadeOut(),
-) = remember(key) { summon(key) }.let { node ->
+) = remember(key) { generator.summon(key) }.let { node ->
     DisposableEffect(key) {
         onDispose {
-            dispose(node)
+            generator.dispose(node)
         }
     }
-    scopes.fold(this) { modifier, scope ->
-        modifier.sharedBounds(
-            rememberSharedContentState("${node.syntheticKey} + ${scope.transition.label}"),
-            scope,
-            enter,
-            exit,
-        )
+    visScope.scopes.fold(this) { modifier, scope ->
+        with(shareScope) {
+            modifier.sharedBounds(
+                rememberSharedContentState("${node.syntheticKey} + ${scope.transition.label}"),
+                scope,
+                enter,
+                exit,
+            )
+        }
     }
 }
 
-context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 @Composable
 inline fun SharedElementBox(key: String, shape: Shape, crossinline content: @Composable BoxScope.() -> Unit) {
     val modifier = Modifier.sharedBounds(key = key).clip(shape)

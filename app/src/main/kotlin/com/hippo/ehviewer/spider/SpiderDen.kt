@@ -338,7 +338,7 @@ class SpiderDen(val info: GalleryInfo) {
                     EhEngine.fillGalleryListByApi(listOf(info))
                 }
                 info.getComicInfo().apply {
-                    write(it)
+                    writeComicInfo(this, it)
                     DownloadManager.getDownloadInfo(gid)?.let { downloadInfo ->
                         downloadInfo.artistInfoList = DownloadArtist.from(gid, penciller.orEmpty())
                         EhDB.putDownloadArtist(gid, downloadInfo.artistInfoList)

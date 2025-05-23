@@ -42,8 +42,8 @@ import kotlin.time.Duration.Companion.microseconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
+import moe.tarsin.launch
 
 @Stable
 enum class FabLayoutValue { Hidden, Primary, Expand }
@@ -98,7 +98,7 @@ fun interface FabBuilder {
     fun onClick(icon: ImageVector, that: suspend () -> Unit) = onClick(icon, true, that)
 }
 
-context(CoroutineScope)
+context(_: CoroutineScope)
 @Composable
 fun FabLayout(
     hidden: Boolean,

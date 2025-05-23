@@ -46,14 +46,15 @@ fun ProgressDialog() {
     }
 }
 
-suspend fun <R> DialogState.bgWork(work: suspend () -> R) = mutex.mutate {
+context(state: DialogState)
+suspend fun <R> bgWork(work: suspend () -> R) = state.mutex.mutate {
     try {
         suspendCoroutineUninterceptedOrReturn { cont ->
             work.startCoroutineUninterceptedOrReturn(cont).also { r ->
-                if (r == COROUTINE_SUSPENDED) value = { ProgressDialog() }
+                if (r == COROUTINE_SUSPENDED) state.value = { ProgressDialog() }
             }
         }
     } finally {
-        dismiss()
+        state.dismiss()
     }
 }

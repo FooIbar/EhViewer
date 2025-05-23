@@ -58,6 +58,7 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -67,7 +68,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import moe.tarsin.launch
+import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable

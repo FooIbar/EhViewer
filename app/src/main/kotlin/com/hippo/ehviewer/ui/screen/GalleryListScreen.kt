@@ -57,7 +57,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -97,6 +96,7 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.LocalSideSheetState
+import com.hippo.ehviewer.ui.ProvideSideSheetContent
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
@@ -114,6 +114,9 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.asyncState
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitInputText
+import com.hippo.ehviewer.ui.tools.awaitInputTextWithCheckBox
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -124,15 +127,18 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.launch
+import moe.tarsin.launchIO
+import moe.tarsin.navigate
+import moe.tarsin.snackbar
+import moe.tarsin.string
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -299,7 +305,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                         onClick = {
                             launch {
                                 if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
-                                    showSnackbar(invalidImageQuickSearch)
+                                    snackbar(invalidImageQuickSearch)
                                 } else {
                                     // itemCount == 0 is treated as error, so no need to check here
                                     val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
@@ -308,7 +314,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                         if (urlBuilder.equalsQuickSearch(q)) {
                                             val nextStr = q.name.substringAfterLast('@', "")
                                             if (nextStr.toLongOrNull() == next) {
-                                                showSnackbar(getString(R.string.duplicate_quick_search, q.name))
+                                                snackbar(string(R.string.duplicate_quick_search, q.name))
                                                 return@launch
                                             }
                                         }
@@ -345,7 +351,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 windowInsets = WindowInsets(),
             )
             Box(modifier = Modifier.fillMaxSize()) {
-                val dialogState by rememberUpdatedState(implicit<DialogState>())
+                val dialogState by rememberUpdatedState(contextOf<DialogState>())
                 val quickSearchListState = rememberLazyListState()
                 val hapticFeedback = rememberHapticFeedback()
                 val reorderableLazyListState = rememberReorderableLazyListState(quickSearchListState) { from, to ->
@@ -371,8 +377,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                             LaunchedEffect(dismissState) {
                                 snapshotFlow { dismissState.currentValue }.collect { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
-                                        runCatching {
-                                            dialogState.awaitConfirmationOrCancel(confirmText = R.string.delete) {
+                                        dialogState.runCatching {
+                                            awaitConfirmationOrCancel(confirmText = R.string.delete) {
                                                 Text(text = stringResource(R.string.delete_quick_search, item.name))
                                             }
                                         }.onSuccess {
@@ -408,7 +414,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                             val builder = ListUrlBuilder(item).apply {
                                                 language = languageFilter
                                             }
-                                            navigator.navigate(builder.asDst())
+                                            navigate(builder.asDst())
                                         } else {
                                             urlBuilder = ListUrlBuilder(item).apply {
                                                 language = languageFilter
@@ -549,7 +555,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val searchBarConnection = remember {
-            val slop = ViewConfiguration.get(implicit<Context>()).scaledTouchSlop
+            val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
@@ -630,7 +636,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             onClick(EhIcons.Default.GoTo) {
                 if (isTopList) {
                     val page = urlBuilder.jumpTo?.toIntOrNull() ?: 0
-                    val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
+                    val hint = string(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
                         val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum } - 1
                         ensure(goto in 0..<TOPLIST_PAGES) { outOfRange }
@@ -656,10 +662,10 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
 
 private const val TOPLIST_PAGES = 200
 
+context(_: Context)
 @Composable
 @Stable
 private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder, appName: Boolean = true): String? {
-    val context = LocalContext.current
     val keyword = urlBuilder.keyword
     val category = urlBuilder.category
     val mode = urlBuilder.mode
@@ -677,7 +683,7 @@ private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder, appName: B
                 }
             }
             MODE_TAG -> {
-                val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(context) && EhTagDatabase.initialized
+                val canTranslate = Settings.showTagTranslations && EhTagDatabase.translatable && EhTagDatabase.initialized
                 wrapTagKeyword(keyword, canTranslate)
             }
             else -> keyword

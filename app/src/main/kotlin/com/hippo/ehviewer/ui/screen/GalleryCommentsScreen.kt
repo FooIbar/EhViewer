@@ -98,8 +98,11 @@ import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitSelectAction
 import com.hippo.ehviewer.ui.tools.normalizeSpan
 import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
+import com.hippo.ehviewer.ui.tools.showNoButton
 import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.ui.tools.toBBCode
@@ -110,13 +113,15 @@ import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.collections.forEach
 import kotlin.math.roundToInt
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.launch
+import moe.tarsin.launchIO
+import moe.tarsin.navigate
+import moe.tarsin.snackbar
 
 private val URL_PATTERN = Regex("(http|https)://[a-z0-9A-Z%-]+(\\.[a-z0-9A-Z%-]+)+(:\\d{1,5})?(/[a-zA-Z0-9-_~:#@!&',;=%/*.?+$\\[\\]()]+)?/?")
 
@@ -222,10 +227,10 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
             userComment = TextFieldValue()
             commentId = -1L
             comments = it
-            showSnackbar(msg)
+            snackbar(msg)
         }.onFailure {
             val text = if (commentId != -1L) editCommentFail else commentFail
-            showSnackbar(text + "\n" + it.displayString())
+            snackbar(text + "\n" + it.displayString())
         }
     }
 
@@ -235,7 +240,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
         awaitConfirmationOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
         Filter(FilterMode.COMMENTER, commenter).remember()
         comments = comments.copy(comments = comments.comments.filterNot { it.user == commenter })
-        showSnackbar(filterAdded)
+        snackbar(filterAdded)
     }
 
     suspend fun showCommentVoteStatus(comment: GalleryComment) {
@@ -357,7 +362,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                                 refreshComment(true)
                             }
                         }.onSuccess { result ->
-                            showSnackbar(
+                            snackbar(
                                 if (isUp) {
                                     if (0 != result.vote) voteUpSucceed else cancelVoteUpSucceed
                                 } else {
@@ -365,7 +370,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                                 },
                             )
                         }.onFailure {
-                            showSnackbar(voteFailed)
+                            snackbar(voteFailed)
                         }
                     }
 

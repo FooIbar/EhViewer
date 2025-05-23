@@ -71,6 +71,7 @@ import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.destinations.ImageSearchScreenDestination
 import com.hippo.ehviewer.ui.tools.DialogState
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.rememberCompositionActiveState
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.jamal.composeprefs3.ui.ifNotNullThen
@@ -84,6 +85,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import moe.tarsin.navigate
 
 fun interface SuggestionProvider {
     fun providerSuggestions(text: String): Suggestion?
@@ -99,7 +101,7 @@ abstract class Suggestion {
 
 suspend fun SearchDao.suggestions(prefix: String, limit: Int) = (if (prefix.isBlank()) list(limit) else rawSuggestions(prefix, limit))
 
-context(DialogState, DestinationsNavigator)
+context(_: DialogState, _: DestinationsNavigator)
 @Composable
 fun SearchBarScreen(
     onApplySearch: (String) -> Unit,

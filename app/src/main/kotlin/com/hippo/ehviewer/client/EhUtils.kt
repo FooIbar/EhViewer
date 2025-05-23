@@ -179,7 +179,7 @@ object EhUtils {
         return title.substringBeforeLast('|').trim().ifEmpty { null }
     }
 
-    context(Context)
+    context(ctx: Context)
     suspend fun downloadArchive(galleryDetail: GalleryDetail, archive: Archive) {
         val gid = galleryDetail.gid
         EhEngine.downloadArchive(gid, galleryDetail.token, archive.res, archive.isHAtH)?.let {
@@ -190,7 +190,7 @@ object EhUtils {
             }
             val name = "$gid-${getSuitableTitle(galleryDetail)}.zip"
             try {
-                startActivity(intent)
+                ctx.startActivity(intent)
                 withUIContext { addTextToClipboard(name, true) }
             } catch (_: ActivityNotFoundException) {
                 val r = DownloadManager.Request(uri)

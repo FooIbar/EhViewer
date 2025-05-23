@@ -6,7 +6,8 @@ import androidx.core.os.LocaleListCompat
 import com.hippo.ehviewer.R
 import org.xmlpull.v1.XmlPullParser
 
-fun Context.getLanguages(): Map<String, String> {
+context(ctx: Context)
+fun getLanguages(): Map<String, String> = with(ctx) {
     val languages = mutableMapOf("system" to getString(R.string.app_language_system))
     resources.getXml(R.xml._generated_res_locale_config).use { parser ->
         var event = parser.eventType

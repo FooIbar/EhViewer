@@ -65,6 +65,7 @@ import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.isExpanded
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.displayString
@@ -72,9 +73,10 @@ import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Job
+import moe.tarsin.launchIO
+import moe.tarsin.navigate
 
 @Destination<RootGraph>(start = true)
 @Composable
@@ -212,7 +214,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                     }
                     Row(modifier = Modifier.padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(
-                            onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                            onClick = { navigate(WebViewSignInScreenDestination) },
                             modifier = Modifier.weight(1f),
                         ) {
                             Text(
@@ -294,7 +296,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.Center) {
                             TextButton(
-                                onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                                onClick = { navigate(WebViewSignInScreenDestination) },
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(

@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.settings
 
 import android.Manifest
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 import android.os.Environment
@@ -53,6 +54,7 @@ import com.hippo.ehviewer.spider.readCompatFromPath
 import com.hippo.ehviewer.spider.speedLevelToSpeed
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.AppConfig
@@ -71,10 +73,11 @@ import com.hippo.files.toUri
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.launchIO
+import moe.tarsin.launchSnackbar
+import moe.tarsin.string
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import splitties.init.appCtx
@@ -83,13 +86,12 @@ import splitties.init.appCtx
 @Composable
 fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    fun launchSnackBar(content: String) = launch { showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.settings_download)) },
                 navigationIcon = {
-                    IconButton(onClick = { popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },
@@ -104,14 +106,14 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 treeUri?.run {
                     launchIO {
                         runCatching {
-                            contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
+                            contextOf<Context>().contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
                             val path = DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri)).toOkioPath()
                             check(path.isDirectory) { "$path is not a directory" }
                             keepNoMediaFileStatus(path) // Check if the directory is writable
                             downloadLocationState = path
                         }.onFailure {
                             logcat(it)
-                            launchSnackBar(cannotGetDownloadLocation)
+                            launchSnackbar(cannotGetDownloadLocation)
                         }
                     }
                 }
@@ -155,7 +157,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                                 logcat(it)
                             }
                         }
-                        launchSnackBar(cannotGetDownloadLocation)
+                        launchSnackbar(cannotGetDownloadLocation)
                     }
                 }
             }
@@ -239,10 +241,10 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                             di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
                         }
                         EhDB.updateGalleryInfo(toUpdate)
-                        launchSnackBar(getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
+                        launchSnackbar(string(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
                     }
                 }.onFailure {
-                    launchSnackBar(getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
+                    launchSnackbar(string(R.string.settings_download_reload_metadata_failed, it.displayString()))
                 }
             }
             val restoreFailed = stringResource(id = R.string.settings_download_restore_failed)
@@ -283,7 +285,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                         fillGalleryListByApi(it, EhUrl.referer)
                     }
                     if (result.isEmpty()) {
-                        launchSnackBar(RESTORE_COUNT_MSG(restoreDirCount))
+                        launchSnackbar(RESTORE_COUNT_MSG(restoreDirCount))
                     } else {
                         val count = result.parMap {
                             if (it.pages != 0) {
@@ -292,11 +294,11 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                                 SpiderDen(it.galleryInfo, it.dirname).writeComicInfo(false)
                             }
                         }.size
-                        launchSnackBar(RESTORE_COUNT_MSG(count + restoreDirCount))
+                        launchSnackbar(RESTORE_COUNT_MSG(count + restoreDirCount))
                     }
                 }.onFailure {
                     logcat(it)
-                    launchSnackBar(restoreFailed)
+                    launchSnackbar(restoreFailed)
                 }
             }
             WorkPreference(
@@ -323,7 +325,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                     }
                 }
                 val cnt = list.count { runCatching { it.delete() }.getOrNull() != null }
-                launchSnackBar(FINAL_CLEAR_REDUNDANCY_MSG(cnt))
+                launchSnackbar(FINAL_CLEAR_REDUNDANCY_MSG(cnt))
             }
         }
     }

@@ -35,7 +35,7 @@ fun AnimatedVisibilityScope.LicenseScreen(navigator: DestinationsNavigator) = Sc
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.license)) },
                 navigationIcon = {
-                    IconButton(onClick = { popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },

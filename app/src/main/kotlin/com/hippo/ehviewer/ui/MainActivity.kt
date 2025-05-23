@@ -25,13 +25,11 @@ import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -43,7 +41,6 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
@@ -55,16 +52,13 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerState2
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.ModalSideDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -138,6 +132,8 @@ import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitInputText
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.addTextToClipboard
@@ -181,15 +177,6 @@ val StartDestination
     get() = navItems[Settings.launchPage].first
 
 class MainActivity : EhActivity() {
-    private val sideSheet = mutableStateListOf<@Composable ColumnScope.(DrawerState2) -> Unit>()
-
-    @Composable
-    fun ProvideSideSheetContent(content: @Composable ColumnScope.(DrawerState2) -> Unit) {
-        DisposableEffect(content) {
-            sideSheet.add(0, content)
-            onDispose { sideSheet.remove(content) }
-        }
-    }
 
     private var shareUrl: String? = null
 
@@ -256,9 +243,7 @@ class MainActivity : EhActivity() {
                     if (hasNetwork) {
                         runSuspendCatching {
                             withIOContext {
-                                AppUpdater.checkForUpdate()?.let {
-                                    showNewVersion(this@MainActivity, it)
-                                }
+                                AppUpdater.checkForUpdate()?.let { showNewVersion(it) }
                             }
                         }.onFailure {
                             snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
@@ -276,13 +261,11 @@ class MainActivity : EhActivity() {
                         Intent.ACTION_VIEW -> {
                             val uri = intent.data ?: return@collect
                             when (uri.scheme) {
-                                SCHEME_CONTENT, SCHEME_FILE -> {
-                                    navigator.navToReader(uri)
-                                }
+                                SCHEME_CONTENT, SCHEME_FILE -> with(navigator) { navToReader(uri) }
 
                                 else -> {
                                     val url = uri.toString()
-                                    if (!navigator.navWithUrl(url)) {
+                                    if (!with(navigator) { navWithUrl(url) }) {
                                         val new = awaitInputText(initial = url, title = cannotParse)
                                         addTextToClipboard(new)
                                     }
@@ -293,7 +276,7 @@ class MainActivity : EhActivity() {
                             val type = intent.type
                             if ("text/plain" == type) {
                                 val keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
-                                if (keyword != null && !navigator.navWithUrl(keyword)) {
+                                if (keyword != null && !with(navigator) { navWithUrl(keyword) }) {
                                     navigator.navigate(ListUrlBuilder(mKeyword = keyword).asDst())
                                 }
                             } else if (type != null && type.startsWith("image/")) {
@@ -440,25 +423,13 @@ class MainActivity : EhActivity() {
                         drawerState = navDrawerState,
                         gesturesEnabled = drawerEnabled && sideSheetState.isClosed || navDrawerState.isOpen,
                     ) {
-                        val sheet = sideSheet.firstOrNull()
                         val radius by remember {
                             snapshotFlow {
                                 val step = calculateFraction(minOffset, 0f, navDrawerState.currentOffset)
                                 with(density) { lerp(0, 10, step).dp.toPx() }
                             }
                         }.collectAsState(0f)
-                        ModalSideDrawer(
-                            drawerContent = {
-                                if (sheet != null) {
-                                    ModalDrawerSheet(
-                                        modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
-                                        drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
-                                        windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
-                                    ) {
-                                        sheet(sideSheetState)
-                                    }
-                                }
-                            },
+                        MutableSideSheet(
                             modifier = Modifier.graphicsLayer {
                                 if (radius != 0f) {
                                     renderEffect = BlurEffect(radius, radius, TileMode.Clamp)
@@ -466,8 +437,7 @@ class MainActivity : EhActivity() {
                                     clip = true
                                 }
                             },
-                            drawerState = sideSheetState,
-                            gesturesEnabled = sheet != null && drawerEnabled,
+                            enabled = drawerEnabled,
                         ) {
                             SharedTransitionLayout {
                                 CompositionLocalProvider(LocalSharedTransitionScope provides this) {
@@ -553,8 +523,6 @@ class MainActivity : EhActivity() {
         }
     }
 
-    fun showTip(@StringRes id: Int, useToast: Boolean = false) = showTip(getString(id), useToast)
-
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)
         shareUrl?.let { outContent?.webUri = it.toUri() }
@@ -562,7 +530,7 @@ class MainActivity : EhActivity() {
 }
 
 val LocalNavDrawerState = compositionLocalOf<DrawerState> { error("CompositionLocal LocalNavDrawerState not present!") }
-val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
+
 val LocalDrawerHandle = compositionLocalOf<SnapshotStateList<Long>> { error("CompositionLocal LocalDrawerHandle not present!") }
 val LocalSnackBarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackBarHostState not present!") }
 val LocalSnackBarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackBarFabPadding not present!") }

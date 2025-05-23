@@ -26,6 +26,7 @@ import android.view.textclassifier.TextClassifier
 import androidx.core.os.persistableBundleOf
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.ui.MainActivity
+import moe.tarsin.tip
 import splitties.systemservices.clipboardManager
 
 fun copyTextToClipboard(text: CharSequence?, isSensitive: Boolean) {
@@ -38,12 +39,14 @@ fun copyTextToClipboard(text: CharSequence?, isSensitive: Boolean) {
     )
 }
 
-fun Context.addTextToClipboard(text: CharSequence?, useToast: Boolean = false) {
+context(ctx: Context)
+fun addTextToClipboard(text: CharSequence?, useToast: Boolean = false) {
     copyTextToClipboard(text, false)
     // Avoid double notify user since system have done that on Tiramisu above
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-        val activity = findActivity<MainActivity>()
-        activity.showTip(R.string.copied_to_clipboard, useToast)
+        with(findActivity<MainActivity>()) {
+            tip(R.string.copied_to_clipboard, useToast)
+        }
     }
 }
 

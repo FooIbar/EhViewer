@@ -32,7 +32,7 @@ fun AnimatedVisibilityScope.MyTagsScreen(navigator: DestinationsNavigator) = Scr
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.my_tags)) },
                 navigationIcon = {
-                    IconButton(onClick = { popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },

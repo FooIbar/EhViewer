@@ -23,7 +23,6 @@ import arrow.core.Either
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.TagNamespace
-import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.bodyAsUtf8Text
 import com.hippo.ehviewer.util.ensureSuccess
@@ -66,10 +65,10 @@ object EhTagDatabase : CoroutineScope {
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
-    context(Context)
+    context(ctx: Context)
     fun suggestion(rawKeyword: String, expectTranslate: Boolean): Sequence<Pair<String, String?>> {
         if (!initialized) return emptySequence()
-        val translate = expectTranslate && isTranslatable(implicit<Context>())
+        val translate = expectTranslate && translatable
         val keyword = PREFIXES.fold(rawKeyword) { kwd, pfx -> kwd.removePrefix(pfx) }
         val prefix = rawKeyword.dropLast(keyword.length)
         val ns = keyword.substringBefore(':')
@@ -107,7 +106,9 @@ object EhTagDatabase : CoroutineScope {
 
     private fun metadata(context: Context): Array<String> = context.resources.getStringArray(R.array.tag_translation_metadata)
 
-    fun isTranslatable(context: Context): Boolean = context.resources.getBoolean(R.bool.tag_translatable)
+    context(ctx: Context)
+    val translatable
+        get() = ctx.resources.getBoolean(R.bool.tag_translatable)
 
     private suspend fun fetch(url: String) = ktorClient.prepareGet(url).executeSafely {
         it.status.ensureSuccess()
