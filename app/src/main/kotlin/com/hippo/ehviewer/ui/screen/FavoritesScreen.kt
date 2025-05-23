@@ -155,15 +155,10 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                             when (params) {
                                 is LoadParams.Prepend -> builder.setIndex(params.key, isNext = false)
                                 is LoadParams.Append -> builder.setIndex(params.key, isNext = true)
-                                is LoadParams.Refresh -> {
-                                    val key = params.key
-                                    if (key.isNullOrBlank()) {
-                                        if (builder.jumpTo != null) {
-                                            builder.next ?: builder.setIndex("2", true)
-                                        }
-                                    } else {
-                                        builder.setIndex(key, false)
-                                    }
+                                is LoadParams.Refresh -> if (builder.jumpTo != null) {
+                                    builder.next ?: builder.setIndex("2", true)
+                                } else {
+                                    builder.setIndex(params.key.orEmpty(), false)
                                 }
                             }
                             runSuspendCatching {
@@ -338,7 +333,8 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                 }
             },
             searchBarOffsetY = { searchBarOffsetY },
-            scrollToTopOnRefresh = urlBuilder.favCat != FavListUrlBuilder.FAV_CAT_LOCAL,
+            scrollToTopOnRefresh = !urlBuilder.isLocal,
+            allowRefresh = !urlBuilder.isLocal,
             onRefresh = { urlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null) },
             onLoading = { searchBarOffsetY = 0 },
         )
@@ -369,13 +365,14 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                         withUIContext { navigate(info.asDst()) }
                     }
                 }
+            } else {
+                onClick(Icons.Default.Refresh) {
+                    urlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)
+                }
             }
             onClick(EhIcons.Default.GoTo) {
                 val date = awaitSelectDate()
                 urlBuilder = urlBuilder.copy(jumpTo = date)
-            }
-            onClick(Icons.Default.Refresh) {
-                urlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)
             }
             onClick(Icons.AutoMirrored.Default.LastPage) {
                 urlBuilder = urlBuilder.copy(jumpTo = null, prev = "1-0", next = null)

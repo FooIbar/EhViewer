@@ -92,6 +92,7 @@ fun GalleryList(
     thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit),
     searchBarOffsetY: () -> Int,
     scrollToTopOnRefresh: Boolean = true,
+    allowRefresh: Boolean = true,
     onRefresh: () -> Unit,
     onLoading: () -> Unit,
 ) {
@@ -104,7 +105,7 @@ fun GalleryList(
         modifier = modifier.fillMaxSize().pullToRefresh(
             isRefreshing = isRefreshing,
             state = refreshState,
-            enabled = data.loadState.refresh is LoadState.NotLoading,
+            enabled = allowRefresh && data.loadState.refresh is LoadState.NotLoading,
         ) {
             isRefreshing = true
             launch {

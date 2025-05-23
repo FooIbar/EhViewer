@@ -216,15 +216,10 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                             when (params) {
                                 is LoadParams.Prepend -> builder.setIndex(params.key, isNext = false)
                                 is LoadParams.Append -> builder.setIndex(params.key, isNext = true)
-                                is LoadParams.Refresh -> {
-                                    val key = params.key
-                                    if (key.isNullOrBlank()) {
-                                        if (builder.jumpTo != null) {
-                                            builder.next ?: builder.setIndex("2", true)
-                                        }
-                                    } else {
-                                        builder.setIndex(key, false)
-                                    }
+                                is LoadParams.Refresh -> if (builder.jumpTo != null) {
+                                    builder.next ?: builder.setIndex("2", true)
+                                } else {
+                                    builder.setIndex(params.key.orEmpty(), false)
                                 }
                             }
                             runSuspendCatching {
