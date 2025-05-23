@@ -163,7 +163,7 @@ fun AnimatedVisibilityScope.ToplistScreen(navigator: DestinationsNavigator) = Ga
 @Composable
 fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = Screen(navigator) {
     val searchFieldState = rememberTextFieldState()
-    var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
+    var urlBuilder by rememberSaveable { mutableStateOf(lub) }
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     val animateItems by Settings.animateItems.collectAsState()
