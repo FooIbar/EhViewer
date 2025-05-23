@@ -51,17 +51,9 @@ data class ListUrlBuilder(
         range = 0
     }
 
-    fun withIndex(index: String, isNext: Boolean = true) = copy(
-        next = index.takeIf { isNext },
-        prev = index.takeUnless { isNext },
-        range = 0,
-    )
-
     fun setJumpTo(to: Int) {
         jumpTo = to.takeUnless { it == 0 }?.toString()
     }
-
-    fun withJumpTo(to: Int) = copy(jumpTo = to.takeUnless { it == 0 }?.toString())
 
     fun setRange(to: Int) {
         range = to
@@ -69,13 +61,6 @@ data class ListUrlBuilder(
         next = null
         jumpTo = null
     }
-
-    fun withRange(to: Int) = copy(
-        range = to,
-        prev = null,
-        next = null,
-        jumpTo = null,
-    )
 
     var keyword: String?
         get() = if (MODE_UPLOADER == mode) "uploader:$mKeyword" else mKeyword

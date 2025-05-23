@@ -42,7 +42,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -97,7 +96,6 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
@@ -121,6 +119,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
 
     // Derived State
     val keyword = urlBuilder.keyword
+    val isLocalFav = urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL
     val favCatName = remember(urlBuilder) {
         when (val favCat = urlBuilder.favCat) {
             in 0..9 -> Settings.favCat[favCat]
@@ -136,56 +135,61 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     val density = LocalDensity.current
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
-    val data = rememberInVM {
-        snapshotFlow { urlBuilder }.flatMapLatest { builder ->
-            if (builder.isLocal) {
-                Pager(PagingConfig(20, jumpThreshold = 40)) {
-                    val keywordNow = builder.keyword.orEmpty()
-                    if (keywordNow.isBlank()) {
-                        EhDB.localFavLazyList
-                    } else {
-                        EhDB.searchLocalFav(keywordNow)
-                    }
+    val data = rememberInVM(isLocalFav) {
+        if (isLocalFav) {
+            Pager(PagingConfig(20, jumpThreshold = 40)) {
+                val keywordNow = urlBuilder.keyword.orEmpty()
+                if (keywordNow.isBlank()) {
+                    EhDB.localFavLazyList
+                } else {
+                    EhDB.searchLocalFav(keywordNow)
                 }
-            } else {
-                Pager(PagingConfig(25)) {
-                    object : PagingSource<String, BaseGalleryInfo>() {
-                        override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
-                        override suspend fun load(params: LoadParams<String>) = withIOContext {
-                            when (params) {
-                                is LoadParams.Prepend -> builder.setIndex(params.key, isNext = false)
-                                is LoadParams.Append -> builder.setIndex(params.key, isNext = true)
-                                is LoadParams.Refresh -> {
-                                    val key = params.key
-                                    if (key.isNullOrBlank()) {
-                                        if (builder.jumpTo != null) {
-                                            builder.next ?: builder.setIndex("2", true)
-                                        }
-                                    } else {
-                                        builder.setIndex(key, false)
+            }
+        } else {
+            Pager(PagingConfig(25)) {
+                object : PagingSource<String, BaseGalleryInfo>() {
+                    override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
+                    override suspend fun load(params: LoadParams<String>) = withIOContext {
+                        when (params) {
+                            is LoadParams.Prepend -> urlBuilder.setIndex(params.key, isNext = false)
+                            is LoadParams.Append -> urlBuilder.setIndex(params.key, isNext = true)
+                            is LoadParams.Refresh -> {
+                                val key = params.key
+                                if (key.isNullOrBlank()) {
+                                    if (urlBuilder.jumpTo != null) {
+                                        urlBuilder.next ?: urlBuilder.setIndex("2", true)
                                     }
+                                } else {
+                                    urlBuilder.setIndex(key, false)
                                 }
                             }
-                            runSuspendCatching {
-                                EhEngine.getFavorites(builder.build())
-                            }.foldToLoadResult { result ->
-                                Settings.favCat = result.catArray.toTypedArray()
-                                Settings.favCount = result.countArray.toIntArray()
-                                Settings.favCloudCount = result.countArray.sum()
-                                builder.jumpTo = null
-                                LoadResult.Page(result.galleryInfoList, result.prev, result.next)
-                            }
+                        }
+                        runSuspendCatching {
+                            EhEngine.getFavorites(urlBuilder.build())
+                        }.foldToLoadResult { result ->
+                            Settings.favCat = result.catArray.toTypedArray()
+                            Settings.favCount = result.countArray.toIntArray()
+                            Settings.favCloudCount = result.countArray.sum()
+                            urlBuilder.jumpTo = null
+                            LoadResult.Page(result.galleryInfoList, result.prev, result.next)
                         }
                     }
                 }
-            }.flow.map { pagingData ->
-                // https://github.com/FooIbar/EhViewer/issues/1190
-                // Workaround for duplicate items when sorting by favorited time
-                val gidSet = MutableLongSet(50)
-                pagingData.filter { gidSet.add(it.gid) }
+            }
+        }.flow.map { pagingData ->
+            // https://github.com/FooIbar/EhViewer/issues/1190
+            // Workaround for duplicate items when sorting by favorited time
+            val gidSet = MutableLongSet(50)
+            pagingData.filter {
+                gidSet.add(it.gid)
             }
         }.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
+
+    fun refresh(newUrlBuilder: FavListUrlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)) {
+        urlBuilder = newUrlBuilder
+        data.refresh()
+    }
 
     ProvideSideSheetContent { sheetState ->
         val localFavCount by localFavCountFlow.collectAsState(0)
@@ -220,7 +224,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                     trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
                     modifier = Modifier.clip(CardDefaults.shape).clickable {
                         val newCat = index - 2
-                        urlBuilder = FavListUrlBuilder(newCat)
+                        refresh(FavListUrlBuilder(newCat))
                         Settings.recentFavCat = newCat
                         launch { sheetState.close() }
                     },
@@ -237,7 +241,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     DrawerHandle(!selectMode && !searchBarExpanded)
 
     SearchBarScreen(
-        onApplySearch = { urlBuilder = FavListUrlBuilder(urlBuilder.favCat, it) },
+        onApplySearch = { refresh(FavListUrlBuilder(urlBuilder.favCat, it)) },
         expanded = searchBarExpanded,
         onExpandedChange = {
             searchBarExpanded = it
@@ -246,7 +250,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         },
         title = title,
         searchFieldHint = searchBarHint,
-        tagNamespace = !urlBuilder.isLocal,
+        tagNamespace = !isLocalFav,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
@@ -339,7 +343,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             },
             searchBarOffsetY = { searchBarOffsetY },
             scrollToTopOnRefresh = urlBuilder.favCat != FavListUrlBuilder.FAV_CAT_LOCAL,
-            onRefresh = { urlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null) },
+            onRefresh = { refresh() },
             onLoading = { searchBarOffsetY = 0 },
         )
     }
@@ -363,7 +367,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         autoCancel = !selectMode,
     ) {
         if (!selectMode) {
-            if (urlBuilder.isLocal) {
+            if (isLocalFav) {
                 onClick(Icons.Default.Shuffle) {
                     EhDB.randomLocalFav()?.let { info ->
                         withUIContext { navigate(info.asDst()) }
@@ -372,13 +376,13 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             }
             onClick(EhIcons.Default.GoTo) {
                 val date = awaitSelectDate()
-                urlBuilder = urlBuilder.copy(jumpTo = date)
+                refresh(urlBuilder.copy(jumpTo = date))
             }
             onClick(Icons.Default.Refresh) {
-                urlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)
+                refresh()
             }
             onClick(Icons.AutoMirrored.Default.LastPage) {
-                urlBuilder = urlBuilder.copy(jumpTo = null, prev = "1-0", next = null)
+                refresh(urlBuilder.copy(jumpTo = null, prev = "1-0", next = null))
             }
         } else {
             onClick(Icons.Default.DoneAll, autoClose = false) {
@@ -406,7 +410,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                     }
                 }
                 // We refresh anyway as cloud data maybe partially modified
-                urlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)
+                data.refresh()
             }
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 // First is local favorite, the other 10 is cloud favorite
@@ -437,7 +441,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                         }
                     }
                     // We refresh anyway as cloud data maybe partially modified
-                    urlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)
+                    data.refresh()
                 }
             }
         }
