@@ -17,8 +17,6 @@ package com.hippo.ehviewer.ui
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,7 +35,6 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -124,11 +121,8 @@ suspend fun startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGaller
     }
     val (toStart, toAdd) = galleryInfos.partition { DownloadManager.containDownloadInfo(it.gid) }
     if (toStart.isNotEmpty()) {
-        val intent = Intent(context, DownloadService::class.java)
-        intent.action = DownloadService.ACTION_START_RANGE
         val list = toStart.mapToLongArray(GalleryInfo::gid)
-        intent.putExtra(DownloadService.KEY_GID_LIST, list)
-        ContextCompat.startForegroundService(context, intent)
+        DownloadService.startRangeDownload(list)
     }
     if (toAdd.isEmpty()) {
         return tip(R.string.added_to_download_list)
@@ -148,11 +142,7 @@ suspend fun startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGaller
     if (justStart) {
         // Got default label
         for (gi in toAdd) {
-            val intent = Intent(context, DownloadService::class.java)
-            intent.action = DownloadService.ACTION_START
-            intent.putExtra(DownloadService.KEY_LABEL, label)
-            intent.putExtra(DownloadService.KEY_GALLERY_INFO, gi)
-            ContextCompat.startForegroundService(context, intent)
+            DownloadService.startDownload(gi, label)
         }
         // Notify
         tip(R.string.added_to_download_list)
@@ -173,11 +163,7 @@ suspend fun startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGaller
         val label1 = if (selected == 0) null else items[selected].takeIf { DownloadManager.containLabel(it) }
         // Start download
         for (gi in toAdd) {
-            val intent = Intent(context, DownloadService::class.java)
-            intent.action = DownloadService.ACTION_START
-            intent.putExtra(DownloadService.KEY_LABEL, label1)
-            intent.putExtra(DownloadService.KEY_GALLERY_INFO, gi)
-            ContextCompat.startForegroundService(context, intent)
+            DownloadService.startDownload(gi, label1)
         }
         // Save settings
         if (checked) {
@@ -286,7 +272,7 @@ context(_: DestinationsNavigator)
 fun navToReader(info: BaseGalleryInfo, page: Int = -1) = navToReader(ReaderScreenArgs.Gallery(info, page))
 
 context(_: DestinationsNavigator)
-fun navToReader(uri: Uri) = navToReader(ReaderScreenArgs.Archive(uri))
+fun navToReader(path: String) = navToReader(ReaderScreenArgs.Archive(path))
 
 context(nav: DestinationsNavigator)
 private fun navToReader(args: ReaderScreenArgs) = nav.navigate(ReaderScreenDestination(args)) { launchSingleTop = true }

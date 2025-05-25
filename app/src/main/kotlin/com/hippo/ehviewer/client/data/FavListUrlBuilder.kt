@@ -15,21 +15,23 @@
  */
 package com.hippo.ehviewer.client.data
 
-import android.os.Parcelable
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.addQueryParameter
 import com.hippo.ehviewer.client.addQueryParameterIfNotBlank
 import com.hippo.ehviewer.client.ehUrl
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
+@Serializable
 data class FavListUrlBuilder(
     val favCat: Int = FAV_CAT_ALL,
     val keyword: String? = null,
     var jumpTo: String? = null,
     var prev: String? = null,
     var next: String? = null,
-) : Parcelable {
+) {
+    val isLocal
+        get() = favCat == FAV_CAT_LOCAL
+
     fun setIndex(index: String?, isNext: Boolean) {
         next = index.takeIf { isNext }
         prev = index.takeUnless { isNext }

@@ -15,10 +15,8 @@
  */
 package com.hippo.ehviewer.client.data
 
-import android.os.Parcelable
 import androidx.compose.ui.util.fastFlatMap
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.S_LANGS
-import kotlinx.parcelize.Parcelize
 
 private val LANGUAGES = arrayOf(
     "English",
@@ -37,7 +35,6 @@ private val LANGUAGES = arrayOf(
     "Dutch",
 )
 
-@Parcelize
 data class GalleryDetail(
     val galleryInfo: BaseGalleryInfo = BaseGalleryInfo(),
     var apiUid: Long = -1L,
@@ -55,7 +52,7 @@ data class GalleryDetail(
     val tagGroups: List<GalleryTagGroup>,
     var comments: GalleryCommentList,
     val previewList: List<GalleryPreview>,
-) : GalleryInfo by galleryInfo, Parcelable {
+) : GalleryInfo by galleryInfo {
     fun fillInfo() {
         val index = LANGUAGES.indexOf(language)
         if (index != -1) simpleLanguage = S_LANGS[index]

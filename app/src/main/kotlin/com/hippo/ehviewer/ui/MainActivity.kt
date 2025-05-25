@@ -258,32 +258,32 @@ class MainActivity : EhActivity() {
             LaunchedEffect(Unit) {
                 intentFlow.collect { intent ->
                     when (intent.action) {
-                        Intent.ACTION_VIEW -> {
+                        Intent.ACTION_VIEW -> with(navigator) {
                             val uri = intent.data ?: return@collect
                             when (uri.scheme) {
-                                SCHEME_CONTENT, SCHEME_FILE -> with(navigator) { navToReader(uri) }
-
+                                SCHEME_FILE -> navToReader(uri.path!!)
+                                SCHEME_CONTENT -> navToReader(uri.toString())
                                 else -> {
                                     val url = uri.toString()
-                                    if (!with(navigator) { navWithUrl(url) }) {
+                                    if (!navWithUrl(url)) {
                                         val new = awaitInputText(initial = url, title = cannotParse)
                                         addTextToClipboard(new)
                                     }
                                 }
                             }
                         }
-                        Intent.ACTION_SEND -> {
+                        Intent.ACTION_SEND -> with(navigator) {
                             val type = intent.type
                             if ("text/plain" == type) {
                                 val keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
-                                if (keyword != null && !with(navigator) { navWithUrl(keyword) }) {
-                                    navigator.navigate(ListUrlBuilder(mKeyword = keyword).asDst())
+                                if (keyword != null && !navWithUrl(keyword)) {
+                                    navigate(ListUrlBuilder(mKeyword = keyword).asDst())
                                 }
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
                                     val hash = withIOContext { uri.toOkioPath().sha1() }
-                                    navigator.navigate(
+                                    navigate(
                                         ListUrlBuilder(
                                             mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
                                             hash = hash,

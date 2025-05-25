@@ -62,13 +62,9 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingSource
-import androidx.paging.PagingState
-import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
@@ -76,10 +72,8 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_NORMAL
@@ -117,9 +111,7 @@ import com.hippo.ehviewer.ui.tools.asyncState
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitInputText
 import com.hippo.ehviewer.ui.tools.awaitInputTextWithCheckBox
-import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
-import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberMutableStateInDataStore
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -127,13 +119,11 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 import moe.tarsin.coroutines.onEachLatest
-import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.launch
 import moe.tarsin.launchIO
 import moe.tarsin.navigate
@@ -160,9 +150,13 @@ fun AnimatedVisibilityScope.ToplistScreen(navigator: DestinationsNavigator) = Ga
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = Screen(navigator) {
+fun AnimatedVisibilityScope.GalleryListScreen(
+    lub: ListUrlBuilder,
+    navigator: DestinationsNavigator,
+    viewModel: GalleryListViewModel = viewModel { GalleryListViewModel(lub, createSavedStateHandle()) },
+) = Screen(navigator) {
     val searchFieldState = rememberTextFieldState()
-    var urlBuilder by rememberSaveable { mutableStateOf(lub) }
+    var urlBuilder by viewModel.urlBuilder
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     val animateItems by Settings.animateItems.collectAsState()
@@ -193,49 +187,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val exHint = stringResource(R.string.gallery_list_search_bar_hint_exhentai)
     val searchBarHint by rememberUpdatedState(if (EhUtils.isExHentai) exHint else ehHint)
     val suitableTitle = getSuitableTitleForUrlBuilder(urlBuilder)
-    val data = rememberInVM {
-        Pager(PagingConfig(25)) {
-            object : PagingSource<String, BaseGalleryInfo>() {
-                override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
-                override suspend fun load(params: LoadParams<String>) = withIOContext {
-                    if (urlBuilder.mode == MODE_TOPLIST) {
-                        // TODO: Since we know total pages, let pager support jump
-                        val key = (params.key ?: urlBuilder.jumpTo)?.toInt() ?: 0
-                        val prev = (key - 1).takeIf { it > 0 }
-                        val next = (key + 1).takeIf { it < TOPLIST_PAGES }
-                        runSuspendCatching {
-                            urlBuilder.setJumpTo(key)
-                            EhEngine.getGalleryList(urlBuilder.build())
-                        }.foldToLoadResult { result ->
-                            LoadResult.Page(result.galleryInfoList, prev?.toString(), next?.toString())
-                        }
-                    } else {
-                        when (params) {
-                            is LoadParams.Prepend -> urlBuilder.setIndex(params.key, isNext = false)
-                            is LoadParams.Append -> urlBuilder.setIndex(params.key, isNext = true)
-                            is LoadParams.Refresh -> {
-                                val key = params.key
-                                if (key.isNullOrBlank()) {
-                                    if (urlBuilder.jumpTo != null) {
-                                        urlBuilder.next ?: urlBuilder.setIndex("2", true)
-                                    }
-                                } else {
-                                    urlBuilder.setIndex(key, false)
-                                }
-                            }
-                        }
-                        runSuspendCatching {
-                            val url = urlBuilder.build()
-                            EhEngine.getGalleryList(url)
-                        }.foldToLoadResult { result ->
-                            urlBuilder.jumpTo = null
-                            LoadResult.Page(result.galleryInfoList, result.prev, result.next)
-                        }
-                    }
-                }
-            }
-        }.flow.cachedIn(viewModelScope)
-    }.collectAsLazyPagingItems()
+    val data = viewModel.data.collectAsLazyPagingItems()
     ReportDrawnWhen { data.loadState.refresh !is LoadState.Loading }
     FavouriteStatusRouter.Observe(data)
     val listMode by Settings.listMode.collectAsState()
@@ -660,7 +612,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     }
 }
 
-private const val TOPLIST_PAGES = 200
+const val TOPLIST_PAGES = 200
 
 context(_: Context)
 @Composable

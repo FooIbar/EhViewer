@@ -15,10 +15,8 @@
  */
 package com.hippo.ehviewer.shortcuts
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.hippo.ehviewer.download.DownloadService
 
 /**
@@ -27,8 +25,8 @@ import com.hippo.ehviewer.download.DownloadService
 class ShortcutsActivity : AppCompatActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        when (intent?.action) {
-            DownloadService.ACTION_START_ALL, DownloadService.ACTION_STOP_ALL -> ContextCompat.startForegroundService(this, Intent(this, DownloadService::class.java).setAction(intent.action))
+        when (val action = intent?.action) {
+            DownloadService.ACTION_START_ALL, DownloadService.ACTION_STOP_ALL -> DownloadService.startService(action)
         }
         finish()
     }
