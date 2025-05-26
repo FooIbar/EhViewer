@@ -15,12 +15,7 @@
   -->
 
 <full-backup-content>
-
     <include
         domain="database"
-        path="eh.db" />
-    <include
-        domain="database"
-        path="search_database.db" />
-
+        path="." />
 </full-backup-content>
