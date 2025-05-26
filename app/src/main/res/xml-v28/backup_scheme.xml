@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <include
+        domain="database"
+        path="." />
+    <include
+        domain="file"
+        path="datastore"
+        requireFlags="clientSideEncryption" />
+    <include
+        domain="root"
+        path="app_webview/Default/Cookies"
+        requireFlags="clientSideEncryption" />
+</full-backup-content>
