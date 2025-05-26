@@ -4,6 +4,7 @@ import com.hippo.ehviewer.client.exception.InsufficientFundsException
 import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
 import kotlin.random.Random
+import kotlinx.serialization.Serializable
 
 object HomeParser {
     private val TorrentKeyRegex = Regex("Your current key is: <[^>]*>([^<]*)<")
@@ -37,6 +38,7 @@ object HomeParser {
 
 data class Funds(val gp: Int, val credit: Int)
 
+@Serializable
 data class Limits(val current: Int, val maximum: Int, val resetCost: Int)
 
 private external fun parseLimit(body: ByteBuffer, limit: Int = body.limit()): Int
