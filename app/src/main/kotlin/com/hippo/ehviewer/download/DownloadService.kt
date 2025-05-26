@@ -27,7 +27,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
@@ -114,36 +113,8 @@ class DownloadService :
                 deferredMgr.await().startAllDownload()
             }
 
-            ACTION_STOP -> {
-                val gid = intent.getLongExtra(KEY_GID, -1)
-                if (gid != -1L) {
-                    deferredMgr.await().stopDownload(gid)
-                }
-            }
-
-            ACTION_STOP_CURRENT -> deferredMgr.await().stopCurrentDownload()
-
-            ACTION_STOP_RANGE -> {
-                val gidList = intent.getLongArrayExtra(KEY_GID_LIST)
-                if (gidList != null) {
-                    deferredMgr.await().stopRangeDownload(gidList)
-                }
-            }
-
-            ACTION_STOP_ALL -> deferredMgr.await().stopAllDownload()
-
-            ACTION_DELETE -> {
-                val gid = intent.getLongExtra(KEY_GID, -1)
-                if (gid != -1L) {
-                    deferredMgr.await().deleteDownload(gid)
-                }
-            }
-
-            ACTION_DELETE_RANGE -> {
-                val gidList = intent.getLongArrayExtra(KEY_GID_LIST)
-                if (gidList != null) {
-                    deferredMgr.await().deleteRangeDownload(gidList)
-                }
+            ACTION_STOP_ALL -> deferredMgr.await().run {
+                if (isIdle) stopSelf() else stopAllDownload()
             }
 
             ACTION_CLEAR -> {
@@ -373,7 +344,6 @@ class DownloadService :
     private fun checkStopSelf() {
         launch {
             if (deferredMgr.await().isIdle) {
-                ServiceCompat.stopForeground(this@DownloadService, ServiceCompat.STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
         }
@@ -432,12 +402,7 @@ class DownloadService :
         const val ACTION_START = "start"
         const val ACTION_START_RANGE = "start_range"
         const val ACTION_START_ALL = "start_all"
-        const val ACTION_STOP = "stop"
-        const val ACTION_STOP_RANGE = "stop_range"
-        const val ACTION_STOP_CURRENT = "stop_current"
         const val ACTION_STOP_ALL = "stop_all"
-        const val ACTION_DELETE = "delete"
-        const val ACTION_DELETE_RANGE = "delete_range"
         const val ACTION_CLEAR = "clear"
         const val KEY_GALLERY_INFO = "gallery_info"
         const val KEY_LABEL = "label"
