@@ -107,6 +107,7 @@ object Settings : DataStorePreferences(null) {
     var favCloudCount by intPref("fav_cloud", 0).emitTo(_favFlow)
 
     val gallerySite = intPref("gallery_site_2", 0).observed { updateWhenGallerySiteChanges() }
+    val launchPage = intPref("launch_page_2", 0)
     val listMode = intPref("list_mode_2", 0)
     val detailSize = intPref("detail_size_2", 0)
     val thumbColumns = intPref("thumb_columns", 3)
@@ -145,7 +146,6 @@ object Settings : DataStorePreferences(null) {
     var timeoutSpeed by intPref("timeout_speed_level", 6)
     var theme by intPref("theme_2", -1).observed { updateWhenThemeChanges() }
     var readCacheSize by intPref("read_cache_size_2", 640)
-    var launchPage by intPref("launch_page_2", 0)
     var commentThreshold by intPref("comment_threshold", -100)
     var hardwareBitmapThreshold by intPref("hardware_bitmap_threshold", 16384)
     var showComments by boolPref("show_gallery_comments", true)
