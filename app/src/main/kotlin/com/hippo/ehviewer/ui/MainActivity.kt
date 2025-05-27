@@ -173,9 +173,6 @@ private val navItems = arrayOf<Triple<Direction, Int, ImageVector>>(
     Triple(SettingsScreenDestination, R.string.settings, Icons.Default.Settings),
 )
 
-val StartDestination
-    get() = navItems[Settings.launchPage].first
-
 class MainActivity : EhActivity() {
 
     private var shareUrl: String? = null
@@ -359,6 +356,7 @@ class MainActivity : EhActivity() {
             val density = LocalDensity.current
             val adaptiveInfo = currentWindowAdaptiveInfo()
             val needSignIn by Settings.needSignIn.collectAsState()
+            val launchPage by Settings.launchPage.collectAsState()
             CompositionLocalProvider(
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
@@ -443,7 +441,7 @@ class MainActivity : EhActivity() {
                                 CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                                     val start = when {
                                         needSignIn -> SignInScreenDestination
-                                        hasNetwork -> StartDestination
+                                        hasNetwork -> navItems[launchPage].first
                                         else -> DownloadsScreenDestination
                                     }
                                     DestinationsNavHost(

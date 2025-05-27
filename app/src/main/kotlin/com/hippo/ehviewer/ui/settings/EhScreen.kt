@@ -187,7 +187,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 title = stringResource(id = R.string.settings_eh_launch_page),
                 entry = R.array.launch_page_entries,
                 entryValueRes = R.array.launch_page_entry_values,
-                value = Settings::launchPage.observed,
+                value = Settings.launchPage.asMutableState(),
             )
             val listMode = Settings.listMode.asMutableState()
             SimpleMenuPreferenceInt(
