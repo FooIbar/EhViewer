@@ -21,24 +21,6 @@ plugins {
 val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
 
 android {
-    androidResources {
-        generateLocaleConfig = true
-        localeFilters += listOf(
-            "zh",
-            "zh-rCN",
-            "zh-rHK",
-            "zh-rTW",
-            "es",
-            "ja",
-            "ko",
-            "fr",
-            "de",
-            "th",
-            "tr",
-            "nb-rNO",
-        )
-    }
-
     splits {
         abi {
             isEnable = true
@@ -134,9 +116,27 @@ android {
                 "/kotlin/**",
                 "**.txt",
                 "**.bin",
-                "/okhttp3/**", // Okhttp public suffix
             )
         }
+    }
+
+    androidResources {
+        ignoreAssetsPatterns += "!PublicSuffixDatabase.list" // OkHttp
+        generateLocaleConfig = true
+        localeFilters += listOf(
+            "zh",
+            "zh-rCN",
+            "zh-rHK",
+            "zh-rTW",
+            "es",
+            "ja",
+            "ko",
+            "fr",
+            "de",
+            "th",
+            "tr",
+            "nb-rNO",
+        )
     }
 
     dependenciesInfo.includeInApk = false
