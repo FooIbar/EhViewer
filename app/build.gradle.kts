@@ -189,7 +189,6 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.core.splashscreen)
 
-    implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.graphics.path)
 

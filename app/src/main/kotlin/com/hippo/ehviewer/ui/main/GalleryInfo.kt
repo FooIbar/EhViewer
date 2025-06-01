@@ -5,10 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -34,15 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.ConstraintSet
-import androidx.constraintlayout.compose.Dimension
-import arrow.core.Tuple7
 import coil3.compose.AsyncImage
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
@@ -56,41 +50,6 @@ import com.hippo.ehviewer.ui.tools.SharedElementBox
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.listThumbGenerator
 import com.hippo.ehviewer.util.FavouriteStatusRouter
-
-private val ids = Tuple7(1, 2, 3, 4, 5, 6, 7)
-
-private val constraintSet = ConstraintSet {
-    val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) =
-        createRefsFor(1, 2, 3, 4, 5, 6, 7)
-    constrain(titleRef) {
-        top.linkTo(parent.top)
-        width = Dimension.matchParent
-    }
-    constrain(uploaderRef) {
-        start.linkTo(parent.start)
-        bottom.linkTo(iconsRef.top)
-    }
-    constrain(ratingRef) {
-        start.linkTo(parent.start)
-        top.linkTo(iconsRef.top, 1.dp)
-    }
-    constrain(categoryRef) {
-        start.linkTo(parent.start)
-        bottom.linkTo(parent.bottom)
-    }
-    constrain(iconsRef) {
-        end.linkTo(parent.end)
-        bottom.linkTo(categoryRef.top)
-    }
-    constrain(favRef) {
-        end.linkTo(parent.end)
-        bottom.linkTo(iconsRef.top)
-    }
-    constrain(postedRef) {
-        end.linkTo(parent.end)
-        linkTo(categoryRef.top, parent.bottom)
-    }
-}
 
 context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
@@ -115,48 +74,48 @@ fun GalleryInfoListItem(
                 modifier = Modifier.aspectRatio(DEFAULT_RATIO),
             )
         }
-        ConstraintLayout(
-            modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp).fillMaxSize(),
-            constraintSet = constraintSet,
-        ) {
-            val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) = ids
+        Column(modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp)) {
             Text(
                 text = EhUtils.getSuitableTitle(info),
                 maxLines = 2,
-                modifier = Modifier.layoutId(titleRef),
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.titleSmall,
             )
+            Spacer(modifier = Modifier.weight(1f))
             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                info.uploader?.let {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        text = it,
-                        modifier = Modifier.layoutId(uploaderRef).alpha(if (info.disowned) 0.5f else 1f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        text = info.uploader.orEmpty(),
+                        modifier = Modifier.alignByBaseline().alpha(if (info.disowned) 0.5f else 1f),
                     )
+                    Spacer(modifier = Modifier.weight(1f))
+                    if (isInFavScene) {
+                        info.favoriteNote?.let {
+                            Text(text = it, modifier = Modifier.alignByBaseline(), fontStyle = FontStyle.Italic)
+                        }
+                    } else {
+                        val showFav by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
+                        if (showFav) {
+                            Icon(
+                                Icons.Default.Favorite,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp).align(Alignment.CenterVertically),
+                            )
+                            info.favoriteName?.let {
+                                Text(text = it, modifier = Modifier.alignByBaseline())
+                            }
+                        }
+                    }
                 }
-                GalleryListCardRating(
-                    rating = info.rating,
-                    modifier = Modifier.layoutId(ratingRef),
-                )
-                val categoryColor = EhUtils.getCategoryColor(info.category)
-                val categoryText = EhUtils.getCategory(info.category).uppercase()
-                Text(
-                    text = categoryText,
-                    modifier = Modifier.layoutId(categoryRef).clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
-                    color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
-                    textAlign = TextAlign.Center,
-                )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.layoutId(iconsRef),
                 ) {
-                    // Placeholder to reserve minimum height
-                    Text(text = "")
-                    val download by DownloadManager.collectContainDownloadInfo(info.gid)
-                    if (download) {
+                    // Place the rating near the uploader text as there's more visual space
+                    GalleryListCardRating(rating = info.rating, modifier = Modifier.padding(top = 1.dp, bottom = 3.dp))
+                    Spacer(modifier = Modifier.weight(1f))
+                    val downloaded by DownloadManager.collectContainDownloadInfo(info.gid)
+                    if (downloaded) {
                         Icon(
                             Icons.Default.Download,
                             contentDescription = null,
@@ -170,35 +129,17 @@ fun GalleryInfoListItem(
                         Text(text = "${info.pages}P")
                     }
                 }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.layoutId(favRef),
-                ) {
-                    // Placeholder to reserve minimum height
-                    Text(text = "")
-                    if (isInFavScene) {
-                        info.favoriteNote?.let {
-                            Text(text = it, fontStyle = FontStyle.Italic)
-                        }
-                    } else {
-                        val showFav by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
-                        if (showFav) {
-                            Icon(
-                                Icons.Default.Favorite,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                            )
-                            info.favoriteName?.let {
-                                Text(text = it)
-                            }
-                        }
-                    }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val categoryColor = EhUtils.getCategoryColor(info.category)
+                    val categoryText = EhUtils.getCategory(info.category).uppercase()
+                    Text(
+                        text = categoryText,
+                        modifier = Modifier.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
+                        color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = info.posted.orEmpty())
                 }
-                Text(
-                    text = info.posted.orEmpty(),
-                    modifier = Modifier.layoutId(postedRef),
-                )
             }
         }
     }
