@@ -4,12 +4,14 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
@@ -29,7 +31,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryDetail
@@ -47,53 +48,29 @@ fun GalleryDetailHeaderInfoCard(
 ) = detail.run {
     Card(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.width(IntrinsicSize.Max),
     ) {
-        ConstraintLayout(modifier = Modifier.padding(8.dp)) {
-            val (langRef, sizeRef, favRef, pagesRef, postRef) = createRefs()
-
-            ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-                Text(
-                    text = language.orEmpty(),
-                    modifier = Modifier.constrainAs(langRef) {
-                        top.linkTo(parent.top)
-                        start.linkTo(parent.start)
-                    },
-                )
-                Text(
-                    text = size.orEmpty(),
-                    modifier = Modifier.constrainAs(sizeRef) {
-                        baseline.linkTo(langRef.baseline)
-                        end.linkTo(parent.end)
-                        horizontalBias = 1.0f
-                        start.linkTo(langRef.end)
-                    }.padding(start = 16.dp),
-                )
+        ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+            Row(modifier = Modifier.padding(8.dp)) {
+                Text(text = language.orEmpty())
+                Spacer(modifier = Modifier.width(16.dp).weight(1f))
+                Text(text = size.orEmpty())
+            }
+            Row(modifier = Modifier.padding(horizontal = 8.dp)) {
                 Text(
                     text = stringResource(id = R.string.favored_times, favoriteCount),
-                    modifier = Modifier.constrainAs(favRef) {
-                        start.linkTo(parent.start)
-                        top.linkTo(langRef.bottom)
-                    }.padding(top = 8.dp),
+                    modifier = Modifier.alignByBaseline(),
                 )
+                Spacer(modifier = Modifier.width(16.dp).weight(1f))
                 Text(
                     text = pluralStringResource(id = R.plurals.page_count, pages, pages),
-                    modifier = Modifier.constrainAs(pagesRef) {
-                        baseline.linkTo(favRef.baseline)
-                        end.linkTo(parent.end)
-                        horizontalBias = 1.0f
-                        start.linkTo(favRef.end)
-                    }.padding(start = 16.dp),
-                )
-                Text(
-                    text = posted.orEmpty(),
-                    modifier = Modifier.constrainAs(postRef) {
-                        end.linkTo(parent.end)
-                        start.linkTo(parent.start)
-                        top.linkTo(favRef.bottom)
-                    }.padding(top = 8.dp),
+                    modifier = Modifier.alignByBaseline(),
                 )
             }
+            Text(
+                text = posted.orEmpty(),
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp),
+            )
         }
     }
 }
