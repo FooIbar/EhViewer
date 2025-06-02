@@ -1,5 +1,6 @@
 #![cfg(feature = "jvm")]
 
+use crate::parser::archive::{parse_archive_url, parse_archives, parse_archives_with_funds};
 use crate::parser::config::parse_fav_cat;
 use crate::parser::fav::parse_fav;
 use crate::parser::home::parse_limit;
@@ -9,7 +10,7 @@ use crate::EhError;
 use android_logger::Config;
 use anyhow::{ensure, Context, Result};
 use jni::objects::{JByteBuffer, JClass};
-use jni::sys::{jboolean, jint, jobject, JNI_VERSION_1_6};
+use jni::sys::{jboolean, jint, jobject, JNI_TRUE, JNI_VERSION_1_6};
 use jni::{JNIEnv, JavaVM};
 use jni_fn::jni_fn;
 use log::LevelFilter;
@@ -61,6 +62,36 @@ pub fn parseTorrent(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit:
 #[jni_fn("com.hippo.ehviewer.client.parser.UserConfigParser")]
 pub fn parseFavCat(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |_, body| Ok(parse_fav_cat(body)))
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+#[jni_fn("com.hippo.ehviewer.client.parser.ArchiveParserKt")]
+pub fn parseArchives(
+    mut env: JNIEnv,
+    _class: JClass,
+    buffer: JByteBuffer,
+    limit: jint,
+    parse_funds: jboolean,
+) -> jint {
+    if parse_funds == JNI_TRUE {
+        parse_marshal_inplace(&mut env, buffer, limit, |dom, html| {
+            parse_archives_with_funds(dom, dom.parser(), html)
+        })
+    } else {
+        parse_marshal_inplace(&mut env, buffer, limit, |dom, html| {
+            parse_archives(dom, dom.parser(), html)
+        })
+    }
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+#[jni_fn("com.hippo.ehviewer.client.parser.ArchiveParserKt")]
+pub fn parseArchiveUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+    parse_marshal_inplace(&mut env, buffer, limit, |dom, html| {
+        parse_archive_url(dom, dom.parser(), html)
+    })
 }
 
 fn deref_mut_direct_bytebuffer<'local>(

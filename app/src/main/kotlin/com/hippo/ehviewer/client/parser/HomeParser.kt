@@ -36,6 +36,7 @@ object HomeParser {
     data class Result(val limits: Limits, val funds: Funds, private val id: Int = Random.nextInt())
 }
 
+@Serializable
 data class Funds(val gp: Int, val credit: Int)
 
 @Serializable

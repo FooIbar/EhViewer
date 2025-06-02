@@ -15,4 +15,6 @@
  */
 package com.hippo.ehviewer.client.exception
 
-class NoHAtHClientException(detailMessage: String?) : EhException(detailMessage)
+import com.hippo.ehviewer.R
+
+class NoHathClientException() : EhException(R.string.download_archive_failure_no_hath)
