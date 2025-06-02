@@ -182,7 +182,7 @@ object EhUtils {
     context(ctx: Context)
     suspend fun downloadArchive(galleryDetail: GalleryDetail, archive: Archive) {
         val gid = galleryDetail.gid
-        EhEngine.downloadArchive(gid, galleryDetail.token, archive.res, archive.isHAtH)?.let {
+        EhEngine.downloadArchive(gid, galleryDetail.token, archive.res, archive.isHath)?.let {
             val uri = it.toUri()
             val intent = Intent().apply {
                 action = Intent.ACTION_VIEW

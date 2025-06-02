@@ -36,7 +36,7 @@ fun ArchiveList(
     val archiveOriginal = stringResource(R.string.archive_original)
     val archiveResample = stringResource(R.string.archive_resample)
     val fundsStyle = MaterialTheme.typography.labelLarge
-    val (hAtH, nonHAtH) = remember(items) { items.partition { it.isHAtH } }
+    val (hath, nonHath) = remember(items) { items.partition { it.isHath } }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier,
@@ -62,7 +62,7 @@ fun ArchiveList(
                 textStyle = fundsStyle,
             )
         }
-        items(nonHAtH) {
+        items(nonHath) {
             ArchiveItem(
                 name = if (it.res == "org") archiveOriginal else archiveResample,
                 cost = if (it.cost == "Free!") archiveFree else it.cost,
@@ -76,7 +76,7 @@ fun ArchiveList(
                 Text(text = "H@H")
             }
         }
-        items(hAtH) {
+        items(hath) {
             ArchiveItem(
                 name = if (it.res == "org") archiveOriginal else it.name,
                 cost = if (it.cost == "Free") archiveFree else it.cost,

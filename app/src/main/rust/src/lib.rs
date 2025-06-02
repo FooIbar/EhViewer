@@ -6,7 +6,7 @@ mod img;
 mod parser;
 
 use std::fmt::{Debug, Display, Formatter};
-use tl::{Bytes, Node, NodeHandle, Parser, VDom};
+use tl::{Bytes, HTMLTag, Node, NodeHandle, Parser, VDom};
 
 #[macro_export]
 macro_rules! regex {
@@ -36,6 +36,16 @@ fn get_first_element_by_class_name<'a>(
     handle.get(parser)
 }
 
+fn select_first<'a>(tag: &'a HTMLTag, parser: &'a Parser, id: &str) -> Option<&'a HTMLTag<'a>> {
+    for n in tag.children().top().iter() {
+        let tag = n.get(parser).and_then(Node::as_tag);
+        if tag.is_some_and(|t| t.name() == id) {
+            return tag;
+        }
+    }
+    None
+}
+
 fn get_element_by_id<'b, S>(node: &'b Node, parser: &'b Parser, id: S) -> Option<&'b Node<'b>>
 where
     S: Into<Bytes<'b>>,
@@ -53,6 +63,8 @@ enum EhError {
     NoHits,
     NoWatched,
     NeedLogin,
+    NoHathClient,
+    InsufficientFunds,
     Error(String),
 }
 
@@ -62,7 +74,9 @@ impl Display for EhError {
             EhError::NoHits => "0",
             EhError::NoWatched => "1",
             EhError::NeedLogin => "2",
-            EhError::Error(s) => &format!("3{s}"),
+            EhError::NoHathClient => "3",
+            EhError::InsufficientFunds => "4",
+            EhError::Error(s) => &format!("5{s}"),
         };
         f.write_str(msg)
     }
@@ -77,7 +91,11 @@ fn get_node_handle_attr<'a>(
 }
 
 fn get_node_attr<'a>(node: &'a Node<'_>, attr: &'a str) -> Option<&'a str> {
-    node.as_tag()?.attributes().get(attr)??.try_as_utf8_str()
+    get_tag_attr(node.as_tag()?, attr)
+}
+
+fn get_tag_attr<'a>(tag: &'a HTMLTag<'_>, attr: &'a str) -> Option<&'a str> {
+    tag.attributes().get(attr)??.try_as_utf8_str()
 }
 
 // Should not use it at too upper node, since it will do DFS?

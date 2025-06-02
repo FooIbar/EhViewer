@@ -30,6 +30,7 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
+import com.hippo.ehviewer.client.exception.NoHathClientException
 import com.hippo.ehviewer.client.exception.NoHitsFoundException
 import com.hippo.ehviewer.client.exception.NotLoggedInException
 import com.hippo.ehviewer.client.exception.ParseException
@@ -138,7 +139,9 @@ fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuffer>, e: 
             "0" -> throw NoHitsFoundException()
             "1" -> throw EhException(R.string.gallery_list_empty_hit_subscription)
             "2" -> throw NotLoggedInException()
-            is String if message.startsWith('3') -> throw EhException(message.drop(1))
+            "3" -> throw NoHathClientException()
+            "4" -> throw InsufficientFundsException()
+            is String if message.startsWith('5') -> throw EhException(message.drop(1))
         }
         if (Settings.saveParseErrorBody) body.saveParseError(e)
         throw EhException(appCtx.getString(R.string.error_parse_error), e)
@@ -191,7 +194,7 @@ object EhEngine {
     suspend fun getArchiveList(url: String, gid: Long, token: String): ArchiveParser.Result {
         val funds = if (EhUtils.isExHentai) getFunds() else null
         return ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
-            .fetchUsingAsText(ArchiveParser::parse.partially2(funds))
+            .fetchUsingAsByteBuffer(ArchiveParser::parse.partially2(funds))
     }
 
     suspend fun getImageLimits() = parZip(
@@ -309,12 +312,12 @@ object EhEngine {
     suspend fun getFavoriteNote(gid: Long, token: String) = ehRequest(EhUrl.getAddFavorites(gid, token), EhUrl.getGalleryDetailUrl(gid, token))
         .fetchUsingAsText(FavoritesParser::parseNote)
 
-    suspend fun downloadArchive(gid: Long, token: String, res: String, isHAtH: Boolean): String? {
+    suspend fun downloadArchive(gid: Long, token: String, res: String, isHath: Boolean): String? {
         val url = EhUrl.getDownloadArchive(gid, token)
         val referer = EhUrl.getGalleryDetailUrl(gid, token)
         val request = ehRequest(url, referer, EhUrl.origin) {
             formBody {
-                if (isHAtH) {
+                if (isHath) {
                     append("hathdl_xres", res)
                 } else {
                     append("dltype", res)
@@ -326,12 +329,12 @@ object EhEngine {
                 }
             }
         }
-        var result = request.fetchUsingAsText(ArchiveParser::parseArchiveUrl)
-        if (!isHAtH) {
+        var result = request.fetchUsingAsByteBuffer(ArchiveParser::parseArchiveUrl)
+        if (!isHath) {
             if (result == null) {
                 // Wait for the server to prepare archives
                 delay(1000)
-                result = request.fetchUsingAsText(ArchiveParser::parseArchiveUrl)
+                result = request.fetchUsingAsByteBuffer(ArchiveParser::parseArchiveUrl)
                 if (result == null) throw EhException("Archive unavailable")
             }
             return result

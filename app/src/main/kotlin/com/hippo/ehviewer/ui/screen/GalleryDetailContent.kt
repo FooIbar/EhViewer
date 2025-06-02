@@ -86,7 +86,7 @@ import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
-import com.hippo.ehviewer.client.exception.NoHAtHClientException
+import com.hippo.ehviewer.client.exception.NoHathClientException
 import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
@@ -548,7 +548,6 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         val noArchive = stringResource(R.string.no_archives)
         val downloadStarted = stringResource(R.string.download_archive_started)
         val downloadFailed = stringResource(R.string.download_archive_failure)
-        val failureNoHath = stringResource(R.string.download_archive_failure_no_hath)
         val archiveResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                 with(galleryDetail) {
@@ -578,7 +577,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                         }
                     }.onFailure {
                         when (it) {
-                            is NoHAtHClientException -> snackbar(failureNoHath)
+                            is NoHathClientException -> snackbar(it.message!!)
                             is EhException -> snackbar(it.displayString())
                             else -> {
                                 logcat(it)
