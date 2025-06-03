@@ -3,6 +3,7 @@ pub mod config;
 pub mod fav;
 pub mod home;
 pub mod list;
+pub mod profile;
 mod test_parser;
 pub mod torrent;
 mod utils;

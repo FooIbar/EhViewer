@@ -5,6 +5,7 @@ use crate::parser::config::parse_fav_cat;
 use crate::parser::fav::parse_fav;
 use crate::parser::home::parse_limit;
 use crate::parser::list::parse_info_list;
+use crate::parser::profile::{parse_profile, parse_profile_url};
 use crate::parser::torrent::parse_torrent_list;
 use crate::EhError;
 use android_logger::Config;
@@ -91,6 +92,24 @@ pub fn parseArchives(
 pub fn parseArchiveUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |dom, html| {
         parse_archive_url(dom, dom.parser(), html)
+    })
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+#[jni_fn("com.hippo.ehviewer.client.parser.ProfileParser")]
+pub fn parseProfileUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+    parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
+        parse_profile_url(dom, dom.parser())
+    })
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+#[jni_fn("com.hippo.ehviewer.client.parser.ProfileParser")]
+pub fn parseProfile(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+    parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
+        parse_profile(dom, dom.parser())
     })
 }
 
