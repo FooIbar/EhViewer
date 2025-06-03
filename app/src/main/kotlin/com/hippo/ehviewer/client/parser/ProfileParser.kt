@@ -15,36 +15,28 @@
  */
 package com.hippo.ehviewer.client.parser
 
-import arrow.core.Either
+import arrow.core.Either.Companion.catch
 import arrow.core.getOrElse
-import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.exception.ParseException
-import eu.kanade.tachiyomi.util.system.logcat
-import org.jsoup.Jsoup
+import java.nio.ByteBuffer
+import kotlinx.serialization.Serializable
 
 object ProfileParser {
-    fun parse(body: String): Result = Either.catch {
-        val d = Jsoup.parse(body)
-        val profilename = d.getElementById("profilename")
-        val displayName = profilename!!.child(0).text()
-        val avatar = Either.catch {
-            val avatar =
-                profilename.nextElementSibling()!!.nextElementSibling()!!.child(0).attr("src")
-            if (avatar.isEmpty()) {
-                null
-            } else if (!avatar.startsWith("http")) {
-                EhUrl.URL_FORUMS + avatar
-            } else {
-                avatar
-            }
-        }.getOrElse {
-            logcat { "No avatar" }
-            null
-        }
-        Result(displayName, avatar)
+    fun parse(body: ByteBuffer) = catch {
+        unmarshalParsingAs<Result>(body, ::parseProfile)
     }.getOrElse {
-        throw ParseException("Parse forums error")
+        throw ParseException("Failed to parse profile", it)
     }
 
-    class Result(val displayName: String?, val avatar: String?)
+    fun parseProfileUrl(body: ByteBuffer) = catch {
+        unmarshalParsingAs<String>(body, ::parseProfileUrl)
+    }.getOrElse {
+        throw ParseException("Failed to parse profile url", it)
+    }
+
+    @Serializable
+    data class Result(val displayName: String, val avatar: String?)
+
+    private external fun parseProfile(body: ByteBuffer, size: Int = body.limit()): Int
+    private external fun parseProfileUrl(body: ByteBuffer, size: Int = body.limit()): Int
 }

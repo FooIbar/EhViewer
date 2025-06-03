@@ -38,7 +38,6 @@ import com.hippo.ehviewer.client.parser.ArchiveParser
 import com.hippo.ehviewer.client.parser.EventPaneParser
 import com.hippo.ehviewer.client.parser.FavParserResult
 import com.hippo.ehviewer.client.parser.FavoritesParser
-import com.hippo.ehviewer.client.parser.ForumsParser
 import com.hippo.ehviewer.client.parser.GalleryApiParser
 import com.hippo.ehviewer.client.parser.GalleryDetailParser
 import com.hippo.ehviewer.client.parser.GalleryListParser
@@ -209,8 +208,8 @@ object EhEngine {
         .fetchUsingAsText { if (parse) EventPaneParser.parse(this) else null }
 
     suspend fun getProfile(): ProfileParser.Result {
-        val url = ehRequest(EhUrl.URL_FORUMS).fetchUsingAsText(ForumsParser::parse)
-        return ehRequest(url, EhUrl.URL_FORUMS).fetchUsingAsText(ProfileParser::parse)
+        val url = ehRequest(EhUrl.URL_FORUMS).fetchUsingAsByteBuffer(ProfileParser::parseProfileUrl)
+        return ehRequest(url, EhUrl.URL_FORUMS).fetchUsingAsByteBuffer(ProfileParser::parse)
     }
 
     suspend fun getUConfig(url: String = EhUrl.uConfigUrl) {
