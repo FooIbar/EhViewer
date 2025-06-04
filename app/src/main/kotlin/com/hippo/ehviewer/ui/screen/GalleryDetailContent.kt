@@ -805,7 +805,7 @@ private fun GalleryDetail.collectPreviewItems() = rememberInVM(previewList) {
                     (up..end).filterNot { it in previewPagesMap }.map { it / pageSize }.toSet()
                         .parMap(concurrency = Settings.multiThreadDownload) { page ->
                             val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
-                            EhEngine.getPreviewList(url).first
+                            EhEngine.getPreviewList(url)
                         }.flattenForEach {
                             previewPagesMap[it.position] = it
                             if (Settings.preloadThumbAggressively) {
