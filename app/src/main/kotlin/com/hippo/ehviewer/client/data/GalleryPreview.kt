@@ -15,26 +15,31 @@
  */
 package com.hippo.ehviewer.client.data
 
-import com.hippo.ehviewer.client.keyToUrl
+import com.hippo.ehviewer.client.getThumbKey
+import com.hippo.ehviewer.client.getV2PreviewKey
 
 sealed interface GalleryPreview {
     val url: String
     val imageKey: String
     val position: Int
+    val pToken: String
 }
 
 data class V1GalleryPreview(
-    override val imageKey: String,
+    override val url: String,
     override val position: Int,
+    override val pToken: String,
 ) : GalleryPreview {
-    override val url get() = keyToUrl(imageKey)
+    override val imageKey get() = getThumbKey(url)
 }
 
 data class V2GalleryPreview(
     override val url: String,
-    override val imageKey: String,
     override val position: Int,
+    override val pToken: String,
     val offsetX: Int,
     val clipWidth: Int,
     val clipHeight: Int,
-) : GalleryPreview
+) : GalleryPreview {
+    override val imageKey get() = getV2PreviewKey(url)
+}
