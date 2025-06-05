@@ -30,10 +30,11 @@ fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
 // Load in original size so the memory cache can be reused for preload requests
 fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = apply {
     with(preview) {
+        val key = imageKey
         data(url)
         size(SizeResolver.ORIGINAL)
-        memoryCacheKey(imageKey)
-        diskCacheKey(imageKey)
+        memoryCacheKey(key)
+        diskCacheKey(key)
     }
 }
 
