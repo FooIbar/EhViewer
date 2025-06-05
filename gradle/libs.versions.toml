@@ -96,7 +96,7 @@ okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp
 okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
-logcat = "com.squareup.logcat:logcat:0.2.1"
+logcat = "com.squareup.logcat:logcat:0.2.2"
 
 okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 
