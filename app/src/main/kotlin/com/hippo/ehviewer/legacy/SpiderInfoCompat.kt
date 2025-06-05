@@ -10,15 +10,15 @@ fun Path.readLegacySpiderInfo() = read {
     fun readInt() = read().toInt()
     fun readLong() = read().toLong()
 
-    read() // Skip version, we assert it's v2
-    read() // Skip startPage
+    repeat(2) { read() } // We assert that only info v2
     val gid = readLong()
     val token = read()
-    read() // Skip mode
-    read() // Skip previewPages
+    read()
+    val previewPages = readInt()
     val previewPerPage = readInt()
-    val pages = readInt()
-    SpiderInfo(gid, token, pages, previewPerPage = previewPerPage).apply {
+    val pages = read().toInt()
+    val pTokenMap = hashMapOf<Int, String>()
+    SpiderInfo(gid, token, pages, pTokenMap, previewPages, previewPerPage).apply {
         runCatching {
             while (true) {
                 val line = read()
