@@ -34,7 +34,9 @@ import com.hippo.ehviewer.client.exception.QuotaExceededException
 import com.hippo.ehviewer.client.fetchUsingAsText
 import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePages
 import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewList
+import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewPages
 import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
+import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.util.displayString
 import com.hippo.files.find
 import eu.kanade.tachiyomi.util.system.logcat
@@ -319,14 +321,20 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         ?: readFromCache(galleryInfo.gid)?.takeIf { it.gid == galleryInfo.gid && it.token == galleryInfo.token }
 
     private fun readPreviews(body: String, index: Int, spiderInfo: SpiderInfo) {
-        val previewList = parsePreviewList(body)
-        if (index == 0) {
-            spiderInfo.previewPerPage = previewList.size
-        } else {
-            spiderInfo.previewPerPage = previewList[0].position / index
+        spiderInfo.previewPages = parsePreviewPages(body)
+        val (previewList, pageUrlList) = parsePreviewList(body)
+        if (previewList.isNotEmpty()) {
+            if (index == 0) {
+                spiderInfo.previewPerPage = previewList.size
+            } else {
+                spiderInfo.previewPerPage = previewList[0].position / index
+            }
         }
-        previewList.forEach {
-            spiderInfo.pTokenMap[it.position] = it.pToken
+        pageUrlList.forEach {
+            val result = GalleryPageUrlParser.parse(it)
+            if (result != null) {
+                spiderInfo.pTokenMap[result.page] = result.pToken
+            }
         }
     }
 
@@ -362,10 +370,15 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     suspend fun getPTokenFromInternet(index: Int): String? {
-        val previewIndex = if (spiderInfo.previewPerPage > 0) {
+        // Check previewIndex
+        var previewIndex: Int
+        previewIndex = if (spiderInfo.previewPerPage >= 0) {
             index / spiderInfo.previewPerPage
         } else {
             0
+        }
+        if (spiderInfo.previewPages > 0) {
+            previewIndex = previewIndex.coerceAtMost(spiderInfo.previewPages - 1)
         }
         val url = getGalleryDetailUrl(
             galleryInfo.gid,

@@ -27,6 +27,8 @@ class SpiderInfo(
 
     val pTokenMap: MutableMap<Int, String> = hashMapOf(),
 
+    var previewPages: Int = -1,
+
     var previewPerPage: Int = -1,
 )
 
