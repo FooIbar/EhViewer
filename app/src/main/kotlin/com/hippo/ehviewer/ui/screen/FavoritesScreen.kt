@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.screen
 
 import android.content.Context
 import android.view.ViewConfiguration
+import androidx.collection.MutableLongSet
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -50,8 +52,14 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
+import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.filter
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -76,23 +84,30 @@ import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.asyncState
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitSelectItem
+import com.hippo.ehviewer.ui.tools.foldToLoadResult
+import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.rememberSerializable
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.takeAndClear
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import moe.tarsin.coroutines.onEachLatest
+import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
 import moe.tarsin.launch
 import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, viewModel: FavoritesViewModel = viewModel()) = Screen(navigator) {
+fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     // Immutables
     val localFavName = stringResource(R.string.local_favorites)
     val cloudFavName = stringResource(R.string.cloud_favorites)
@@ -100,7 +115,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
 
     // Meta State
-    var urlBuilder by viewModel.urlBuilder
+    var urlBuilder by rememberSerializable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
 
@@ -120,7 +135,56 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
     }
     val density = LocalDensity.current
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
-    val data = viewModel.data.collectAsLazyPagingItems()
+    val data = rememberInVM {
+        snapshotFlow { urlBuilder.isLocal }.flatMapLatest { isLocalFav ->
+            if (isLocalFav) {
+                Pager(PagingConfig(20, jumpThreshold = 40)) {
+                    val keywordNow = urlBuilder.keyword.orEmpty()
+                    if (keywordNow.isBlank()) {
+                        EhDB.localFavLazyList
+                    } else {
+                        EhDB.searchLocalFav(keywordNow)
+                    }
+                }
+            } else {
+                Pager(PagingConfig(25)) {
+                    object : PagingSource<String, BaseGalleryInfo>() {
+                        override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
+                        override suspend fun load(params: LoadParams<String>) = withIOContext {
+                            when (params) {
+                                is LoadParams.Prepend -> urlBuilder.setIndex(params.key, isNext = false)
+                                is LoadParams.Append -> urlBuilder.setIndex(params.key, isNext = true)
+                                is LoadParams.Refresh -> {
+                                    val key = params.key
+                                    if (key.isNullOrBlank()) {
+                                        if (urlBuilder.jumpTo != null) {
+                                            urlBuilder.next ?: urlBuilder.setIndex("2", true)
+                                        }
+                                    } else {
+                                        urlBuilder.setIndex(key, false)
+                                    }
+                                }
+                            }
+                            runSuspendCatching {
+                                EhEngine.getFavorites(urlBuilder.build())
+                            }.foldToLoadResult { result ->
+                                Settings.favCat = result.catArray.toTypedArray()
+                                Settings.favCount = result.countArray.toIntArray()
+                                Settings.favCloudCount = result.countArray.sum()
+                                urlBuilder.jumpTo = null
+                                LoadResult.Page(result.galleryInfoList, result.prev, result.next)
+                            }
+                        }
+                    }
+                }
+            }.flow.map { pagingData ->
+                // https://github.com/FooIbar/EhViewer/issues/1190
+                // Workaround for duplicate items when sorting by favorited time
+                val gidSet = MutableLongSet(50)
+                pagingData.filter { gidSet.add(it.gid) }
+            }
+        }.cachedIn(viewModelScope)
+    }.collectAsLazyPagingItems()
 
     fun refresh(newUrlBuilder: FavListUrlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)) {
         urlBuilder = newUrlBuilder
@@ -128,7 +192,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
     }
 
     ProvideSideSheetContent { sheetState ->
-        val localFavCount by viewModel.localFavCount.collectAsState(0)
+        val localFavCount by rememberInVM { EhDB.localFavCount }.collectAsState(0)
         TopAppBar(
             title = { Text(text = stringResource(id = R.string.collections)) },
             windowInsets = WindowInsets(),
