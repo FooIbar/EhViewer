@@ -15,6 +15,7 @@ android-26 = ["android", "ndk/api-level-26"]
 regex-lite = "0.1"
 jni = { version = "0.21", optional = true }
 jni_fn = { version = "0.1", optional = true }
+chrono = { version = "0.4", default-features = false, features = ["std"] }
 quick-xml = { default-features = false, version = "0.37" }
 tl = { version = "0.7", features = ["simd"] }
 log = "0.4"

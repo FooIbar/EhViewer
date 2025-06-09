@@ -17,7 +17,10 @@ package com.hippo.ehviewer.client.data
 
 import com.hippo.ehviewer.client.getThumbKey
 import com.hippo.ehviewer.client.getV2PreviewKey
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface GalleryPreview {
     val url: String
     val imageKey: String
@@ -25,6 +28,8 @@ sealed interface GalleryPreview {
     val pToken: String
 }
 
+@Serializable
+@SerialName("V1")
 data class V1GalleryPreview(
     override val url: String,
     override val position: Int,
@@ -33,6 +38,8 @@ data class V1GalleryPreview(
     override val imageKey get() = getThumbKey(url)
 }
 
+@Serializable
+@SerialName("V2")
 data class V2GalleryPreview(
     override val url: String,
     override val position: Int,

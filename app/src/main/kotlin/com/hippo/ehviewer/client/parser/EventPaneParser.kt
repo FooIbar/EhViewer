@@ -17,8 +17,10 @@
  */
 package com.hippo.ehviewer.client.parser
 
-import org.jsoup.Jsoup
+import java.nio.ByteBuffer
 
 object EventPaneParser {
-    fun parse(body: String): String? = Jsoup.parse(body).getElementById("eventpane")?.html()
+    private external fun parseEventPane(body: ByteBuffer, size: Int = body.limit()): Int
+
+    fun parse(body: ByteBuffer): String? = unmarshalParsingAs(body, ::parseEventPane)
 }

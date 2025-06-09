@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::parser::archive::{parse_archive_url, parse_archives_with_funds};
+    use crate::parser::detail::parse_gallery_detail;
     use crate::parser::list::parse_info_list;
     use crate::parser::profile::{parse_profile, parse_profile_url};
     use reqwest::get;
@@ -51,5 +52,17 @@ mod tests {
             result.avatar,
             Some("https://forums.e-hentai.org/ehgt/jdk_180.png".to_string())
         );
+    }
+
+    #[tokio::test]
+    async fn test_parse_gallery_detail() {
+        let resp = get("https://e-hentai.org/g/530350/8b3c7e4a21/")
+            .await
+            .expect("Failed to get!");
+        let body = resp.text().await.expect("Failed to receive!");
+        let mut dom =
+            tl::parse(&body, ParserOptions::default().track_ids()).expect("Failed to parse HTML");
+        let result = parse_gallery_detail(&mut dom, &body).expect("Failed to parse gallery detail");
+        dbg!(result);
     }
 }

@@ -743,12 +743,12 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                         }
                         if (galleryDetail.apiUid >= 0) {
                             when (vote) {
-                                VoteStatus.NONE -> {
+                                VoteStatus.None -> {
                                     onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
                                     onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
                                 }
-                                VoteStatus.UP -> onSelect(withDraw) { galleryDetail.voteTag(tag, -1) }
-                                VoteStatus.DOWN -> onSelect(withDraw) { galleryDetail.voteTag(tag, 1) }
+                                VoteStatus.Up -> onSelect(withDraw) { galleryDetail.voteTag(tag, -1) }
+                                VoteStatus.Down -> onSelect(withDraw) { galleryDetail.voteTag(tag, 1) }
                             }
                         }
                     }()
@@ -765,7 +765,6 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
 
 @StringRes
 private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt()) {
-    0 -> R.string.rating0
     1 -> R.string.rating1
     2 -> R.string.rating2
     3 -> R.string.rating3

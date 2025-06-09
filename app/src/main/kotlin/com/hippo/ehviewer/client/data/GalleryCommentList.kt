@@ -15,6 +15,9 @@
  */
 package com.hippo.ehviewer.client.data
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class GalleryCommentList(
     val comments: List<GalleryComment>,
     val hasMore: Boolean,

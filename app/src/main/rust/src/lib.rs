@@ -36,6 +36,8 @@ fn get_first_element_by_class_name<'a>(
     handle.get(parser)
 }
 
+// tl does not support selecting child elements
+// Workaround for https://github.com/y21/tl/issues/22
 fn select_first<'a>(tag: &'a HTMLTag, parser: &'a Parser, id: &str) -> Option<&'a HTMLTag<'a>> {
     for n in tag.children().top().iter() {
         let tag = n.get(parser).and_then(Node::as_tag);
@@ -44,6 +46,14 @@ fn select_first<'a>(tag: &'a HTMLTag, parser: &'a Parser, id: &str) -> Option<&'
         }
     }
     None
+}
+
+fn get_first_child<'a>(tag: &'a HTMLTag, parser: &'a Parser) -> Option<&'a HTMLTag<'a>> {
+    tag.children()
+        .top()
+        .iter()
+        .filter_map(|n| n.get(parser)?.as_tag())
+        .next()
 }
 
 fn get_element_by_id<'b, S>(node: &'b Node, parser: &'b Parser, id: S) -> Option<&'b Node<'b>>

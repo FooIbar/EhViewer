@@ -17,16 +17,11 @@ package com.hippo.ehviewer.client.parser
 
 import arrow.core.Either
 import arrow.core.getOrElse
-import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhFilter
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.GalleryCommentList
 import com.hippo.ehviewer.client.data.GalleryDetail
-import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
-import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 import com.hippo.ehviewer.client.data.GalleryTag
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.PowerStatus
@@ -35,9 +30,7 @@ import com.hippo.ehviewer.client.data.V1GalleryPreview
 import com.hippo.ehviewer.client.data.V2GalleryPreview
 import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.client.exception.EhException
-import com.hippo.ehviewer.client.exception.OffensiveException
 import com.hippo.ehviewer.client.exception.ParseException
-import com.hippo.ehviewer.client.exception.PiningException
 import com.hippo.ehviewer.client.getThumbKey
 import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.ehviewer.util.toFloatOrDefault
@@ -45,16 +38,19 @@ import com.hippo.ehviewer.util.toIntOrDefault
 import com.hippo.ehviewer.util.trimAnd
 import com.hippo.ehviewer.util.unescapeXml
 import eu.kanade.tachiyomi.util.system.logcat
+import java.nio.ByteBuffer
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.char
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.cbor.CborArray
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.NodeTraversor
 
 object GalleryDetailParser {
-    private val PATTERN_ERROR = Regex("<div class=\"d\">\n<p>([^<]+)</p>")
+    private val PATTERN_ERROR = Regex("<div class=\"d\">[^<]*<p>([^<]+)</p>")
     private val PATTERN_DETAIL =
         Regex("var gid = (\\d+);\\s+var token = \"([a-f0-9]+)\";\\s+var apiuid = ([\\-\\d]+);\\s+var apikey = \"([a-f0-9]+)\";")
     private val PATTERN_TORRENT =
@@ -83,20 +79,9 @@ object GalleryDetailParser {
         char(':')
         minute()
     }
-    private const val OFFENSIVE_STRING =
-        "<p>(And if you choose to ignore this warning, you lose all rights to complain about it in the future.)</p>"
-    private const val PINING_STRING = "<p>This gallery is pining for the fjords.</p>"
 
-    suspend fun parse(body: String): GalleryDetail {
-        if (body.contains(OFFENSIVE_STRING)) {
-            throw OffensiveException()
-        }
-        if (body.contains(PINING_STRING)) {
-            throw PiningException()
-        }
-
-        // Error info
-        PATTERN_ERROR.find(body)?.run { throw EhException(groupValues[1]) }
+    fun parse(body: String): GalleryDetail {
+        PATTERN_ERROR.find(body)?.run { throw EhException(groupValues[1].replace("<br>", "\n")) }
         val document = Jsoup.parse(body)
         val galleryDetail = GalleryDetail(
             tagGroups = parseTagGroups(document),
@@ -104,13 +89,10 @@ object GalleryDetailParser {
             previewList = parsePreviewList(body),
         )
         parseDetail(galleryDetail, document, body)
-
-        // Fill info for database
-        galleryDetail.fillInfo()
         return galleryDetail
     }
 
-    private suspend fun parseDetail(gd: GalleryDetail, d: Document, body: String) {
+    private fun parseDetail(gd: GalleryDetail, d: Document, body: String) {
         PATTERN_DETAIL.find(body)?.apply {
             gd.gid = groupValues[1].toLongOrNull() ?: -1L
             gd.token = groupValues[2]
@@ -206,9 +188,6 @@ object GalleryDetailParser {
                     }
                 }
             }
-            if (gd.favoriteSlot == NOT_FAVORITED && EhDB.containLocalFavorites(gd.gid)) {
-                gd.favoriteSlot = LOCAL_FAVORITED
-            }
         }.getOrElse {
             throw ParseException("Can't parse gallery detail")
         }
@@ -279,14 +258,14 @@ object GalleryDetailParser {
                 // Sometimes parody tag is followed with '|' and english translate, just remove them
                 text = e.text().substringBefore('|').trim(),
                 power = when {
-                    e.hasClass("gtw") -> PowerStatus.WEAK
-                    e.hasClass("gtl") -> PowerStatus.ACTIVE
-                    else -> PowerStatus.SOLID
+                    e.hasClass("gtw") -> PowerStatus.Weak
+                    e.hasClass("gtl") -> PowerStatus.Active
+                    else -> PowerStatus.Solid
                 },
                 vote = when {
-                    e.child(0).hasClass("tup") -> VoteStatus.UP
-                    e.child(0).hasClass("tdn") -> VoteStatus.DOWN
-                    else -> VoteStatus.NONE
+                    e.child(0).hasClass("tup") -> VoteStatus.Up
+                    e.child(0).hasClass("tdn") -> VoteStatus.Down
+                    else -> VoteStatus.None
                 },
             )
         }
@@ -308,7 +287,7 @@ object GalleryDetailParser {
         emptyList()
     }
 
-    private suspend fun parseComment(element: Element): GalleryComment? = Either.catch {
+    private fun parseComment(element: Element): GalleryComment? = Either.catch {
         // Id
         val a = element.previousElementSibling()
         val name = a!!.attr("name")
@@ -365,13 +344,6 @@ object GalleryDetailParser {
             }
         }
         val commentHtml = c6.html()
-        // filter comment
-        if (!uploader) {
-            val sEhFilter = EhFilter
-            if (score <= Settings.commentThreshold || sEhFilter.filterCommenter(user.orEmpty()) || sEhFilter.filterComment(commentHtml)) {
-                return null
-            }
-        }
         // last edited
         val c8 = element.getElementsByClass("c8").first()
         val lastEdited = c8?.children()?.first()?.run { WEB_COMMENT_DATE_FORMAT.parse(text()).toEpochMillis() } ?: 0
@@ -387,7 +359,7 @@ object GalleryDetailParser {
     /**
      * Parse comments with html parser
      */
-    suspend fun parseComments(document: Document): GalleryCommentList = Either.catch {
+    fun parseComments(document: Document): GalleryCommentList = Either.catch {
         // Disable pretty print to get comments in raw html
         document.outputSettings().prettyPrint(false)
         val cdiv = document.getElementById("cdiv")!!
@@ -430,4 +402,16 @@ object GalleryDetailParser {
     }.toList().apply {
         if (isEmpty()) throw ParseException("Parse preview list error")
     }
+
+    fun parseRust(body: ByteBuffer) = Either.catch {
+        unmarshalParsingAs<Result>(body, ::parseGalleryDetail)
+    }.getOrElse {
+        throw ParseException("Failed to parse gallery detail", it)
+    }
+
+    @Serializable
+    @CborArray
+    class Result(val detail: GalleryDetail, val event: String?)
+
+    private external fun parseGalleryDetail(body: ByteBuffer, size: Int = body.limit()): Int
 }

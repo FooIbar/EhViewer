@@ -41,7 +41,6 @@ import com.hippo.ehviewer.client.parser.FavoritesParser
 import com.hippo.ehviewer.client.parser.GalleryApiParser
 import com.hippo.ehviewer.client.parser.GalleryDetailParser
 import com.hippo.ehviewer.client.parser.GalleryListParser
-import com.hippo.ehviewer.client.parser.GalleryNotAvailableParser
 import com.hippo.ehviewer.client.parser.GalleryPageParser
 import com.hippo.ehviewer.client.parser.GalleryTokenApiParser
 import com.hippo.ehviewer.client.parser.HomeParser
@@ -121,11 +120,19 @@ fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuffer>, e: 
 
     // Check Gallery Not Available
     body.onLeft {
-        if ("Gallery Not Available - " in it) {
-            val error = GalleryNotAvailableParser.parse(it)
-            if (!error.isNullOrBlank()) {
-                throw EhException(error)
-            }
+        if ("Gallery Not Available - " in it) throw e
+    }
+
+    // Check parse error thrown by rust
+    val cause = e.cause
+    if (e is ParseException && cause is RuntimeException) {
+        when (val message = cause.message) {
+            "0" -> throw NoHitsFoundException()
+            "1" -> throw EhException(R.string.gallery_list_empty_hit_subscription)
+            "2" -> throw NotLoggedInException()
+            "3" -> throw NoHathClientException()
+            "4" -> throw InsufficientFundsException()
+            is String if message.startsWith('5') -> throw EhException(message.drop(1))
         }
     }
 
@@ -134,14 +141,6 @@ fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuffer>, e: 
 
     if (e is ParseException || e is SerializationException) {
         body.onLeft { if ("<" !in it) throw EhException(it) }
-        when (val message = e.cause?.message) {
-            "0" -> throw NoHitsFoundException()
-            "1" -> throw EhException(R.string.gallery_list_empty_hit_subscription)
-            "2" -> throw NotLoggedInException()
-            "3" -> throw NoHathClientException()
-            "4" -> throw InsufficientFundsException()
-            is String if message.startsWith('5') -> throw EhException(message.drop(1))
-        }
         if (Settings.saveParseErrorBody) body.saveParseError(e)
         throw EhException(appCtx.getString(R.string.error_parse_error), e)
     }
@@ -205,7 +204,7 @@ object EhEngine {
     private suspend fun getFunds() = ehRequest(EhUrl.URL_FUNDS).fetchUsingAsText(HomeParser::parseFunds)
 
     suspend fun getNews(parse: Boolean) = ehRequest(EhUrl.URL_NEWS, EhUrl.REFERER_E)
-        .fetchUsingAsText { if (parse) EventPaneParser.parse(this) else null }
+        .fetchUsingAsByteBuffer { if (parse) EventPaneParser.parse(this) else null }
 
     suspend fun getProfile(): ProfileParser.Result {
         val url = ehRequest(EhUrl.URL_FORUMS).fetchUsingAsByteBuffer(ProfileParser::parseProfileUrl)
@@ -235,13 +234,16 @@ object EhEngine {
         .apply { galleryInfoList.fillInfo(url, true) }
         .takeUnless { it.galleryInfoList.isEmpty() } ?: GalleryListParser.emptyResult
 
-    suspend fun getGalleryDetail(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsText {
-        val eventPane = EventPaneParser.parse(this)
-        if (eventPane != null) {
+    suspend fun getGalleryDetail(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(GalleryDetailParser::parseRust).run {
+        event?.let {
             Settings.lastDawnDays = today
-            showEventNotification(eventPane)
+            showEventNotification(it)
         }
-        GalleryDetailParser.parse(this)
+        detail.apply {
+            // Fill info for database
+            fillInfo()
+            filterComments()
+        }
     }
 
     suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsText {

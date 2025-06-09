@@ -58,7 +58,7 @@ fun GalleryTags(
                         Box {
                             BaseRoundText(
                                 text = translation,
-                                weak = power == PowerStatus.WEAK,
+                                weak = power == PowerStatus.Weak,
                                 modifier = Modifier.combinedClickable(
                                     onClick = { onTagClick(tag) },
                                     onLongClick = {
@@ -67,7 +67,7 @@ fun GalleryTags(
                                     },
                                 ),
                             )
-                            if (vote != VoteStatus.NONE && showVote) {
+                            if (vote != VoteStatus.None && showVote) {
                                 Text(
                                     text = vote.display,
                                     modifier = Modifier.align(Alignment.TopEnd).padding(horizontal = 2.dp),

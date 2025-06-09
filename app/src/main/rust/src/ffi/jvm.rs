@@ -2,6 +2,7 @@
 
 use crate::parser::archive::{parse_archive_url, parse_archives, parse_archives_with_funds};
 use crate::parser::config::parse_fav_cat;
+use crate::parser::detail::{parse_event_pane, parse_gallery_detail};
 use crate::parser::fav::parse_fav;
 use crate::parser::home::parse_limit;
 use crate::parser::list::parse_info_list;
@@ -46,6 +47,25 @@ pub fn parseLimit(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: ji
 pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |dom, str| {
         parse_info_list(dom, dom.parser(), str)
+    })
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+#[jni_fn("com.hippo.ehviewer.client.parser.GalleryDetailParser")]
+pub fn parseGalleryDetail(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+    let options = ParserOptions::default().track_ids();
+    parse_marshal_inplace_with_options(&mut env, buffer, limit, options, |dom, html| {
+        parse_gallery_detail(dom, html).map(|detail| (detail, parse_event_pane(dom, dom.parser())))
+    })
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+#[jni_fn("com.hippo.ehviewer.client.parser.EventPaneParser")]
+pub fn parseEventPane(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
+    parse_marshal_inplace(&mut env, input, limit, |dom, _| {
+        Ok(parse_event_pane(dom, dom.parser()))
     })
 }
 
@@ -165,9 +185,24 @@ where
     }
 }
 
+#[inline]
 pub fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, f: F) -> i32
 where
-    F: Fn(&VDom, &str) -> Result<R>,
+    F: Fn(&mut VDom, &str) -> Result<R>,
+    R: Serialize,
+{
+    parse_marshal_inplace_with_options(env, str, limit, ParserOptions::default(), f)
+}
+
+pub fn parse_marshal_inplace_with_options<F, R>(
+    env: &mut JNIEnv,
+    str: JByteBuffer,
+    limit: jint,
+    options: ParserOptions,
+    f: F,
+) -> i32
+where
+    F: Fn(&mut VDom, &str) -> Result<R>,
     R: Serialize,
 {
     jni_throwing(env, |env| {
@@ -176,9 +211,9 @@ where
             // SAFETY: ktor client ensure html content is valid utf-8.
             let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
 
-            let dom = tl::parse(html, ParserOptions::default())?;
+            let mut dom = tl::parse(html, options)?;
             ensure!(dom.version().is_some(), EhError::Error(html.to_string()));
-            f(&dom, html)?
+            f(&mut dom, html)?
         };
         let mut cursor = Cursor::new(buffer);
         serde_cbor::to_writer(&mut cursor, &value)?;

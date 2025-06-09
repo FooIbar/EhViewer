@@ -15,6 +15,9 @@
  */
 package com.hippo.ehviewer.client.data
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class GalleryComment(
     val id: Long,
     val score: Int,

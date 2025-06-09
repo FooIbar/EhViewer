@@ -243,9 +243,8 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
         snackbar(filterAdded)
     }
 
-    suspend fun showCommentVoteStatus(comment: GalleryComment) {
-        val statusStr = comment.voteState ?: return
-        val data = statusStr.split(',').map {
+    suspend fun showCommentVoteStatus(status: String) {
+        val data = status.split(',').map {
             val str = it.trim()
             val index = str.lastIndexOf(' ')
             if (index < 0) {
@@ -400,7 +399,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         }
                         if (!comment.voteState.isNullOrEmpty()) {
                             onSelect(checkVoteStatus) {
-                                showCommentVoteStatus(comment)
+                                showCommentVoteStatus(comment.voteState)
                             }
                         }
                     }()
