@@ -1,5 +1,6 @@
 pub mod archive;
 pub mod config;
+pub mod detail;
 pub mod fav;
 pub mod home;
 pub mod list;

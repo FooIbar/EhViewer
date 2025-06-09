@@ -16,7 +16,10 @@
 package com.hippo.ehviewer.client.data
 
 import androidx.compose.ui.util.fastFlatMap
-import com.hippo.ehviewer.client.data.GalleryInfo.Companion.S_LANGS
+import com.hippo.ehviewer.EhDB
+import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.client.EhFilter
+import kotlinx.serialization.Serializable
 
 private val LANGUAGES = arrayOf(
     "English",
@@ -35,6 +38,7 @@ private val LANGUAGES = arrayOf(
     "Dutch",
 )
 
+@Serializable
 data class GalleryDetail(
     val galleryInfo: BaseGalleryInfo = BaseGalleryInfo(),
     var apiUid: Long = -1L,
@@ -53,11 +57,28 @@ data class GalleryDetail(
     var comments: GalleryCommentList,
     val previewList: List<GalleryPreview>,
 ) : GalleryInfo by galleryInfo {
-    fun fillInfo() {
+    suspend fun fillInfo() {
         val index = LANGUAGES.indexOf(language)
-        if (index != -1) simpleLanguage = S_LANGS[index]
+        if (index != -1) simpleLanguage = GalleryInfo.S_LANGS[index]
         simpleTags = tagGroups.fastFlatMap(GalleryTagGroup::tags).map { (text, power, _) ->
-            if (power == PowerStatus.WEAK) "_$text" else text
+            if (power == PowerStatus.Weak) "_$text" else text
+        }
+        if (favoriteSlot == GalleryInfo.NOT_FAVORITED && EhDB.containLocalFavorites(gid)) {
+            favoriteSlot = GalleryInfo.LOCAL_FAVORITED
+        }
+    }
+
+    suspend fun filterComments() {
+        comments = with(comments) {
+            val scoreThreshold = Settings.commentThreshold
+            copy(
+                comments = comments.filter {
+                    it.uploader ||
+                        it.score > scoreThreshold &&
+                        !EhFilter.filterCommenter(it.user.orEmpty()) &&
+                        !EhFilter.filterComment(it.comment)
+                },
+            )
         }
     }
 }

@@ -15,7 +15,10 @@
  */
 package com.hippo.ehviewer.client.data
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class GalleryTagGroup(
-    val nameSpace: TagNamespace,
+    val namespace: TagNamespace,
     val tags: List<GalleryTag>,
 )

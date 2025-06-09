@@ -1,5 +1,14 @@
 package com.hippo.ehviewer.client.data
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
+@Serializable(TagNamespaceSerializer::class)
 sealed class TagNamespace(val value: String, val prefix: String?) {
     object Artist : TagNamespace("artist", "a")
     object Cosplayer : TagNamespace("cosplayer", "cos")
@@ -31,4 +40,13 @@ sealed class TagNamespace(val value: String, val prefix: String?) {
             else -> null
         }
     }
+}
+
+object TagNamespaceSerializer : KSerializer<TagNamespace> {
+    override val descriptor = PrimitiveSerialDescriptor("TagNamespace", PrimitiveKind.STRING)
+    override fun deserialize(decoder: Decoder): TagNamespace {
+        val string = decoder.decodeString()
+        return TagNamespace.from(string) ?: throw SerializationException("Unknown tag namespace $string")
+    }
+    override fun serialize(encoder: Encoder, value: TagNamespace) = encoder.encodeString(value.value)
 }

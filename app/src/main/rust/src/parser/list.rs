@@ -10,28 +10,28 @@ use std::borrow::Cow;
 use std::ops::Index;
 use tl::{Node, Parser, VDom};
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Default)]
 #[allow(non_snake_case)]
-struct BaseGalleryInfo {
-    gid: i64,
-    token: String,
-    title: String,
-    titleJpn: Option<String>,
-    thumbKey: String,
-    category: i32,
-    posted: String,
-    uploader: Option<String>,
-    disowned: bool,
-    rating: f32,
-    rated: bool,
-    simpleTags: Vec<String>,
-    pages: i32,
-    thumbWidth: i32,
-    thumbHeight: i32,
-    simpleLanguage: Option<String>,
-    favoriteSlot: i32,
-    favoriteName: Option<String>,
-    favoriteNote: Option<String>,
+pub struct BaseGalleryInfo {
+    pub gid: i64,
+    pub token: String,
+    pub title: String,
+    pub titleJpn: Option<String>,
+    pub thumbKey: String,
+    pub category: i32,
+    pub posted: String,
+    pub uploader: Option<String>,
+    pub disowned: bool,
+    pub rating: f32,
+    pub rated: bool,
+    pub simpleTags: Vec<String>,
+    pub pages: i32,
+    pub thumbWidth: i32,
+    pub thumbHeight: i32,
+    pub simpleLanguage: Option<String>,
+    pub favoriteSlot: i32,
+    pub favoriteName: Option<String>,
+    pub favoriteNote: Option<String>,
 }
 
 #[derive(Serialize, Debug)]
@@ -42,7 +42,7 @@ pub struct GalleryListResult {
     galleryInfoList: Vec<BaseGalleryInfo>,
 }
 
-fn to_category_i32(category: &str) -> i32 {
+pub fn to_category_i32(category: &str) -> i32 {
     match category {
         "misc" => 0x1,
         "doujinshi" => 0x2,
@@ -75,14 +75,14 @@ fn parse_rating(str: &str) -> f32 {
     }
 }
 
-fn get_thumb_key(url: &str) -> String {
+pub fn get_thumb_key(url: &str) -> String {
     url.trim_start_matches(EHGT_PREFIX)
         .trim_start_matches(EX_PREFIX)
         .trim_start_matches("t/")
         .to_string()
 }
 
-fn parse_token_and_gid(str: &str) -> Option<(i64, String)> {
+pub fn parse_token_and_gid(str: &str) -> Option<(i64, String)> {
     let grp =
         regex!("https?://(?:exhentai.org|e-hentai.org(?:/lofi)?)/(?:g|mpv)/(\\d+)/([0-9a-f]{10})")
             .captures(str)?;
