@@ -59,6 +59,7 @@
     <string name="sign_in_failed">ログインに失敗しました</string>
     <string name="sign_in_failed_tip">この問題が続く場合は「%s」をお試しください。</string>
     <string name="get_it">了解</string>
+    <string name="cloudflare_bypass_failed">Cloudflare チャレンジのバイパスに失敗しました</string>
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">ExHentai を検索</string>
     <string name="gallery_list_search_bar_hint_e_hentai">E-Hentai を検索</string>
@@ -326,6 +327,8 @@
     <string name="settings_download_concurrency_summary">同時に最大 %s 枚の画像をダウンロードします</string>
     <string name="settings_download_download_delay">ダウンロードの遅延</string>
     <string name="settings_download_download_delay_summary">ダウンロードで %s ミリ秒の遅延をさせます</string>
+    <string name="settings_download_connection_timeout">接続のタイムアウト (秒数)</string>
+    <string name="settings_download_timeout_speed">最小の応答速度 (KB/s 単位)</string>
     <string name="settings_download_preload_image">画像をプリロード</string>
     <string name="settings_download_preload_image_summary">%s 枚の画像をプリロードします</string>
     <string name="settings_download_download_origin_image">オリジナルの画像をダウンロードする</string>
@@ -357,6 +360,7 @@
     <string name="settings_advanced_dump_logcat_to">Logcat のログが「%s」にダンプされました</string>
     <string name="settings_advanced_read_cache_size">読書用キャッシュのサイズ</string>
     <string name="settings_advanced_app_language_title">アプリの言語</string>
+    <string name="settings_advanced_enable_quic">QUIC をサポート</string>
     <string name="settings_advanced_hardware_bitmap_threshold">ハードウェアビットマップ (パフォーマンス向上) のしきい値</string>
     <string name="settings_advanced_hardware_bitmap_threshold_summary">長い画像の読み込みに失敗する場合はこれを減らしてみてください</string>
     <string name="settings_advanced_export_data">データをエクスポート</string>
@@ -381,6 +385,7 @@
     <string name="settings_about_commit_time">%s にコミットされました</string>
     <string name="settings_about_check_for_updates">更新を確認</string>
     <string name="license">ライセンス</string>
+    <string name="settings_restart">変更を適用して再起動しますか？</string>
     <string name="cant_read_the_file">ファイルを読み取れませんでした</string>
     <string name="app_language_system">システム言語 (デフォルト)</string>
     <!-- ExcludedLanguagesScene -->
@@ -436,7 +441,7 @@
     <string name="favorite_name">お気に入り</string>
     <string name="dark_theme">ダークテーマ</string>
     <string name="black_dark_theme">ブラックダークテーマ</string>
-    <string name="harmonize_category_color">カテゴリの色をダイナミックカラーで調和させる</string>
+    <string name="harmonize_category_color">カテゴリーの色をダイナミックカラーで調和する</string>
     <string name="sort_by">並べ替え</string>
     <string name="added_time_desc">追加された時間 (昇順)</string>
     <string name="added_time_asc">追加された時間 (昇順)</string>
@@ -495,8 +500,8 @@
     <string name="preload_thumb_aggressively">サムネイルを積極的にプリロードする</string>
     <string name="animate_items">リスト項目のアニメーション</string>
     <string name="animate_items_summary">クラッシュやフレームドロップが発生する場合はこれを無効化してください</string>
-    <string name="desktop_site">デスクトップのサイト</string>
-    <string name="desktop_site_summary">デフォルトの画像解像度を高くします</string>
+    <string name="desktop_site">デスクトップサイト</string>
+    <string name="desktop_site_summary">デフォルトの画像解像度を高くします\nCloudflare をバイパスできなかった場合は無効化をお試しください</string>
     <string name="auto_updates">自動で更新を確認する</string>
     <string name="update_frequency_never">しない</string>
     <string name="update_frequency_daily">毎日</string>
