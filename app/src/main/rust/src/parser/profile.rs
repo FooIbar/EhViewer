@@ -33,7 +33,7 @@ pub fn parse_profile(dom: &VDom, parser: &Parser) -> Result<Profile> {
                     if src.starts_with("http") {
                         src.to_string()
                     } else {
-                        format!("{}{}", HOST_FORUMS, src)
+                        format!("{HOST_FORUMS}{src}")
                     }
                 })
             });

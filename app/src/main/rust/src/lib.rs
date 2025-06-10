@@ -63,7 +63,7 @@ where
     let bytes: Bytes = id.into();
     let handle = node.find_node(parser, &mut |n| match n.as_tag() {
         None => false,
-        Some(tag) => tag.attributes().id().map_or(false, |x| x.eq(&bytes)),
+        Some(tag) => tag.attributes().id().is_some_and(|x| x.eq(&bytes)),
     })?;
     handle.get(parser)
 }
@@ -114,7 +114,7 @@ fn query_childs_first_match_attr<'a>(
     parser: &'a Parser,
     attr: &'a str,
 ) -> Option<&'a str> {
-    let selector = format!("[{}]", attr);
+    let selector = format!("[{attr}]");
     let mut iter = node.as_tag()?.query_selector(parser, &selector)?;
     get_node_handle_attr(&iter.next()?, parser, attr)
 }
