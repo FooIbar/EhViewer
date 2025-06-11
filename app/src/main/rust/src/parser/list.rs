@@ -193,7 +193,6 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
     })
 }
 
-#[allow(dead_code)]
 pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<GalleryListResult> {
     if str.contains("<p>You do not have any watched tags") {
         bail!(EhError::NoWatched)

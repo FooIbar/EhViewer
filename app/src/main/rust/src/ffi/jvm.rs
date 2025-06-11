@@ -23,8 +23,6 @@ use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
 use tl::{ParserOptions, VDom};
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.FavoritesParserKt")]
 pub fn parseFav(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, input, limit, |dom, html| {
@@ -32,8 +30,6 @@ pub fn parseFav(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint
     })
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.HomeParserKt")]
 pub fn parseLimit(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, input, limit, |dom, _| {
@@ -41,8 +37,6 @@ pub fn parseLimit(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: ji
     })
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
 pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |dom, str| {
@@ -50,8 +44,6 @@ pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, lim
     })
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryDetailParser")]
 pub fn parseGalleryDetail(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     let options = ParserOptions::default().track_ids();
@@ -60,8 +52,6 @@ pub fn parseGalleryDetail(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit
     })
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.EventPaneParser")]
 pub fn parseEventPane(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, input, limit, |dom, _| {
@@ -69,8 +59,6 @@ pub fn parseEventPane(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit
     })
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.TorrentParserKt")]
 pub fn parseTorrent(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
@@ -78,15 +66,11 @@ pub fn parseTorrent(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit:
     })
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.UserConfigParser")]
 pub fn parseFavCat(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |_, body| Ok(parse_fav_cat(body)))
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.ArchiveParserKt")]
 pub fn parseArchives(
     mut env: JNIEnv,
@@ -106,8 +90,6 @@ pub fn parseArchives(
     }
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.ArchiveParserKt")]
 pub fn parseArchiveUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |dom, html| {
@@ -115,8 +97,6 @@ pub fn parseArchiveUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, lim
     })
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.ProfileParser")]
 pub fn parseProfileUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
@@ -124,8 +104,6 @@ pub fn parseProfileUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, lim
     })
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.ProfileParser")]
 pub fn parseProfile(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
