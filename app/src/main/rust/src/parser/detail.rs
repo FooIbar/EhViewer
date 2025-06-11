@@ -325,19 +325,43 @@ fn parse_comment_time(str: &str, prefix: &str) -> Option<i64> {
         .map(|(dt, _)| dt.and_utc().timestamp_millis())
 }
 
-fn parse_comments(dom: &mut VDom) -> Result<GalleryCommentList> {
+pub fn parse_comments(dom: &mut VDom) -> Result<GalleryCommentList> {
+    let parser = dom.parser();
     let cdiv = dom
         .get_element_by_id("cdiv")
+        .and_then(|n| n.get(parser)?.as_tag())
         .context("Failed to find cdiv")?;
-    let parser = dom.parser_mut();
-    let comment_nodes = cdiv
+
+    // Mimic "#chd + p" as tl does not support selecting siblings
+    let chd = dom.get_element_by_id("chd").context("Failed to find chd")?;
+    let children = cdiv.children();
+    let slice = children.top().as_slice();
+    let i = slice
+        .iter()
+        .rposition(|n| *n == chd)
+        .context("chd is not a direct child of cdiv")?;
+    if let Some(tag) = slice
+        .iter()
+        .skip(i + 1)
+        .find_map(|n| n.get(parser)?.as_tag())
+        && tag.name() == "p"
+    {
+        bail!(EhError::Error(tag.inner_text(parser).to_string()));
+    };
+
+    let has_more = chd
         .get(parser)
-        .and_then(|n| n.as_tag()?.query_selector(parser, ".c1"))
+        .and_then(|n| get_first_child(n.as_tag()?, parser))
+        .is_some_and(|tag| tag.attributes().id() != Some(&"postnewcomment".into()));
+
+    let comment_nodes = cdiv
+        .query_selector(parser, ".c1")
         .unwrap()
         .collect::<Vec<_>>();
     let comments = comment_nodes
         .iter()
         .map(|node_handle| {
+            let parser = dom.parser_mut();
             let node = node_handle.get(parser).unwrap();
 
             let c3 = get_first_element_by_class_name(node, parser, "c3")
@@ -401,9 +425,7 @@ fn parse_comments(dom: &mut VDom) -> Result<GalleryCommentList> {
                 .context("Failed to find c6")?;
             let c6 = c6_handle.get(parser).and_then(Node::as_tag).unwrap();
             let nodes = c6
-                // Should be "span[style='text-decoration:underline;']" but it's bugged in tl
-                // https://github.com/y21/tl/issues/46
-                .query_selector(parser, "span[style^='text-decoration:underline']")
+                .query_selector(parser, "span[style='text-decoration:underline;']")
                 .unwrap()
                 .collect::<Vec<_>>();
             for node in nodes {
@@ -436,21 +458,6 @@ fn parse_comments(dom: &mut VDom) -> Result<GalleryCommentList> {
             })
         })
         .collect::<Result<Vec<_>>>()?;
-
-    let parser = dom.parser();
-    let has_more = dom
-        .get_element_by_id("chd")
-        .and_then(|n| {
-            let tag = n
-                .get(parser)?
-                .children()?
-                .top()
-                .iter()
-                .filter_map(|n| n.get(parser)?.as_tag())
-                .next()?;
-            tag.attributes().id()
-        })
-        .is_some_and(|id| id.ne("postnewcomment"));
 
     Ok(GalleryCommentList {
         comments,

@@ -17,7 +17,7 @@ jni = { version = "0.21", optional = true }
 jni_fn = { version = "0.1", optional = true }
 chrono = { version = "0.4", default-features = false, features = ["std"] }
 quick-xml = { default-features = false, version = "0.37" }
-tl = { version = "0.7", features = ["simd"] }
+tl = { git = "https://github.com/y21/tl.git", rev = "13ed128e35ce04c4f16c41cb1e38347da3da0b46", features = ["simd"] }
 log = "0.4"
 android_logger = { default-features = false, version = "0.15" }
 serde_cbor = "0.11"

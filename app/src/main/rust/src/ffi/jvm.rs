@@ -3,7 +3,7 @@
 use crate::EhError;
 use crate::parser::archive::{parse_archive_url, parse_archives, parse_archives_with_funds};
 use crate::parser::config::parse_fav_cat;
-use crate::parser::detail::{parse_event_pane, parse_gallery_detail};
+use crate::parser::detail::{parse_comments, parse_event_pane, parse_gallery_detail};
 use crate::parser::fav::parse_fav;
 use crate::parser::home::parse_limit;
 use crate::parser::list::parse_info_list;
@@ -49,6 +49,14 @@ pub fn parseGalleryDetail(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit
     let options = ParserOptions::default().track_ids();
     parse_marshal_inplace_with_options(&mut env, buffer, limit, options, |dom, html| {
         parse_gallery_detail(dom, html).map(|detail| (detail, parse_event_pane(dom, dom.parser())))
+    })
+}
+
+#[jni_fn("com.hippo.ehviewer.client.parser.GalleryDetailParser")]
+pub fn parseGalleryComments(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+    let options = ParserOptions::default().track_ids();
+    parse_marshal_inplace_with_options(&mut env, buffer, limit, options, |dom, _| {
+        parse_comments(dom)
     })
 }
 

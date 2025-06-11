@@ -52,8 +52,7 @@ fn get_first_child<'a>(tag: &'a HTMLTag, parser: &'a Parser) -> Option<&'a HTMLT
     tag.children()
         .top()
         .iter()
-        .filter_map(|n| n.get(parser)?.as_tag())
-        .next()
+        .find_map(|n| n.get(parser)?.as_tag())
 }
 
 fn get_element_by_id<'b, S>(node: &'b Node, parser: &'b Parser, id: S) -> Option<&'b Node<'b>>
