@@ -409,9 +409,16 @@ object GalleryDetailParser {
         throw ParseException("Failed to parse gallery detail", it)
     }
 
+    fun parseCommentsRust(body: ByteBuffer) = Either.catch {
+        unmarshalParsingAs<GalleryCommentList>(body, ::parseGalleryComments)
+    }.getOrElse {
+        throw ParseException("Failed to parse gallery comments", it)
+    }
+
     @Serializable
     @CborArray
     class Result(val detail: GalleryDetail, val event: String?)
 
     private external fun parseGalleryDetail(body: ByteBuffer, size: Int = body.limit()): Int
+    private external fun parseGalleryComments(body: ByteBuffer, size: Int = body.limit()): Int
 }
