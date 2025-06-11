@@ -14,8 +14,6 @@ use jni_fn::jni_fn;
 use ndk::bitmap::{Bitmap, BitmapFormat};
 use std::ptr::slice_from_raw_parts;
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArray {
     jni_throwing(&mut env, |env| {
@@ -26,8 +24,6 @@ pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArr
     })
 }
 
-#[unsafe(no_mangle)]
-#[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
     jni_throwing(&mut env, |env| {

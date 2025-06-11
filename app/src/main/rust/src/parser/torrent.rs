@@ -17,7 +17,6 @@ pub struct Torrent {
     name: String,
 }
 
-#[allow(dead_code)]
 pub fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>> {
     let list = dom.query_selector("table").context("No Table")?.filter_map(|e| {
         let html = e.get(parser)?.inner_html(parser);

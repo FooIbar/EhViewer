@@ -5,7 +5,6 @@ pub type Rgba8888 = Rgba<u8>;
 pub type Rgb565 = Luma<u16>;
 pub type RgbaF16 = Luma<u64>;
 
-#[allow(dead_code)]
 pub trait ImageConsumer<R> {
     fn apply<T: CustomPixel>(self, buffer: &ImageBuffer<T, &[T::Subpixel]>) -> Result<R>;
 }

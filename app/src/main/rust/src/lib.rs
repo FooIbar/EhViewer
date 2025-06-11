@@ -2,8 +2,8 @@
 #![feature(never_type)]
 
 mod ffi;
-mod img;
-mod parser;
+pub mod img;
+pub mod parser;
 
 use std::fmt::{Debug, Display, Formatter};
 use tl::{Bytes, HTMLTag, Node, NodeHandle, Parser, VDom};
