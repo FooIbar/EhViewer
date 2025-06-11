@@ -41,7 +41,7 @@ pub fn parse_archive_url(dom: &VDom, parser: &Parser, body: &str) -> Result<Opti
     let url = dom.get_element_by_id("continue").and_then(|node| {
         let tag = select_first(node.get(parser)?.as_tag()?, parser, "a")?;
         let href = get_tag_attr(tag, "href")?;
-        Some(format!("{}?start=1", href))
+        Some(format!("{href}?start=1"))
     });
     Ok(url)
 }

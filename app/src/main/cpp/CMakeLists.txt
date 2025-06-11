@@ -117,13 +117,13 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(Corrosion)
-corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml LOCKED)
+corrosion_import_crate(
+        MANIFEST_PATH ../rust/Cargo.toml
+        LOCKED
+        FEATURES $<IF:$<VERSION_GREATER_EQUAL:${ANDROID_NATIVE_API_LEVEL},26>,android-26,android>
+        FLAGS $<$<NOT:$<CONFIG:Debug>>:-Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort>
+)
 corrosion_add_target_local_rustflags(ehviewer_rust "-Clink-args=-Wl,-z,max-page-size=16384")
-if (ANDROID_NATIVE_API_LEVEL GREATER_EQUAL 26)
-    corrosion_set_features(ehviewer_rust FEATURES android-26)
-else ()
-    corrosion_set_features(ehviewer_rust FEATURES android)
-endif ()
 
 # Build and link our app's native lib
 add_library(${PROJECT_NAME} SHARED archive.c gifutils.c hash.c natsort/strnatcmp.c)
