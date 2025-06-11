@@ -4,17 +4,17 @@ use super::jvm::jni_throwing;
 use crate::img::border::DetectBorder;
 use crate::img::core::{CustomPixel, ImageConsumer, Rgb565, Rgba8888, RgbaF16};
 use crate::img::qr_code::QrCode;
-use anyhow::{anyhow, Ok, Result};
+use anyhow::{Ok, Result, anyhow};
 use image::ImageBuffer;
+use jni::JNIEnv;
 use jni::objects::JClass;
 use jni::sys::jboolean;
 use jni::sys::{jintArray, jobject};
-use jni::JNIEnv;
 use jni_fn::jni_fn;
 use ndk::bitmap::{Bitmap, BitmapFormat};
 use std::ptr::slice_from_raw_parts;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArray {
@@ -26,7 +26,7 @@ pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArr
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {

@@ -1,5 +1,6 @@
 #![cfg(feature = "jvm")]
 
+use crate::EhError;
 use crate::parser::archive::{parse_archive_url, parse_archives, parse_archives_with_funds};
 use crate::parser::config::parse_fav_cat;
 use crate::parser::detail::{parse_event_pane, parse_gallery_detail};
@@ -8,11 +9,10 @@ use crate::parser::home::parse_limit;
 use crate::parser::list::parse_info_list;
 use crate::parser::profile::{parse_profile, parse_profile_url};
 use crate::parser::torrent::parse_torrent_list;
-use crate::EhError;
 use android_logger::Config;
-use anyhow::{ensure, Context, Result};
+use anyhow::{Context, Result, ensure};
 use jni::objects::{JByteBuffer, JClass};
-use jni::sys::{jboolean, jint, jobject, JNI_TRUE, JNI_VERSION_1_6};
+use jni::sys::{JNI_TRUE, JNI_VERSION_1_6, jboolean, jint, jobject};
 use jni::{JNIEnv, JavaVM};
 use jni_fn::jni_fn;
 use log::LevelFilter;
@@ -23,7 +23,7 @@ use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
 use tl::{ParserOptions, VDom};
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.FavoritesParserKt")]
 pub fn parseFav(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
@@ -32,7 +32,7 @@ pub fn parseFav(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.HomeParserKt")]
 pub fn parseLimit(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
@@ -41,7 +41,7 @@ pub fn parseLimit(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: ji
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
 pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
@@ -50,7 +50,7 @@ pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, lim
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryDetailParser")]
 pub fn parseGalleryDetail(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
@@ -60,7 +60,7 @@ pub fn parseGalleryDetail(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.EventPaneParser")]
 pub fn parseEventPane(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
@@ -69,7 +69,7 @@ pub fn parseEventPane(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.TorrentParserKt")]
 pub fn parseTorrent(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
@@ -78,14 +78,14 @@ pub fn parseTorrent(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit:
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.UserConfigParser")]
 pub fn parseFavCat(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |_, body| Ok(parse_fav_cat(body)))
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.ArchiveParserKt")]
 pub fn parseArchives(
@@ -106,7 +106,7 @@ pub fn parseArchives(
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.ArchiveParserKt")]
 pub fn parseArchiveUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
@@ -115,7 +115,7 @@ pub fn parseArchiveUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, lim
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.ProfileParser")]
 pub fn parseProfileUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
@@ -124,7 +124,7 @@ pub fn parseProfileUrl(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, lim
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.ProfileParser")]
 pub fn parseProfile(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
@@ -221,7 +221,8 @@ where
     })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
+#[allow(non_snake_case)]
 pub extern "system" fn JNI_OnLoad(_: JavaVM, _: *mut c_void) -> jint {
     android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
     JNI_VERSION_1_6

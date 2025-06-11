@@ -1,4 +1,4 @@
-use crate::{get_node_handle_attr, get_tag_attr, select_first, EhError};
+use crate::{EhError, get_node_handle_attr, get_tag_attr, select_first};
 use anyhow::{Context, Result};
 use serde::Serialize;
 use tl::{Parser, VDom};

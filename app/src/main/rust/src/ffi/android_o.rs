@@ -3,13 +3,13 @@
 use super::android::use_bitmap_content;
 use super::jvm::jni_throwing;
 use crate::img::copy_region::CopyRegion;
+use jni::JNIEnv;
 use jni::objects::JClass;
 use jni::sys::{jint, jobject};
-use jni::JNIEnv;
 use jni_fn::jni_fn;
 use ndk::hardware_buffer::{HardwareBuffer, HardwareBufferUsage};
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn copyBitmapToAHB(mut env: JNIEnv, _: JClass, bm: jobject, ahb: jobject, x: jint, y: jint) {

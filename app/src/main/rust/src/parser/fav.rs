@@ -1,6 +1,6 @@
-use crate::parser::list::{parse_info_list, GalleryListResult};
 use crate::EhError;
-use anyhow::{bail, Result};
+use crate::parser::list::{GalleryListResult, parse_info_list};
+use anyhow::{Result, bail};
 use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::Parser;
