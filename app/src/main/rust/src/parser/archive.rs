@@ -1,6 +1,6 @@
 use crate::parser::utils::parse_int_lenient;
-use crate::{get_tag_attr, regex, select_first, EhError};
-use anyhow::{bail, Context, Result};
+use crate::{EhError, get_tag_attr, regex, select_first};
+use anyhow::{Context, Result, bail};
 use serde::Serialize;
 use tl::{Parser, VDom};
 
