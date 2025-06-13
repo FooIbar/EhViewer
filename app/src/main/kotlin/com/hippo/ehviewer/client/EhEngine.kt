@@ -233,7 +233,7 @@ object EhEngine {
         .apply { galleryInfoList.fillInfo(url, true) }
         .takeUnless { it.galleryInfoList.isEmpty() } ?: GalleryListParser.emptyResult
 
-    suspend fun getGalleryDetail(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(GalleryDetailParser::parseRust).run {
+    suspend fun getGalleryDetail(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(GalleryDetailParser::parse).run {
         event?.let {
             Settings.lastDawnDays = today
             showEventNotification(it)
@@ -245,7 +245,7 @@ object EhEngine {
         }
     }
 
-    suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(GalleryDetailParser::parsePreviewsRust)
+    suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(GalleryDetailParser::parsePreviews)
 
     suspend fun getFavorites(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(FavoritesParser::parse)
         .apply { galleryInfoList.fillInfo(url) }
@@ -279,7 +279,7 @@ object EhEngine {
         // Ktor does not handle POST redirect, we need to do it manually
         // https://youtrack.jetbrains.com/issue/KTOR-478
         val location = response.headers["Location"] ?: url
-        ehRequest(location, url).fetchUsingAsByteBuffer(GalleryDetailParser::parseCommentsRust)
+        ehRequest(location, url).fetchUsingAsByteBuffer(GalleryDetailParser::parseComments)
     }
 
     suspend fun modifyFavorites(gid: Long, token: String, dstCat: Int = -1, note: String = "") {
