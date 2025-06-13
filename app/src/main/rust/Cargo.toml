@@ -21,6 +21,7 @@ tl = { git = "https://github.com/y21/tl.git", rev = "13ed128e35ce04c4f16c41cb1e3
 log = "0.4"
 android_logger = { default-features = false, version = "0.15" }
 serde_cbor = "0.11"
+serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 anyhow = "1.0"
 image = { default-features = false, version = "0.25" }

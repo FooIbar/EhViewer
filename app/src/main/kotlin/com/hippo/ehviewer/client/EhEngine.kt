@@ -245,9 +245,7 @@ object EhEngine {
         }
     }
 
-    suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsText {
-        GalleryDetailParser.parsePreviewList(this)
-    }
+    suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(GalleryDetailParser::parsePreviewsRust)
 
     suspend fun getFavorites(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(FavoritesParser::parse)
         .apply { galleryInfoList.fillInfo(url) }
@@ -426,7 +424,7 @@ object EhEngine {
             put("tags", tags)
             put("vote", vote)
         }
-    }.fetchUsingAsText(VoteTagParser::parse)
+    }.fetchUsingAsByteBuffer(VoteTagParser::parse)
 
     suspend fun getGalleryToken(gid: Long, gtoken: String, page: Int) = ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
         jsonBody {

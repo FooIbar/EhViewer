@@ -29,11 +29,10 @@ import com.hippo.ehviewer.client.EhUrl.getGalleryMultiPageViewerUrl
 import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.exception.QuotaExceededException
 import com.hippo.ehviewer.client.fetchUsingAsText
-import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePages
-import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewList
 import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.util.displayString
 import com.hippo.files.find
@@ -318,27 +317,24 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
         ?: readFromCache(galleryInfo.gid)?.takeIf { it.gid == galleryInfo.gid && it.token == galleryInfo.token }
 
-    private fun readPreviews(body: String, index: Int, spiderInfo: SpiderInfo) {
-        val previewList = parsePreviewList(body)
+    private fun readPreviews(previews: List<GalleryPreview>, index: Int, spiderInfo: SpiderInfo) {
         if (index == 0) {
-            spiderInfo.previewPerPage = previewList.size
+            spiderInfo.previewPerPage = previews.size
         } else {
-            spiderInfo.previewPerPage = previewList[0].position / index
+            spiderInfo.previewPerPage = previews[0].position / index
         }
-        previewList.forEach {
+        previews.forEach {
             if (it.pToken.isNotEmpty()) {
                 spiderInfo.pTokenMap[it.position] = it.pToken
             }
         }
     }
 
-    private suspend fun readSpiderInfoFromInternet() = ehRequest(
+    private suspend fun readSpiderInfoFromInternet() = EhEngine.getPreviewList(
         getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
-        referer,
-    ).fetchUsingAsText {
-        val pages = parsePages(this)
-        val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
-        readPreviews(this, 0, spiderInfo)
+    ).run {
+        val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, total)
+        readPreviews(previews, 0, spiderInfo)
         spiderInfo
     }
 
@@ -376,8 +372,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             false,
         )
         return runSuspendCatching {
-            ehRequest(url, referer).fetchUsingAsText {
-                readPreviews(this, previewIndex, spiderInfo)
+            EhEngine.getPreviewList(url).run {
+                readPreviews(previews, previewIndex, spiderInfo)
                 spiderInfo.pTokenMap[index]
             }
         }.getOrElse {
