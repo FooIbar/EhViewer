@@ -22,6 +22,7 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.GalleryCommentList
 import com.hippo.ehviewer.client.data.GalleryDetail
+import com.hippo.ehviewer.client.data.GalleryPreviewList
 import com.hippo.ehviewer.client.data.GalleryTag
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.PowerStatus
@@ -404,21 +405,28 @@ object GalleryDetailParser {
     }
 
     fun parseRust(body: ByteBuffer) = Either.catch {
-        unmarshalParsingAs<Result>(body, ::parseGalleryDetail)
+        unmarshalParsingAs<Result>(body, ::nativeParse)
     }.getOrElse {
         throw ParseException("Failed to parse gallery detail", it)
     }
 
     fun parseCommentsRust(body: ByteBuffer) = Either.catch {
-        unmarshalParsingAs<GalleryCommentList>(body, ::parseGalleryComments)
+        unmarshalParsingAs<GalleryCommentList>(body, ::nativeParseComments)
     }.getOrElse {
-        throw ParseException("Failed to parse gallery comments", it)
+        throw ParseException("Failed to parse comments", it)
+    }
+
+    fun parsePreviewsRust(body: ByteBuffer) = Either.catch {
+        unmarshalParsingAs<GalleryPreviewList>(body, ::nativeParsePreviews)
+    }.getOrElse {
+        throw ParseException("Failed to parse previews", it)
     }
 
     @Serializable
     @CborArray
     class Result(val detail: GalleryDetail, val event: String?)
 
-    private external fun parseGalleryDetail(body: ByteBuffer, size: Int = body.limit()): Int
-    private external fun parseGalleryComments(body: ByteBuffer, size: Int = body.limit()): Int
+    private external fun nativeParse(body: ByteBuffer, size: Int = body.limit()): Int
+    private external fun nativeParseComments(body: ByteBuffer, size: Int = body.limit()): Int
+    private external fun nativeParsePreviews(body: ByteBuffer, size: Int = body.limit()): Int
 }

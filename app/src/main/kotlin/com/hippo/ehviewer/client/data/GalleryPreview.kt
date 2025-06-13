@@ -19,6 +19,7 @@ import com.hippo.ehviewer.client.getThumbKey
 import com.hippo.ehviewer.client.getV2PreviewKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.cbor.CborArray
 
 @Serializable
 sealed interface GalleryPreview {
@@ -50,3 +51,10 @@ data class V2GalleryPreview(
 ) : GalleryPreview {
     override val imageKey get() = getV2PreviewKey(url)
 }
+
+@Serializable
+@CborArray
+class GalleryPreviewList(
+    val previews: List<GalleryPreview>,
+    val total: Int,
+)

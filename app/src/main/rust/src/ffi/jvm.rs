@@ -1,9 +1,11 @@
 #![cfg(feature = "jvm")]
 
 use crate::EhError;
+use crate::parser::api::parse_vote_tag;
 use crate::parser::archive::{parse_archive_url, parse_archives, parse_archives_with_funds};
 use crate::parser::config::parse_fav_cat;
 use crate::parser::detail::{parse_comments, parse_event_pane, parse_gallery_detail};
+use crate::parser::detail::{parse_pages, parse_preview_list};
 use crate::parser::fav::parse_fav;
 use crate::parser::home::parse_limit;
 use crate::parser::list::parse_info_list;
@@ -45,7 +47,7 @@ pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, lim
 }
 
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryDetailParser")]
-pub fn parseGalleryDetail(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+pub fn nativeParse(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     let options = ParserOptions::default().track_ids();
     parse_marshal_inplace_with_options(&mut env, buffer, limit, options, |dom, html| {
         parse_gallery_detail(dom, html).map(|detail| (detail, parse_event_pane(dom, dom.parser())))
@@ -53,11 +55,27 @@ pub fn parseGalleryDetail(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit
 }
 
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryDetailParser")]
-pub fn parseGalleryComments(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+pub fn nativeParseComments(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     let options = ParserOptions::default().track_ids();
     parse_marshal_inplace_with_options(&mut env, buffer, limit, options, |dom, _| {
         parse_comments(dom)
     })
+}
+
+#[jni_fn("com.hippo.ehviewer.client.parser.GalleryDetailParser")]
+pub fn nativeParsePreviews(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+    let options = ParserOptions::default().track_ids();
+    parse_marshal_inplace_with_options(&mut env, buffer, limit, options, |dom, _| {
+        Ok((
+            parse_preview_list(dom, dom.parser())?,
+            parse_pages(dom, dom.parser())?,
+        ))
+    })
+}
+
+#[jni_fn("com.hippo.ehviewer.client.parser.VoteTagParser")]
+pub fn nativeParse(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+    parse_raw_marshal_inplace(&mut env, buffer, limit, parse_vote_tag)
 }
 
 #[jni_fn("com.hippo.ehviewer.client.parser.EventPaneParser")]
@@ -191,15 +209,24 @@ where
     F: Fn(&mut VDom, &str) -> Result<R>,
     R: Serialize,
 {
+    parse_raw_marshal_inplace(env, str, limit, |html| {
+        let mut dom = tl::parse(html, options)?;
+        ensure!(dom.version().is_some(), EhError::Error(html.to_string()));
+        f(&mut dom, html)
+    })
+}
+
+pub fn parse_raw_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, f: F) -> i32
+where
+    F: Fn(&str) -> Result<R>,
+    R: Serialize,
+{
     jni_throwing(env, |env| {
         let buffer = deref_mut_direct_bytebuffer(env, str)?;
         let value = {
             // SAFETY: ktor client ensure html content is valid utf-8.
-            let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
-
-            let mut dom = tl::parse(html, options)?;
-            ensure!(dom.version().is_some(), EhError::Error(html.to_string()));
-            f(&mut dom, html)?
+            let body = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
+            f(body)?
         };
         let mut cursor = Cursor::new(buffer);
         serde_cbor::to_writer(&mut cursor, &value)?;
