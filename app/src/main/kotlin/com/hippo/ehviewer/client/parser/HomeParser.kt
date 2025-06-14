@@ -25,9 +25,9 @@ object HomeParser {
         ?: throw ParseException("Parse torrent key error")
 
     fun parseFunds(body: String): Funds {
-        FundsRegex.find(body)?.groupValues?.run {
-            val fundsC = ParserUtils.parseInt(get(1), 0)
-            val fundsGP = ParserUtils.parseInt(get(2), 0)
+        FundsRegex.find(body)?.run {
+            val fundsC = ParserUtils.parseInt(groupValues[1], 0)
+            val fundsGP = ParserUtils.parseInt(groupValues[2], 0)
             return Funds(fundsGP, fundsC)
         }
         throw ParseException("Parse funds error")

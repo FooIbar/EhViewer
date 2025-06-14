@@ -96,11 +96,8 @@ fn parse_uploader_and_pages(str: &str) -> (Option<String>, bool, i32) {
         regex!(r#"<a href="https://e[x-]hentai.org/uploader/.*?">(.*?)</a>|(\(Disowned\))"#)
             .captures(str)
             .map(|grp| {
-                grp.get(1)
-                    .or_else(|| grp.get(2))
-                    .unwrap()
-                    .as_str()
-                    .to_string()
+                let str = grp.get(1).or_else(|| grp.get(2)).unwrap().as_str();
+                unescape(str).as_deref().unwrap_or(str).to_string()
             });
     let pages = match regex!(r"<div>(\d+) pages</div>").captures(str) {
         None => 0,
@@ -155,7 +152,8 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
             None => ("".to_string(), None),
             Some(node) => (
                 node.inner_text(parser).trim().to_string(),
-                get_node_attr(node, "title").map(str::to_string),
+                get_node_attr(node, "title")
+                    .map(|s| unescape(s).as_deref().unwrap_or(s).to_string()),
             ),
         };
     let ir = get_first_element_by_class_name(node, parser, "ir")?
@@ -168,8 +166,11 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
             None => (None, false, 0),
             Some(node) => parse_uploader_and_pages(&node.get(parser)?.inner_html(parser)),
         };
-    let favorite_note = get_element_by_id(node, parser, format!("favnote_{gid}").as_str())
-        .map(|e| e.inner_text(parser).to_string());
+    let favorite_note =
+        get_element_by_id(node, parser, format!("favnote_{gid}").as_str()).map(|e| {
+            let str = e.inner_text(parser);
+            unescape(&str).as_deref().unwrap_or(&str).to_string()
+        });
     Some(BaseGalleryInfo {
         gid,
         token,

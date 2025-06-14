@@ -551,7 +551,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         val archiveResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                 with(galleryDetail) {
-                    EhEngine.getArchiveList(archiveUrl!!, gid, token)
+                    EhEngine.getArchiveList(gid, token)
                 }
             }
         }
@@ -598,7 +598,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         val torrentResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                 parZip(
-                    { EhEngine.getTorrentList(galleryDetail.torrentUrl!!, galleryDetail.gid, galleryDetail.token) },
+                    { EhEngine.getTorrentList(galleryDetail.gid, galleryDetail.token) },
                     { EhEngine.getTorrentKey() },
                     { list, key -> list to key },
                 )

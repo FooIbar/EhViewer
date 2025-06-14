@@ -14,8 +14,6 @@ pub struct GalleryDetail {
     pub apiUid: i64,
     pub apiKey: Option<String>,
     pub torrentCount: i32,
-    pub torrentUrl: Option<String>,
-    pub archiveUrl: Option<String>,
     pub parent: Option<String>,
     pub newerVersions: Vec<BaseGalleryInfo>,
     pub visible: Option<String>,
@@ -148,22 +146,16 @@ fn parse_detail(gd: &mut GalleryDetail, dom: &VDom, parser: &Parser, body: &str)
     gd.apiKey = Some(caps[4].to_string());
     gd.galleryInfo.rating = caps[5].parse().ok()?;
 
-    let torrent_regex = regex!(
-        r#"<a[^<>]*onclick="return popUp\('([^']+)'[^)]+\)">Torrent Download \((\d+)\)</a>"#
-    );
-    let caps = torrent_regex.captures(body)?;
-    gd.torrentUrl = unescape(&caps[1]).ok().map(|s| s.to_string());
-    gd.torrentCount = caps[2].parse().ok()?;
-
-    let archive_regex =
-        regex!(r#"<a[^<>]*onclick="return popUp\('([^']+)'[^)]+\)">Archive Download</a>"#);
-    let caps = archive_regex.captures(body)?;
-    gd.archiveUrl = unescape(&caps[1]).ok().map(|s| s.to_string());
+    let regex = regex!(r#"[^(]+\(([^)]+)"#);
+    let gd5 = dom.get_element_by_id("gd5")?.get(parser)?.as_tag()?;
+    let node = gd5.query_selector(parser, "a[onclick]")?.nth(1)?;
+    let text = node.get(parser)?.inner_text(parser);
+    let caps = regex.captures(&text)?;
+    gd.torrentCount = caps[1].parse().ok()?;
 
     let gd1 = dom.get_element_by_id("gd1")?.get(parser)?.as_tag()?;
     let style = get_tag_attr(get_first_child(gd1, parser)?, "style")?;
-    let cover_regex = regex!(r#"[^(]+\(([^)]+)"#);
-    let caps = cover_regex.captures(style)?;
+    let caps = regex.captures(style)?;
     gd.galleryInfo.thumbKey = get_thumb_key(&caps[1]);
 
     let title = dom.get_element_by_id("gn")?.get(parser)?.inner_text(parser);

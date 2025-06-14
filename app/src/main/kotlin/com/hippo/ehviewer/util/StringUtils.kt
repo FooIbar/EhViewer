@@ -1,15 +1,16 @@
 package com.hippo.ehviewer.util
 
-import org.jsoup.parser.Parser
+private val EntityRegex = "&(?:amp|lt|gt|quot|#039);".toRegex()
+private val EntityMap = mapOf(
+    "&amp;" to "&",
+    "&lt;" to "<",
+    "&gt;" to ">",
+    "&quot;" to "\"",
+    "&#039;" to "'", // HTML uses &#039; instead of &apos;
+)
 
-fun String.unescapeXml(): String = Parser.unescapeEntities(this, true)
-
-inline infix fun <T> CharSequence.trimAnd(block: CharSequence.() -> T): T = block(trim())
+fun String.unescapeXml() = replace(EntityRegex) { EntityMap[it.value]!! }
 
 fun String.toIntOrDefault(defaultValue: Int): Int = toIntOrNull() ?: defaultValue
-
-fun String.toLongOrDefault(defaultValue: Long): Long = toLongOrNull() ?: defaultValue
-
-fun String.toFloatOrDefault(defaultValue: Float): Float = toFloatOrNull() ?: defaultValue
 
 fun String?.containsIgnoreCase(other: String) = this?.contains(other, true) == true

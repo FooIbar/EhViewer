@@ -95,7 +95,6 @@
 - [Coil](https://coil-kt.github.io/coil/)
 - [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
 - [libarchive](https://www.libarchive.org/)
-- [jsoup](https://jsoup.org/)
 
 # 許可證書
 

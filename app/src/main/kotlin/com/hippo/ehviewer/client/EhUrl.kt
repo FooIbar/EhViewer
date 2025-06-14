@@ -125,7 +125,12 @@ object EhUrl {
         addQueryParameter("act", "addfav")
     }.buildString()
 
-    fun getDownloadArchive(gid: Long, token: String) = ehUrl("archiver.php") {
+    fun getArchiveUrl(gid: Long, token: String) = ehUrl("archiver.php") {
+        addQueryParameter("gid", "$gid")
+        addQueryParameter("token", token)
+    }.buildString()
+
+    fun getTorrentUrl(gid: Long, token: String) = ehUrl("gallerytorrents.php") {
         addQueryParameter("gid", "$gid")
         addQueryParameter("token", token)
     }.buildString()

@@ -178,7 +178,8 @@ object EhEngine {
         location.takeIf { "bounce_login" !in it } ?: throw NotLoggedInException()
     }
 
-    suspend fun getTorrentList(url: String, gid: Long, token: String): TorrentResult {
+    suspend fun getTorrentList(gid: Long, token: String): TorrentResult {
+        val url = EhUrl.getTorrentUrl(gid, token)
         val referer = EhUrl.getGalleryDetailUrl(gid, token)
         return ehRequest(url, referer).fetchUsingAsByteBuffer(TorrentParser::parse)
     }
@@ -188,7 +189,8 @@ object EhEngine {
         "${id}x$key"
     }
 
-    suspend fun getArchiveList(url: String, gid: Long, token: String): ArchiveParser.Result {
+    suspend fun getArchiveList(gid: Long, token: String): ArchiveParser.Result {
+        val url = EhUrl.getArchiveUrl(gid, token)
         val funds = if (EhUtils.isExHentai) getFunds() else null
         return ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
             .fetchUsingAsByteBuffer(ArchiveParser::parse.partially2(funds))
@@ -304,7 +306,7 @@ object EhEngine {
         .fetchUsingAsText(FavoritesParser::parseNote)
 
     suspend fun downloadArchive(gid: Long, token: String, res: String, isHath: Boolean): String? {
-        val url = EhUrl.getDownloadArchive(gid, token)
+        val url = EhUrl.getArchiveUrl(gid, token)
         val referer = EhUrl.getGalleryDetailUrl(gid, token)
         val request = ehRequest(url, referer, EhUrl.origin) {
             formBody {

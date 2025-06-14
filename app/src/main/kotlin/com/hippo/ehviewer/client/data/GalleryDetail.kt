@@ -44,8 +44,6 @@ data class GalleryDetail(
     var apiUid: Long = -1L,
     var apiKey: String? = null,
     var torrentCount: Int = 0,
-    var torrentUrl: String? = null,
-    var archiveUrl: String? = null,
     var parent: String? = null,
     var newerVersions: List<BaseGalleryInfo> = emptyList(),
     var visible: String? = null,

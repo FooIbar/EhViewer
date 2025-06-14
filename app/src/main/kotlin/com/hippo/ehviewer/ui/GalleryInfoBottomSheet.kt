@@ -58,7 +58,7 @@ private fun GalleryDetail.content() = arrayOf(
     R.string.key_rating_count to ratingCount.toString(),
     R.string.key_rating to rating.toString(),
     R.string.key_torrents to torrentCount.toString(),
-    R.string.key_torrent_url to torrentUrl,
+    R.string.key_torrent_url to EhUrl.getTorrentUrl(gid, token),
     R.string.favorite_name to favoriteName,
 )
 
