@@ -1,5 +1,6 @@
 use crate::{EhError, get_node_handle_attr, get_tag_attr, select_first};
 use anyhow::{Context, Result};
+use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::{Parser, VDom};
 
@@ -26,7 +27,8 @@ pub fn parse_profile(dom: &VDom, parser: &Parser) -> Result<Profile> {
         .next()
         .and_then(|n| {
             let mut iter = n.get(parser)?.as_tag()?.query_selector(parser, "div")?;
-            let display_name = iter.next()?.get(parser)?.inner_text(parser).to_string();
+            let str = iter.next()?.get(parser)?.inner_text(parser);
+            let display_name = unescape(&str).as_deref().unwrap_or(&str).to_string();
             let avatar = iter.next().and_then(|n| {
                 let img = select_first(n.get(parser)?.as_tag()?, parser, "img")?;
                 get_tag_attr(img, "src").map(|src| {
