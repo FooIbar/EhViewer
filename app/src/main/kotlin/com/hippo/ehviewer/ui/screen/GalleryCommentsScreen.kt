@@ -315,7 +315,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                     isRefreshing = false
                 }
             },
-            modifier = Modifier.fillMaxSize().imePadding().padding(top = paddingValues.calculateTopPadding()),
+            modifier = Modifier.imePadding().padding(top = paddingValues.calculateTopPadding()),
             state = refreshState,
             indicator = {
                 PullToRefreshDefaults.LoadingIndicator(
@@ -342,7 +342,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
             val layoutDirection = LocalLayoutDirection.current
             val lazyListState = rememberLazyListState()
             LazyColumn(
-                modifier = Modifier.padding(horizontal = keylineMargin),
+                modifier = Modifier.fillMaxSize().padding(horizontal = keylineMargin),
                 state = lazyListState,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(

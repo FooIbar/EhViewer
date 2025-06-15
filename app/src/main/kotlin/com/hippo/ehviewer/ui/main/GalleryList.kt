@@ -101,7 +101,7 @@ fun GalleryList(
     var isRefreshing by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
     Box(
-        modifier = modifier.fillMaxSize().pullToRefresh(
+        modifier = modifier.pullToRefresh(
             isRefreshing = isRefreshing,
             state = refreshState,
             enabled = data.loadState.refresh is LoadState.NotLoading,
@@ -129,7 +129,7 @@ fun GalleryList(
             val columnWidth by collectDetailSizeAsState()
             FastScrollLazyVerticalGrid(
                 columns = GridCells.Adaptive(columnWidth),
-                modifier = contentModifier,
+                modifier = contentModifier.fillMaxSize(),
                 state = detailListState,
                 contentPadding = contentPadding + PaddingValues(marginH, marginV),
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
@@ -159,7 +159,7 @@ fun GalleryList(
             val thumbColumns by Settings.thumbColumns.collectAsState()
             FastScrollLazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(thumbColumns),
-                modifier = contentModifier,
+                modifier = contentModifier.fillMaxSize(),
                 state = thumbListState,
                 contentPadding = contentPadding + PaddingValues(marginH, marginV),
                 verticalItemSpacing = gridInterval,
