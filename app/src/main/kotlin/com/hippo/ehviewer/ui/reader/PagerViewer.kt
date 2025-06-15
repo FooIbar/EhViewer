@@ -235,6 +235,7 @@ private fun PageContainer(
                 onLongClick = onLongClick,
                 onDoubleClick = DoubleTapZoom,
             ),
+            pagerState = pagerState,
         )
     }
 }
