@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.reader
 
+import android.graphics.drawable.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -57,6 +60,7 @@ fun PagerItem(
     contentScale: ContentScale,
     modifier: Modifier = Modifier,
     contentModifier: Modifier = Modifier,
+    pagerState: PagerState? = null,
 ) {
     LaunchedEffect(Unit) {
         pageLoader.request(page.index)
@@ -98,6 +102,14 @@ fun PagerItem(
                 }
             }
             painter?.let { painter ->
+                val drawable = (painter as? DrawablePainter)?.drawable
+                if (pagerState != null && drawable is Animatable) {
+                    LaunchedEffect(drawable) {
+                        snapshotFlow { pagerState.currentPage == page.index }.collect {
+                            if (it) drawable.start() else drawable.stop()
+                        }
+                    }
+                }
                 val grayScale by Settings.grayScale.collectAsState()
                 val invert by Settings.invertedColors.collectAsState()
                 Image(
