@@ -5,7 +5,7 @@ use anyhow::{Context, Result, bail};
 use chrono::naive::NaiveDateTime;
 use quick_xml::escape::unescape;
 use serde::Serialize;
-use tl::{Node, NodeHandle, Parser, VDom};
+use tl::{Bytes, Node, NodeHandle, Parser, VDom};
 
 #[derive(Serialize, Debug, Default)]
 #[allow(non_snake_case)]
@@ -303,15 +303,16 @@ pub fn parse_tag_groups(
                     let power = match tag.attributes().class()?.try_as_utf8_str()? {
                         "gtw" => PowerStatus::Weak,
                         "gtl" => PowerStatus::Active,
-                        _ => PowerStatus::Solid,
+                        "gt" => PowerStatus::Solid,
+                        _ => return None,
                     };
                     let vote = match get_first_child(tag, parser)?
                         .attributes()
-                        .class()?
-                        .try_as_utf8_str()?
+                        .class()
+                        .and_then(Bytes::try_as_utf8_str)
                     {
-                        "tup" => VoteStatus::Up,
-                        "tdn" => VoteStatus::Down,
+                        Some("tup") => VoteStatus::Up,
+                        Some("tdn") => VoteStatus::Down,
                         _ => VoteStatus::None,
                     };
                     Some(GalleryTag { text, power, vote })
@@ -390,11 +391,12 @@ pub fn parse_comments(dom: &mut VDom) -> Result<GalleryCommentList> {
                     .for_each(|tag| match tag.inner_text(parser).as_ref() {
                         "Vote+" => {
                             c.voteUpAble = true;
-                            c.voteUpEd = tag.attributes().contains("style");
+                            c.voteUpEd = get_tag_attr(tag, "style").is_some_and(|s| !s.is_empty());
                         }
                         "Vote-" => {
                             c.voteDownAble = true;
-                            c.voteDownEd = tag.attributes().contains("style");
+                            c.voteDownEd =
+                                get_tag_attr(tag, "style").is_some_and(|s| !s.is_empty());
                         }
                         "Edit" => c.editable = true,
                         _ => {}
