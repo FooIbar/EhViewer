@@ -132,7 +132,7 @@ object EhUrl {
 
     fun getTorrentUrl(gid: Long, token: String) = ehUrl("gallerytorrents.php") {
         addQueryParameter("gid", "$gid")
-        addQueryParameter("token", token)
+        addQueryParameter("t", token)
     }.buildString()
 
     fun getTagDefinitionUrl(tag: String) = "https://ehwiki.org/wiki/" + tag.replace(' ', '_')
