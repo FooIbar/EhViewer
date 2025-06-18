@@ -1,6 +1,7 @@
 #![cfg(feature = "jvm")]
 
 use crate::EhError;
+use crate::img::webp::{create_decoder, get_image_info, pack_image_info};
 use crate::parser::api::parse_vote_tag;
 use crate::parser::archive::{parse_archive_url, parse_archives, parse_archives_with_funds};
 use crate::parser::config::parse_fav_cat;
@@ -14,9 +15,10 @@ use crate::parser::torrent::parse_torrent_list;
 use android_logger::Config;
 use anyhow::{Context, Result, ensure};
 use jni::objects::{JByteBuffer, JClass};
-use jni::sys::{JNI_TRUE, JNI_VERSION_1_6, jboolean, jint, jobject};
+use jni::sys::{JNI_TRUE, JNI_VERSION_1_6, jboolean, jint, jlong, jobject};
 use jni::{JNIEnv, JavaVM};
 use jni_fn::jni_fn;
+use libwebp_sys::{WebPAnimDecoder, WebPAnimDecoderDelete, WebPAnimDecoderReset};
 use log::LevelFilter;
 use serde::Serialize;
 use std::ffi::c_void;
@@ -137,6 +139,41 @@ pub fn parseProfile(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit:
     })
 }
 
+#[jni_fn("com.hippo.ehviewer.coil.AnimatedWebPDrawableKt")]
+pub fn nativeCreateDecoder(mut env: JNIEnv, _: JClass, buffer: JByteBuffer) -> jlong {
+    jni_throwing(&mut env, |env| {
+        let buffer = deref_mut_direct_bytebuffer(env, buffer)?;
+        Ok(create_decoder(buffer) as i64)
+    })
+}
+
+#[jni_fn("com.hippo.ehviewer.coil.AnimatedWebPDrawableKt")]
+pub fn nativeGetImageInfo(mut env: JNIEnv, _: JClass, decoder: jlong) -> jlong {
+    jni_throwing(&mut env, |_| {
+        let dec = decoder as *const WebPAnimDecoder;
+        let info = unsafe { get_image_info(dec) };
+        Ok(pack_image_info(info) as i64)
+    })
+}
+
+#[jni_fn("com.hippo.ehviewer.coil.AnimatedWebPDrawableKt")]
+pub fn nativeResetDecoder(mut env: JNIEnv, _: JClass, decoder: jlong) {
+    jni_throwing(&mut env, |_| {
+        let dec = decoder as *mut WebPAnimDecoder;
+        unsafe { WebPAnimDecoderReset(dec) };
+        Ok(())
+    })
+}
+
+#[jni_fn("com.hippo.ehviewer.coil.AnimatedWebPDrawableKt")]
+pub fn nativeDestroyDecoder(mut env: JNIEnv, _: JClass, decoder: jlong) {
+    jni_throwing(&mut env, |_| {
+        let dec = decoder as *mut WebPAnimDecoder;
+        unsafe { WebPAnimDecoderDelete(dec) };
+        Ok(())
+    })
+}
+
 fn deref_mut_direct_bytebuffer<'local>(
     env: &JNIEnv,
     buffer: JByteBuffer<'local>,
@@ -165,6 +202,12 @@ impl ThrowingHasDefault for jobject {
 }
 
 impl ThrowingHasDefault for i32 {
+    fn default() -> Self {
+        0
+    }
+}
+
+impl ThrowingHasDefault for i64 {
     fn default() -> Self {
         0
     }

@@ -27,6 +27,7 @@ anyhow = "1.0"
 image = { default-features = false, version = "0.25" }
 rxing = { default-features = false, version = "0.7" }
 ndk = { version = "0.9", optional = true }
+libwebp-sys2 = { git = "https://github.com/FooIbar/libwebp-sys2-rs.git", features = ["1_5", "demux", "extern-types"] }
 
 [dev-dependencies]
 reqwest = "0.12"

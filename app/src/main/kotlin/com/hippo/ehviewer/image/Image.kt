@@ -37,6 +37,7 @@ import coil3.size.Precision
 import coil3.size.Size
 import coil3.size.SizeResolver
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.coil.AnimatedWebPDrawable
 import com.hippo.ehviewer.coil.BitmapImageWithExtraInfo
 import com.hippo.ehviewer.coil.detectQrCode
 import com.hippo.ehviewer.coil.hardwareThreshold
@@ -79,7 +80,10 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
 
     private fun recycle() {
         when (val image = innerImage!!) {
-            is DrawableImage -> src.close()
+            is DrawableImage -> {
+                (image.drawable as? AnimatedWebPDrawable)?.dispose()
+                src.close()
+            }
             is BitmapImage -> image.bitmap.recycle()
         }
         innerImage = null
