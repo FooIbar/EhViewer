@@ -109,6 +109,26 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(libarchive)
 include_directories(${libarchive_SOURCE_DIR}/libarchive)
 
+set(LIBWEBP_PATCH ${CMAKE_CURRENT_LIST_DIR}/0001-Disable-runtime-detection-of-NEON-support.patch)
+FetchContent_Declare(
+        libwebp
+        GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
+        GIT_TAG v1.5.0
+        GIT_SHALLOW 1
+        PATCH_COMMAND git apply --check -R ${LIBWEBP_PATCH} || git apply ${LIBWEBP_PATCH}
+)
+
+option(WEBP_BUILD_ANIM_UTILS OFF)
+option(WEBP_BUILD_CWEBP OFF)
+option(WEBP_BUILD_DWEBP OFF)
+option(WEBP_BUILD_VWEBP OFF)
+option(WEBP_BUILD_WEBPINFO OFF)
+option(WEBP_BUILD_LIBWEBPMUX OFF)
+option(WEBP_BUILD_EXTRAS OFF)
+option(WEBP_ENABLE_SWAP_16BIT_CSP ON)
+
+FetchContent_MakeAvailable(libwebp)
+
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
@@ -123,6 +143,7 @@ corrosion_import_crate(
         FEATURES $<IF:$<VERSION_GREATER_EQUAL:${ANDROID_NATIVE_API_LEVEL},26>,android-26,android>
         FLAGS $<$<NOT:$<CONFIG:Debug>>:-Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort>
 )
+corrosion_link_libraries(ehviewer_rust webp)
 corrosion_add_target_local_rustflags(ehviewer_rust "-Clink-args=-Wl,-z,max-page-size=16384")
 
 # Build and link our app's native lib

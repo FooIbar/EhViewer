@@ -17,7 +17,7 @@ use jni::objects::{JByteBuffer, JClass};
 use jni::sys::{JNI_TRUE, JNI_VERSION_1_6, jboolean, jint, jobject};
 use jni::{JNIEnv, JavaVM};
 use jni_fn::jni_fn;
-use log::LevelFilter;
+use log::{LevelFilter, debug};
 use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
@@ -238,5 +238,7 @@ where
 #[allow(non_snake_case)]
 pub extern "system" fn JNI_OnLoad(_: JavaVM, _: *mut c_void) -> jint {
     android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
+    let libwebp_version = unsafe { libwebp_sys::WebPGetDecoderVersion() };
+    debug!("libwebp version: {libwebp_version:#08x}");
     JNI_VERSION_1_6
 }

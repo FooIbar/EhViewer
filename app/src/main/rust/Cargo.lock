@@ -273,6 +273,7 @@ dependencies = [
  "image",
  "jni",
  "jni_fn",
+ "libwebp-sys2",
  "log",
  "ndk",
  "quick-xml",
@@ -876,6 +877,18 @@ name = "libc"
 version = "0.2.173"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8cfeafaffdbc32176b64fb251369d52ea9f0a8fbc6f8759edffef7b525d64bb"
+
+[[package]]
+name = "libwebp-sys2"
+version = "0.2.0"
+source = "git+https://github.com/FooIbar/libwebp-sys2-rs.git#138c7114eb7cc9c3d0a6c5d074d1dda30550b765"
+dependencies = [
+ "cc",
+ "cfg-if",
+ "libc",
+ "pkg-config",
+ "vcpkg",
+]
 
 [[package]]
 name = "linux-raw-sys"
