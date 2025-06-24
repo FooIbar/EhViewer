@@ -38,7 +38,6 @@ import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
 import com.hippo.ehviewer.client.EhTagDatabase
-import com.hippo.ehviewer.coil.AnimatedWebPDecoder
 import com.hippo.ehviewer.coil.CropBorderInterceptor
 import com.hippo.ehviewer.coil.DetectBorderInterceptor
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
@@ -189,7 +188,6 @@ class EhApplication :
             add(DetectBorderInterceptor)
             add(QrCodeInterceptor)
             add(MapExtraInfoInterceptor)
-            add(AnimatedWebPDecoder.Factory())
             if (isAtLeastP) {
                 add(AnimatedImageDecoder.Factory(false))
             } else {

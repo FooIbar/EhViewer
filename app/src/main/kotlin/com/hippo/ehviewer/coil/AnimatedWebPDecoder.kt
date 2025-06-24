@@ -19,7 +19,7 @@ import okio.FileSystem
 class AnimatedWebPDecoder(private val source: ByteBuffer) : Decoder {
     override suspend fun decode() = DecodeResult(AnimatedWebPDrawable(source).asImage(), false)
 
-    class Factory() : Decoder.Factory {
+    object Factory : Decoder.Factory {
         override fun create(
             result: SourceFetchResult,
             options: Options,

@@ -37,6 +37,7 @@ import coil3.size.Precision
 import coil3.size.Size
 import coil3.size.SizeResolver
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.coil.AnimatedWebPDecoder
 import com.hippo.ehviewer.coil.AnimatedWebPDrawable
 import com.hippo.ehviewer.coil.BitmapImageWithExtraInfo
 import com.hippo.ehviewer.coil.detectQrCode
@@ -105,6 +106,9 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                     maybeCropBorder(Settings.cropBorder.value)
                     detectQrCode(checkExtraneousAds)
                     memoryCachePolicy(CachePolicy.DISABLED)
+                    if (Settings.webpDecoder.value) {
+                        decoderFactory(AnimatedWebPDecoder.Factory)
+                    }
                 }
             }
             return when (val result = request.execute()) {
