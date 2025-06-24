@@ -29,8 +29,7 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
 
     private var decodeJob: Job? = null
     private var loopsCompleted = 0
-    private var timeMark = TimeSource.Monotonic.markNow()
-    private var frameDuration = 0
+    private var frameDuration: Int
     private var currentFrame: Frame
     private var nextFrame: Frame
 
@@ -41,38 +40,41 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
         height = (packed shr 16 and 0xFFFFFF).toInt()
         loopCount = (packed and 0xFFFF).toInt()
         val bitmap = createBitmap(width, height)
-        val timestamp = nativeDecodeNextFrame(decoder, bitmap)
+        val timestamp = nativeDecodeNextFrame(decoder, false, bitmap)
         check(timestamp != 0) {
             nativeDestroyDecoder(decoder)
             "Failed to decode first frame"
         }
-        currentFrame = Frame(bitmap, 0)
-        nextFrame = Frame(createBitmap(width, height), timestamp)
+        frameDuration = timestamp
+        currentFrame = Frame(bitmap, timestamp)
+        nextFrame = Frame(createBitmap(width, height), 0)
     }
 
     override fun getIntrinsicWidth() = width
 
     override fun getIntrinsicHeight() = height
 
-    private fun checkDecodeResult() {
+    private fun decodeNextFrame(reset: Boolean) {
+        nextFrame.timestamp = nativeDecodeNextFrame(decoder, reset, nextFrame.bitmap)
         if (nextFrame.timestamp == 0) {
             throw CancellationException("Failed to decode next frame")
         }
+        nextFrame.bitmap.prepareToDraw()
     }
 
     override fun draw(canvas: Canvas) {
         if (decodeJob?.isCompleted == true && nextFrame.timestamp != 0) {
-            timeMark = TimeSource.Monotonic.markNow()
-            frameDuration = nextFrame.timestamp - currentFrame.timestamp
+            val timeMark = TimeSource.Monotonic.markNow()
+            frameDuration = if (nextFrame.timestamp > currentFrame.timestamp) {
+                nextFrame.timestamp - currentFrame.timestamp
+            } else {
+                loopsCompleted++
+                nextFrame.timestamp
+            }
             currentFrame = nextFrame.also { nextFrame = currentFrame }
             decodeJob = if (loopCount == 0 || loopsCompleted < loopCount) {
                 decodeScope.launch {
-                    nextFrame.timestamp = nativeDecodeNextFrame(decoder, nextFrame.bitmap)
-                    checkDecodeResult()
-                    if (nextFrame.timestamp < currentFrame.timestamp) {
-                        currentFrame.timestamp = 0
-                        loopsCompleted++
-                    }
+                    decodeNextFrame(false)
                     delay(frameDuration - timeMark.elapsedNow().inWholeMilliseconds)
                     invalidateSelf()
                 }
@@ -108,14 +110,11 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
 
     override fun start() {
         if (decodeJob == null) {
-            timeMark = TimeSource.Monotonic.markNow()
-            frameDuration = nextFrame.timestamp - currentFrame.timestamp
-            currentFrame.timestamp = nextFrame.timestamp
+            val timeMark = TimeSource.Monotonic.markNow()
             loopsCompleted = 0
             decodeJob = decodeScope.launch {
-                if (currentFrame.timestamp != frameDuration) nativeResetDecoder(decoder)
-                nextFrame.timestamp = nativeDecodeNextFrame(decoder, nextFrame.bitmap)
-                checkDecodeResult()
+                val isFirstFrame = currentFrame.timestamp == frameDuration
+                decodeNextFrame(!isFirstFrame)
                 delay(frameDuration - timeMark.elapsedNow().inWholeMilliseconds)
                 invalidateSelf()
             }
@@ -136,6 +135,5 @@ private class Frame(val bitmap: Bitmap, var timestamp: Int)
 
 private external fun nativeCreateDecoder(source: ByteBuffer): Long
 private external fun nativeGetImageInfo(decoder: Long): Long
-private external fun nativeDecodeNextFrame(decoder: Long, bitmap: Bitmap): Int
+private external fun nativeDecodeNextFrame(decoder: Long, reset: Boolean, bitmap: Bitmap): Int
 private external fun nativeDestroyDecoder(decoder: Long)
-private external fun nativeResetDecoder(decoder: Long)

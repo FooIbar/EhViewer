@@ -33,10 +33,16 @@ pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
 }
 
 #[jni_fn("com.hippo.ehviewer.coil.AnimatedWebPDrawableKt")]
-pub fn nativeDecodeNextFrame(mut env: JNIEnv, _: JClass, decoder: jlong, bitmap: jobject) -> jint {
+pub fn nativeDecodeNextFrame(
+    mut env: JNIEnv,
+    _: JClass,
+    decoder: jlong,
+    reset: jboolean,
+    bitmap: jobject,
+) -> jint {
     jni_throwing(&mut env, |env| {
         let dec = decoder as *mut WebPAnimDecoder;
-        let (buf, timestamp) = unsafe { decode_next_frame(dec) };
+        let (buf, timestamp) = unsafe { decode_next_frame(dec, reset != 0) };
         if !buf.is_null() {
             let info = unsafe { get_image_info(dec) };
             let handle = unsafe { Bitmap::from_jni(env.get_raw(), bitmap) };

@@ -18,7 +18,7 @@ use jni::objects::{JByteBuffer, JClass};
 use jni::sys::{JNI_TRUE, JNI_VERSION_1_6, jboolean, jint, jlong, jobject};
 use jni::{JNIEnv, JavaVM};
 use jni_fn::jni_fn;
-use libwebp_sys::{WebPAnimDecoder, WebPAnimDecoderDelete, WebPAnimDecoderReset};
+use libwebp_sys::{WebPAnimDecoder, WebPAnimDecoderDelete};
 use log::LevelFilter;
 use serde::Serialize;
 use std::ffi::c_void;
@@ -153,15 +153,6 @@ pub fn nativeGetImageInfo(mut env: JNIEnv, _: JClass, decoder: jlong) -> jlong {
         let dec = decoder as *const WebPAnimDecoder;
         let info = unsafe { get_image_info(dec) };
         Ok(pack_image_info(info) as i64)
-    })
-}
-
-#[jni_fn("com.hippo.ehviewer.coil.AnimatedWebPDrawableKt")]
-pub fn nativeResetDecoder(mut env: JNIEnv, _: JClass, decoder: jlong) {
-    jni_throwing(&mut env, |_| {
-        let dec = decoder as *mut WebPAnimDecoder;
-        unsafe { WebPAnimDecoderReset(dec) };
-        Ok(())
     })
 }
 
