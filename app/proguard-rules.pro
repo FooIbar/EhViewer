@@ -11,6 +11,10 @@
     public static final ** CREATOR;
 }
 
+-keepclassmembers,allowobfuscation class com.hippo.ehviewer.coil.AnimatedWebPDrawable {
+    java.nio.ByteBuffer source;
+}
+
 # Ktor logger
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 

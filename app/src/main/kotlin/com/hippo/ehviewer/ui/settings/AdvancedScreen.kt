@@ -223,6 +223,12 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                     }
                 }
             }
+            var webpDecoder by Settings.webpDecoder.asMutableState()
+            SwitchPref(
+                checked = webpDecoder,
+                onMutate = { webpDecoder = !webpDecoder },
+                title = "Experimental animated WebP decoder",
+            )
             if (isAtLeastO) {
                 IntSliderPreference(
                     maxValue = 16384,
