@@ -29,7 +29,7 @@ import com.hippo.ehviewer.util.requestPermission
 import com.hippo.files.toOkioPath
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.snackbar
 import moe.tarsin.string

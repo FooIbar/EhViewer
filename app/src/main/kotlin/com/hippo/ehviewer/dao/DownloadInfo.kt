@@ -10,7 +10,7 @@ import androidx.room.Relation
 import com.hippo.ehviewer.client.data.AbstractDownloadInfo
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 @Entity(
     tableName = "DOWNLOADS",

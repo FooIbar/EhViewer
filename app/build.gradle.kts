@@ -272,6 +272,7 @@ kotlin {
             "kotlin.ExperimentalStdlibApi",
             "kotlin.concurrent.atomics.ExperimentalAtomicApi",
             "kotlin.contracts.ExperimentalContracts",
+            "kotlin.time.ExperimentalTime",
             "kotlinx.coroutines.ExperimentalCoroutinesApi",
             "kotlinx.coroutines.FlowPreview",
             "kotlinx.serialization.ExperimentalSerializationApi",
