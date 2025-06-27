@@ -7,14 +7,14 @@ import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
+import android.os.SystemClock
 import androidx.core.graphics.createBitmap
 import java.nio.ByteBuffer
-import kotlin.time.TimeSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 
 // Hold a reference to the buffer as it's used by the decoder
@@ -29,7 +29,7 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
 
     private var decodeJob: Job? = null
     private var loopsCompleted = 0
-    private var frameDuration: Int
+    private var currentTime = 0L
     private var currentFrame: Frame
     private var nextFrame: Frame
 
@@ -45,7 +45,6 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
             nativeDestroyDecoder(decoder)
             "Failed to decode first frame"
         }
-        frameDuration = timestamp
         currentFrame = Frame(bitmap, timestamp)
         nextFrame = Frame(createBitmap(width, height), 0)
     }
@@ -54,29 +53,33 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
 
     override fun getIntrinsicHeight() = height
 
-    private fun decodeNextFrame(reset: Boolean) {
-        nextFrame.timestamp = nativeDecodeNextFrame(decoder, reset, nextFrame.bitmap)
-        if (nextFrame.timestamp == 0) {
+    private val runnable = Runnable {
+        currentTime = SystemClock.uptimeMillis()
+        invalidateSelf()
+    }
+
+    private fun CoroutineScope.decodeNextFrame(reset: Boolean) {
+        val timestamp = nativeDecodeNextFrame(decoder, reset, nextFrame.bitmap)
+        ensureActive()
+        if (timestamp == 0) {
+            decodeJob = null
             throw CancellationException("Failed to decode next frame")
+        } else if (timestamp <= currentFrame.timestamp) {
+            if (reset) loopsCompleted = 0 else loopsCompleted++
+            currentFrame.timestamp = 0
         }
+        nextFrame.timestamp = timestamp
         nextFrame.bitmap.prepareToDraw()
     }
 
     override fun draw(canvas: Canvas) {
-        if (decodeJob?.isCompleted == true && nextFrame.timestamp != 0) {
-            val timeMark = TimeSource.Monotonic.markNow()
-            frameDuration = if (nextFrame.timestamp > currentFrame.timestamp) {
-                nextFrame.timestamp - currentFrame.timestamp
-            } else {
-                loopsCompleted++
-                nextFrame.timestamp
-            }
-            currentFrame = nextFrame.also { nextFrame = currentFrame }
+        if (decodeJob?.isCompleted == true) {
             decodeJob = if (loopCount == 0 || loopsCompleted < loopCount) {
+                val duration = nextFrame.timestamp - currentFrame.timestamp
+                currentFrame = nextFrame.also { nextFrame = currentFrame }
                 decodeScope.launch {
                     decodeNextFrame(false)
-                    delay(frameDuration - timeMark.elapsedNow().inWholeMilliseconds)
-                    invalidateSelf()
+                    scheduleSelf(runnable, currentTime + duration)
                 }
             } else {
                 null
@@ -110,13 +113,9 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
 
     override fun start() {
         if (decodeJob == null) {
-            val timeMark = TimeSource.Monotonic.markNow()
-            loopsCompleted = 0
             decodeJob = decodeScope.launch {
-                val isFirstFrame = currentFrame.timestamp == frameDuration
-                decodeNextFrame(!isFirstFrame)
-                delay(frameDuration - timeMark.elapsedNow().inWholeMilliseconds)
-                invalidateSelf()
+                decodeNextFrame(true)
+                runnable.run()
             }
         }
     }
@@ -124,6 +123,7 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
     override fun stop() {
         decodeJob?.cancel()
         decodeJob = null
+        unscheduleSelf(runnable)
     }
 
     fun dispose() {
