@@ -9,6 +9,7 @@ import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.os.SystemClock
 import androidx.core.graphics.createBitmap
+import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +30,7 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
 
     private var decodeJob: Job? = null
     private var loopsCompleted = 0
-    private var currentTime = 0L
+    private var timeToShowNextFrame = 0L
     private var currentFrame: Frame
     private var nextFrame: Frame
 
@@ -54,33 +55,41 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
     override fun getIntrinsicHeight() = height
 
     private val runnable = Runnable {
-        currentTime = SystemClock.uptimeMillis()
+        timeToShowNextFrame = SystemClock.uptimeMillis() + nextFrame.timestamp - currentFrame.timestamp
         invalidateSelf()
     }
 
-    private fun CoroutineScope.decodeNextFrame(reset: Boolean) {
+    private fun decodeNextFrame(reset: Boolean) = decodeScope.launch {
         val timestamp = nativeDecodeNextFrame(decoder, reset, nextFrame.bitmap)
         ensureActive()
-        if (timestamp == 0) {
+        check(timestamp != 0) {
             decodeJob = null
-            throw CancellationException("Failed to decode next frame")
-        } else if (timestamp <= currentFrame.timestamp) {
+            "Failed to decode next frame"
+        }
+        if (timestamp <= currentFrame.timestamp) {
             if (reset) loopsCompleted = 0 else loopsCompleted++
             currentFrame.timestamp = 0
         }
         nextFrame.timestamp = timestamp
         nextFrame.bitmap.prepareToDraw()
+    }.apply {
+        invokeOnCompletion { cause ->
+            when (cause) {
+                null -> if (reset) {
+                    runnable.run()
+                } else {
+                    scheduleSelf(runnable, timeToShowNextFrame)
+                }
+                !is CancellationException -> logcat(cause)
+            }
+        }
     }
 
     override fun draw(canvas: Canvas) {
         if (decodeJob?.isCompleted == true) {
             decodeJob = if (loopCount == 0 || loopsCompleted < loopCount) {
-                val duration = nextFrame.timestamp - currentFrame.timestamp
                 currentFrame = nextFrame.also { nextFrame = currentFrame }
-                decodeScope.launch {
-                    decodeNextFrame(false)
-                    scheduleSelf(runnable, currentTime + duration)
-                }
+                decodeNextFrame(false)
             } else {
                 null
             }
@@ -113,10 +122,7 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
 
     override fun start() {
         if (decodeJob == null) {
-            decodeJob = decodeScope.launch {
-                decodeNextFrame(true)
-                runnable.run()
-            }
+            decodeJob = decodeNextFrame(true)
         }
     }
 
