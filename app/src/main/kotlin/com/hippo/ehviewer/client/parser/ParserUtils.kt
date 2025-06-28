@@ -28,7 +28,7 @@ object ParserUtils {
         char('-')
         monthNumber()
         char('-')
-        dayOfMonth()
+        day()
         char(' ')
         hour()
         char(':')
