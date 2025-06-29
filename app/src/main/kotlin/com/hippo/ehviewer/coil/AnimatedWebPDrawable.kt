@@ -86,7 +86,7 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
     }
 
     override fun draw(canvas: Canvas) {
-        if (decodeJob?.isCompleted == true) {
+        if (decodeJob?.isCompleted == true && isVisible) {
             decodeJob = if (loopCount == 0 || loopsCompleted < loopCount) {
                 currentFrame = nextFrame.also { nextFrame = currentFrame }
                 decodeNextFrame(false)
