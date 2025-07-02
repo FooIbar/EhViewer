@@ -133,7 +133,9 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
     }
 
     fun dispose() {
-        nativeDestroyDecoder(decoder)
+        decodeScope.launch {
+            nativeDestroyDecoder(decoder)
+        }
     }
 }
 
