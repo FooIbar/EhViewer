@@ -4,7 +4,7 @@ version = "0.0.0"
 edition = "2024"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["staticlib"]
 
 [features]
 jvm = ["dep:jni", "dep:jni_fn"]

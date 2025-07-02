@@ -143,9 +143,12 @@ corrosion_import_crate(
         FEATURES $<IF:$<VERSION_GREATER_EQUAL:${ANDROID_NATIVE_API_LEVEL},26>,android-26,android>
         FLAGS $<$<NOT:$<CONFIG:Debug>>:-Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort>
 )
-corrosion_link_libraries(ehviewer_rust webp webpdemux)
-corrosion_add_target_local_rustflags(ehviewer_rust "-Clink-args=-Wl,-z,max-page-size=16384")
+corrosion_link_libraries(ehviewer_rust android jnigraphics log webp webpdemux)
 
 # Build and link our app's native lib
 add_library(${PROJECT_NAME} SHARED archive.c gifutils.c hash.c natsort/strnatcmp.c)
-target_link_libraries(${PROJECT_NAME} ehviewer_rust archive_static log jnigraphics -Wl,--exclude-libs,ALL)
+target_link_libraries(
+        ${PROJECT_NAME} archive_static ehviewer_rust
+        -Wl,-u,JNI_OnLoad -Wl,--undefined-glob,Java_*
+        -Wl,--version-script,${CMAKE_SOURCE_DIR}/libehviewer.map.txt
+)
