@@ -16,7 +16,7 @@ androidx-room = "2.7.2"
 androidx-work = "2.10.2"
 arrow = "2.1.2"
 coil = "3.2.0"
-compose-bom = "2025.06.00"
+compose-bom = "2025.06.02"
 compose-destinations = "2.2.0"
 kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
@@ -70,7 +70,8 @@ coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3" }
 compose-bom = { module = "androidx.compose:compose-bom-alpha", version.ref = "compose-bom" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-compose-material3 = { module = "androidx.compose.material3:material3" }
+# https://issuetracker.google.com/427778135
+compose-material3 = { module = "androidx.compose.material3:material3-android", version = { strictly = "1.4.0-alpha15" } }
 compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
