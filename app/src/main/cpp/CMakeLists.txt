@@ -37,7 +37,7 @@ FetchContent_MakeAvailable(liblzma)
 include_directories(${liblzma_SOURCE_DIR}/src/liblzma/api)
 
 # Build GNUTLS libnettle
-if (CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
+if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
     execute_process(
             COMMAND wsl wslpath ${CMAKE_CURRENT_LIST_DIR}
             OUTPUT_VARIABLE CURRENT_DIR
@@ -49,16 +49,15 @@ endif ()
 set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}")
 ExternalProject_Add(
         nettle
-        PREFIX nettle
         GIT_REPOSITORY https://gitlab.com/gnutls/nettle.git
         GIT_TAG nettle_3.10.2_release_20250626
         GIT_SHALLOW 1
         GIT_CONFIG core.autocrlf=input
         CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
-        BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS} -Qunused-arguments'"
+        BUILD_COMMAND bash -c "make -j4 libnettle.a CFLAGS='${CMAKE_C_FLAGS} -Qunused-arguments'"
         INSTALL_COMMAND ""
         BUILD_IN_SOURCE 1
-        BUILD_BYPRODUCTS nettle/src/nettle/libnettle.a
+        BUILD_BYPRODUCTS <SOURCE_DIR>/libnettle.a
 )
 
 ExternalProject_Get_Property(nettle SOURCE_DIR)
@@ -90,13 +89,9 @@ option(ENABLE_CAT OFF)
 option(ENABLE_UNZIP OFF)
 option(ENABLE_TEST OFF)
 
-# Configure libarchive link's static lib
-SET(LIBARCHIVE_CUSTOM_LIBS "libnettle" "liblzma")
-
 set(LIBARCHIVE_PATCH
-        ${CMAKE_CURRENT_LIST_DIR}/0001-Insert-link-libs.patch
-        ${CMAKE_CURRENT_LIST_DIR}/0002-Fix-zip_time-performance.patch
-        ${CMAKE_CURRENT_LIST_DIR}/0003-Use-UTF-8-as-default-charset-on-bionic.patch
+        ${CMAKE_CURRENT_LIST_DIR}/0001-Fix-zip_time-performance.patch
+        ${CMAKE_CURRENT_LIST_DIR}/0002-Use-UTF-8-as-default-charset-on-bionic.patch
 )
 FetchContent_Declare(
         libarchive
@@ -107,15 +102,14 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(libarchive)
+target_link_libraries(archive_static liblzma libnettle)
 include_directories(${libarchive_SOURCE_DIR}/libarchive)
 
-set(LIBWEBP_PATCH ${CMAKE_CURRENT_LIST_DIR}/0001-Disable-runtime-detection-of-NEON-support.patch)
 FetchContent_Declare(
         libwebp
         GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
         GIT_TAG v1.5.0
         GIT_SHALLOW 1
-        PATCH_COMMAND git apply --check -R ${LIBWEBP_PATCH} || git apply ${LIBWEBP_PATCH}
 )
 
 option(WEBP_BUILD_ANIM_UTILS OFF)
@@ -127,7 +121,13 @@ option(WEBP_BUILD_LIBWEBPMUX OFF)
 option(WEBP_BUILD_EXTRAS OFF)
 option(WEBP_ENABLE_SWAP_16BIT_CSP ON)
 
+# Disable runtime detection of NEON support as NEON is required since API level 23
+# https://source.android.com/docs/compatibility/6.0/android-6.0-cdd#3_3_1_application_binary_interfaces
+unset(ANDROID)
 FetchContent_MakeAvailable(libwebp)
+if (CMAKE_SYSTEM_NAME STREQUAL "Android")
+    set(ANDROID 1)
+endif ()
 
 FetchContent_Declare(
         Corrosion
