@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.LocalPinnableContainer
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
@@ -289,13 +290,13 @@ fun GalleryDetailContent(
                             onClick = ::onDownloadButtonClick,
                             modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
                         ) {
-                            Text(text = downloadButtonText, maxLines = 1)
+                            Text(text = downloadButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
                         }
                         Button(
                             onClick = ::onReadButtonClick,
                             modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
                         ) {
-                            Text(text = readButtonText, maxLines = 1)
+                            Text(text = readButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
                         }
                     }
                     if (getDetailError.isNotBlank()) {
@@ -347,14 +348,14 @@ fun GalleryDetailContent(
                             onClick = ::onReadButtonClick,
                             modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                         ) {
-                            Text(text = readButtonText, maxLines = 1)
+                            Text(text = readButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
                         }
                         Spacer(modifier = modifier.height(24.dp))
                         FilledTonalButton(
                             onClick = ::onDownloadButtonClick,
                             modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                         ) {
-                            Text(text = downloadButtonText, maxLines = 1)
+                            Text(text = downloadButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
                         }
                     }
                 }

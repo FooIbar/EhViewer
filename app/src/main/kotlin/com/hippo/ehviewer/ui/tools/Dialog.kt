@@ -220,7 +220,7 @@ suspend fun awaitSelectTags(): List<String> = dialog { cont ->
                         InputChip(
                             selected = true,
                             onClick = { },
-                            label = { Text(text = text) },
+                            label = { Text(text = text, overflow = TextOverflow.Ellipsis, maxLines = 1) },
                             trailingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Close,
@@ -273,11 +273,12 @@ suspend fun awaitSelectTags(): List<String> = dialog { cont ->
                             DropdownMenuItem(
                                 text = {
                                     Column {
-                                        Text(text = tag, maxLines = 1)
+                                        Text(text = tag, overflow = TextOverflow.Ellipsis, maxLines = 2)
                                         ProvideTextStyle(MaterialTheme.typography.bodySmall) {
                                             if (hint != null) {
                                                 Text(
                                                     text = hint,
+                                                    overflow = TextOverflow.Ellipsis,
                                                     maxLines = 1,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 )
