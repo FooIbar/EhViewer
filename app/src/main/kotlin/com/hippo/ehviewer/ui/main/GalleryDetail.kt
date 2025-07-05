@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUtils
@@ -111,7 +112,7 @@ fun GalleryDetailHeaderCard(
             val categoryText = EhUtils.getCategory(info.category).uppercase()
             AssistChip(
                 onClick = onCategoryChipClick,
-                label = { Text(text = categoryText, maxLines = 1) },
+                label = { Text(text = categoryText, overflow = TextOverflow.Visible, softWrap = false, maxLines = 1) },
                 modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
                 leadingIcon = {
                     Icon(
@@ -123,7 +124,7 @@ fun GalleryDetailHeaderCard(
             val uploaderText = info.uploader.orEmpty()
             AssistChip(
                 onClick = onUploaderChipClick,
-                label = { Text(text = uploaderText, maxLines = 1) },
+                label = { Text(text = uploaderText, overflow = TextOverflow.Visible, softWrap = false, maxLines = 1) },
                 modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
                 leadingIcon = {
                     Icon(
