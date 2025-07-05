@@ -7,7 +7,6 @@ import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.HttpTimeoutConfig
-import io.ktor.client.plugins.SaveBodyPlugin
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.defaultRequest
@@ -35,9 +34,6 @@ fun <T : HttpClientEngineConfig> HttpClientConfig<T>.configureCommon(redirect: B
         header(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
     }
     followRedirects = redirect
-    install(SaveBodyPlugin) {
-        disabled = true
-    }
 }
 
 private val UserAgent = createClientPlugin("UserAgent") {
