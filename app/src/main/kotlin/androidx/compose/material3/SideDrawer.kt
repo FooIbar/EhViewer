@@ -81,7 +81,7 @@ class DrawerState2(initialValue: DrawerValue) {
      */
     val currentValue: DrawerValue
         get() {
-            return anchoredDraggableState.currentValue
+            return anchoredDraggableState.settledValue
         }
 
     /**

@@ -8,11 +8,9 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.DrawerState2
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalSideDrawer
 import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.rememberDrawerState2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -40,12 +38,11 @@ fun ProvideSideSheetContent(content: Sheet) {
 }
 
 @Composable
-fun MutableSideSheet(modifier: Modifier, enabled: Boolean, content: @Composable () -> Unit) {
+fun MutableSideSheet(drawerState: DrawerState2, modifier: Modifier, enabled: Boolean, content: @Composable () -> Unit) {
     val sheet = remember { mutableStateListOf<Sheet>() }
     val f = sheet.firstOrNull()
-    val state = rememberDrawerState2(DrawerValue.Closed)
     val width = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
-    CompositionLocalProvider(LocalSideSheetState provides state, LocalSideSheetContainer provides sheet) {
+    CompositionLocalProvider(LocalSideSheetContainer provides sheet) {
         ModalSideDrawer(
             drawerContent = {
                 if (f != null) {
@@ -54,12 +51,12 @@ fun MutableSideSheet(modifier: Modifier, enabled: Boolean, content: @Composable 
                         drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
                         windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
                     ) {
-                        f(state)
+                        f(drawerState)
                     }
                 }
             },
             modifier = modifier,
-            drawerState = state,
+            drawerState = drawerState,
             gesturesEnabled = f != null && enabled,
             content = content,
         )
