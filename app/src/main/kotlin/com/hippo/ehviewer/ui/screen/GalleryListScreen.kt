@@ -33,6 +33,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -49,7 +50,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -180,6 +180,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
     }
 
     val density = LocalDensity.current
+    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
     val isTopList = remember(urlBuilder) { urlBuilder.mode == MODE_TOPLIST }
@@ -325,32 +326,28 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                         ) { isDragging ->
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                             // SQLite may reuse ROWIDs from previously deleted rows so they'll have the same key
-                            val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
-                            LaunchedEffect(dismissState) {
-                                snapshotFlow { dismissState.currentValue }.collect { value ->
-                                    if (value == SwipeToDismissBoxValue.EndToStart) {
-                                        dialogState.runCatching {
-                                            awaitConfirmationOrCancel(confirmText = R.string.delete) {
-                                                Text(text = stringResource(R.string.delete_quick_search, item.name))
-                                            }
-                                        }.onSuccess {
-                                            EhDB.deleteQuickSearch(item)
-                                            with(quickSearchList) {
-                                                subList(index + 1, size).forEach {
-                                                    it.position--
-                                                }
-                                                removeAt(index)
-                                            }
-                                        }.onFailure {
-                                            dismissState.reset()
-                                        }
-                                    }
-                                }
-                            }
+                            val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, positionalThreshold) }
                             SwipeToDismissBox(
                                 state = dismissState,
                                 backgroundContent = {},
                                 enableDismissFromStartToEnd = false,
+                                onDismiss = {
+                                    dialogState.runCatching {
+                                        awaitConfirmationOrCancel(confirmText = R.string.delete) {
+                                            Text(text = stringResource(R.string.delete_quick_search, item.name))
+                                        }
+                                    }.onSuccess {
+                                        EhDB.deleteQuickSearch(item)
+                                        with(quickSearchList) {
+                                            subList(index + 1, size).forEach {
+                                                it.position--
+                                            }
+                                            removeAt(index)
+                                        }
+                                    }.onFailure {
+                                        dismissState.reset()
+                                    }
+                                },
                             ) {
                                 val elevation by animateDpAsState(
                                     if (isDragging) {
