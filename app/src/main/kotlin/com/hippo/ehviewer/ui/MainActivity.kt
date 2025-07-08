@@ -428,6 +428,7 @@ class MainActivity : EhActivity() {
                             }
                         }.collectAsState(0f)
                         MutableSideSheet(
+                            drawerState = sideSheetState,
                             modifier = Modifier.graphicsLayer {
                                 if (radius != 0f) {
                                     renderEffect = BlurEffect(radius, radius, TileMode.Clamp)
