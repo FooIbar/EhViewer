@@ -47,6 +47,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -66,7 +67,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -161,6 +161,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     fun getTranslation(tag: String) = ehTags?.run {
         getTranslation(TagNamespace.Artist.prefix, tag) ?: getTranslation(TagNamespace.Cosplayer.prefix, tag)
     } ?: tag
+    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
     val unknownName = stringResource(R.string.unknown_artists)
@@ -342,12 +343,21 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             itemsIndexed(groupList, key = { _, (id) -> id }) { itemIndex, (id, label) ->
                 val index by rememberUpdatedState(itemIndex)
                 val item by rememberUpdatedState(label)
-                // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                // SQLite may reuse ROWIDs from previously deleted rows so they'll have the same key
-                val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
-                LaunchedEffect(dismissState) {
-                    snapshotFlow { dismissState.currentValue }.collect {
-                        if (it == SwipeToDismissBoxValue.EndToStart) {
+                ReorderableItem(
+                    reorderableLabelState,
+                    id,
+                    enabled = editEnable,
+                    animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
+                ) { isDragging ->
+                    // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
+                    // SQLite may reuse ROWIDs from previously deleted rows so they'll have the same key
+                    val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, positionalThreshold) }
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        backgroundContent = {},
+                        enableDismissFromStartToEnd = false,
+                        gesturesEnabled = editEnable,
+                        onDismiss = {
                             dialogState.runCatching {
                                 awaitConfirmationOrCancel(confirmText = R.string.delete) {
                                     Text(text = stringResource(R.string.delete_label, item))
@@ -361,20 +371,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             }.onFailure {
                                 dismissState.reset()
                             }
-                        }
-                    }
-                }
-                ReorderableItem(
-                    reorderableLabelState,
-                    id,
-                    enabled = editEnable,
-                    animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
-                ) { isDragging ->
-                    SwipeToDismissBox(
-                        state = dismissState,
-                        backgroundContent = {},
-                        enableDismissFromStartToEnd = false,
-                        gesturesEnabled = editEnable,
+                        },
                     ) {
                         val elevation by animateDpAsState(
                             if (isDragging) {

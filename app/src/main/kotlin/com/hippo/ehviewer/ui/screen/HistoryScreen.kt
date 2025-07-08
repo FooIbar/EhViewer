@@ -14,19 +14,16 @@ import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.fork.SwipeToDismissBox
 import androidx.compose.material3.fork.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -150,18 +147,12 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
                 val info = historyData[index]
                 if (info != null) {
                     val dismissState = rememberSwipeToDismissBoxState()
-                    LaunchedEffect(dismissState) {
-                        snapshotFlow { dismissState.currentValue }.collect {
-                            if (it == SwipeToDismissBoxValue.EndToStart) {
-                                EhDB.deleteHistoryInfo(info)
-                            }
-                        }
-                    }
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},
                         modifier = Modifier.thenIf(animateItems) { animateItem() },
                         enableDismissFromStartToEnd = false,
+                        onDismiss = { EhDB.deleteHistoryInfo(info) },
                     ) {
                         GalleryInfoListItem(
                             onClick = { navigate(info.asDst()) },
