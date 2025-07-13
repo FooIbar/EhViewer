@@ -186,7 +186,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         },
         title = title,
         searchFieldHint = searchBarHint,
-        tagNamespace = !urlBuilder.isLocal,
+        localSearch = urlBuilder.isLocal,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
