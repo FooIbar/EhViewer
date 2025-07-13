@@ -111,7 +111,7 @@ fun SearchBarScreen(
     searchFieldHint: String,
     searchFieldState: TextFieldState = rememberTextFieldState(),
     suggestionProvider: SuggestionProvider? = null,
-    tagNamespace: Boolean = false,
+    localSearch: Boolean = true,
     searchBarOffsetY: () -> Int = { 0 },
     trailingIcon: @Composable () -> Unit = {},
     filter: @Composable (() -> Unit)? = null,
@@ -130,10 +130,18 @@ fun SearchBarScreen(
     ) : Suggestion() {
         override fun onClick() {
             val query = searchFieldState.text.toString()
-            var keywords = query.substringBeforeLast(' ', "")
-            if (keywords.isNotEmpty()) keywords += ' '
-            keywords += if (tagNamespace) wrapTagKeyword(keyword) else keyword.substringAfter(':')
-            if (!keywords.endsWith(':')) keywords += ' '
+            val (index, keyword) = if (localSearch) {
+                query.lastIndexOf(' ') to
+                    "${keyword.substringAfter(':')} "
+            } else {
+                query.lastIndexOfAny(TagTerminators) to
+                    if (keyword.endsWith(':')) keyword else "${wrapTagKeyword(keyword)} "
+            }
+            val keywords = if (index == -1) {
+                keyword
+            } else {
+                "${query.substring(0, index + 1).trimEnd()} $keyword"
+            }
             searchFieldState.setTextAndPlaceCursorAtEnd(keywords)
         }
     }
@@ -152,13 +160,11 @@ fun SearchBarScreen(
             val query = searchFieldState.text.toString()
             suggestionProvider?.run { providerSuggestions(query)?.let { emit(it) } }
             mSearchDatabase.suggestions(query, 128).forEach { emit(KeywordSuggestion(it)) }
-            if (query.isNotEmpty() && !query.endsWith(' ')) {
-                EhTagDatabase.suggestion(
-                    query.substringAfterLast(' '),
-                    Settings.showTagTranslations,
-                ).forEach { (tag, hint) ->
-                    emit(TagSuggestion(hint, tag))
-                }
+            val index = if (localSearch) query.lastIndexOf(' ') else query.lastIndexOfAny(TagTerminators)
+            val keyword = query.substring(index + 1).trimStart()
+            if (keyword.isNotEmpty()) {
+                EhTagDatabase.suggestion(keyword, Settings.showTagTranslations).take(50)
+                    .forEach { emit(TagSuggestion(it.hint, it.tag)) }
             }
         }
     }
@@ -304,9 +310,7 @@ fun SearchBarScreen(
     }
 }
 
-fun wrapTagKeyword(keyword: String, translate: Boolean = false): String = if (keyword.endsWith(':')) {
-    keyword
-} else {
+fun wrapTagKeyword(keyword: String, translate: Boolean = false): String = run {
     val tag = keyword.substringAfter(':')
     val prefix = keyword.dropLast(tag.length + 1)
     if (translate) {
@@ -321,6 +325,7 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String = if (ke
     }
 }
 
+private val TagTerminators = charArrayOf('"', '$')
 private val WhitespaceRegex = Regex("\\s+")
 private val SearchBarHorizontalPadding = 16.dp
 private val M3SearchBarMaxWidth = 720.dp

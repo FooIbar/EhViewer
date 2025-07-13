@@ -259,9 +259,9 @@ suspend fun awaitSelectTags(): List<String> = dialog { cont ->
                         },
                     )
                     val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
-                    var items by remember { mutableStateOf(emptyList<Pair<String, String?>>()) }
+                    var items by remember { mutableStateOf(emptyList<EhTagDatabase.Tag>()) }
                     LaunchedEffect(suggestionTranslate, query) {
-                        items = query?.let { suggestion(query, suggestionTranslate).take(15).toList() }.orEmpty()
+                        items = query?.let { suggestion(query, suggestionTranslate).take(15) }.orEmpty()
                         expanded = items.isNotEmpty()
                     }
                     ExposedDropdownMenu(

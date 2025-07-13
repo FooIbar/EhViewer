@@ -481,7 +481,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                 GalleryPageUrlSuggestion(gid, pToken, page)
             }
         },
-        tagNamespace = true,
+        localSearch = false,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
