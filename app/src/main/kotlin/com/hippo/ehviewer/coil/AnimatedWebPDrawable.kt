@@ -15,8 +15,11 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 // Hold a reference to the buffer as it's used by the decoder
 @Suppress("CanBeParameter")
@@ -133,9 +136,10 @@ class AnimatedWebPDrawable(private val source: ByteBuffer) : Drawable(), Animata
     }
 
     fun dispose() {
-        decodeScope.launch {
-            nativeDestroyDecoder(decoder)
+        runBlocking {
+            decodeScope.coroutineContext.job.cancelAndJoin()
         }
+        nativeDestroyDecoder(decoder)
     }
 }
 
