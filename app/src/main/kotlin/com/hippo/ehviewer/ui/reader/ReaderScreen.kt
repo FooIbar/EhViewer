@@ -13,11 +13,14 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.layout.LazyLayoutCacheWindow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -50,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.zIndex
 import androidx.core.view.WindowInsetsControllerCompat
 import arrow.core.Either
 import arrow.core.Either.Companion.catch
@@ -73,6 +77,7 @@ import com.hippo.ehviewer.gallery.useEhPageLoader
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.theme.EhTheme
+import com.hippo.ehviewer.ui.theme.scrim
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.asyncInVM
@@ -232,6 +237,10 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
                     uiController.isSystemBarsVisible = it
                 }
             }
+            Box(
+                Modifier.windowInsetsTopHeight(WindowInsets.statusBars).fillMaxWidth()
+                    .align(Alignment.TopCenter).background(bgColor.scrim()).zIndex(1f),
+            )
         }
         var showNavigationOverlay by remember {
             val showOnStart = Settings.showNavigationOverlayNewUser.value || Settings.showNavigationOverlayOnStart.value

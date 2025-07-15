@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.theme
 import android.app.WallpaperManager
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.scrollbar.LocalScrollbarStyle
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
@@ -73,6 +74,9 @@ fun EhTheme(useDarkTheme: Boolean, content: @Composable () -> Unit) {
         )
     }
 }
+
+@Composable
+fun Color.scrim() = copy(alpha = if (isSystemInDarkTheme()) 0.5f else 0.9f)
 
 typealias WallPaperPalette = Triple<Color, Color?, Color?>
 

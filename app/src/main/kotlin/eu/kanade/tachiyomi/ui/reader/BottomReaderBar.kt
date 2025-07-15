@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.reader
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
@@ -15,7 +14,6 @@ import androidx.compose.material3.FlexibleBottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -39,8 +38,8 @@ import eu.kanade.tachiyomi.ui.reader.setting.PreferenceType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 
 @Composable
-fun BottomReaderBar(onClickSettings: () -> Unit) = FlexibleBottomAppBar(
-    containerColor = toolbarColor,
+fun BottomReaderBar(onClickSettings: () -> Unit, containerColor: Color) = FlexibleBottomAppBar(
+    containerColor = containerColor,
     contentPadding = PaddingValues.Zero,
     horizontalArrangement = Arrangement.SpaceEvenly,
 ) {
@@ -76,10 +75,6 @@ fun BottomReaderBar(onClickSettings: () -> Unit) = FlexibleBottomAppBar(
         contentDescription = stringResource(R.string.action_settings),
     )
 }
-
-// Use surface container highest to have a higher contract on grey background
-val toolbarColor
-    @Composable get() = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
 
 @Composable
 private fun DropdownIconButton(
