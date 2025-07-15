@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
@@ -34,6 +36,7 @@ fun ReaderAppBars(
     enter = slideInVertically(initialOffsetY = { it }, animationSpec = animationSpec),
     exit = slideOutVertically(targetOffsetY = { it }, animationSpec = animationSpec),
 ) {
+    val toolbarColor = BottomAppBarDefaults.containerColor.copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (showSeekBar && totalPages > 1) {
             ChapterNavigator(
@@ -41,8 +44,9 @@ fun ReaderAppBars(
                 currentPage = currentPage,
                 totalPages = totalPages,
                 onSliderValueChange = onSliderValueChange,
+                containerColor = toolbarColor,
             )
         }
-        BottomReaderBar(onClickSettings = onClickSettings)
+        BottomReaderBar(onClickSettings = onClickSettings, containerColor = toolbarColor)
     }
 }

@@ -1,10 +1,12 @@
 package com.hippo.ehviewer.ui.screen
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,9 +21,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.input.TextFieldState
@@ -38,6 +41,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -70,6 +74,7 @@ import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.destinations.ImageSearchScreenDestination
+import com.hippo.ehviewer.ui.theme.scrim
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.rememberCompositionActiveState
@@ -211,8 +216,13 @@ fun SearchBarScreen(
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
-                // Placeholder, fill immutable SearchBar padding
-                Spacer(modifier = Modifier.statusBarsPadding().height(SearchBarDefaults.InputFieldHeight + 16.dp))
+                Column {
+                    val scrim = MaterialTheme.colorScheme.background.scrim()
+                    Box(Modifier.windowInsetsTopHeight(WindowInsets.statusBars).fillMaxWidth().background(scrim))
+
+                    // Placeholder, fill immutable SearchBar padding
+                    Spacer(modifier = Modifier.height(SearchBarDefaults.InputFieldHeight + 16.dp))
+                }
             },
             floatingActionButton = floatingActionButton,
             content = content,

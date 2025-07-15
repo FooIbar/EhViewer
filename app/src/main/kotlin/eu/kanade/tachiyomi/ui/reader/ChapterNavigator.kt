@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -31,11 +32,12 @@ fun ChapterNavigator(
     currentPage: Int,
     totalPages: Int,
     onSliderValueChange: (Int) -> Unit,
+    containerColor: Color,
 ) = CompositionLocalProvider(LocalLayoutDirection provides if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr) {
     val windowSizeClass = LocalWindowSizeClass.current
     val horizontalPadding = if (windowSizeClass.isExpanded) 24.dp else 16.dp
     Row(
-        modifier = Modifier.padding(horizontal = horizontalPadding).clip(CircleShape).background(toolbarColor).padding(horizontal = 16.dp),
+        modifier = Modifier.padding(horizontal = horizontalPadding).clip(CircleShape).background(containerColor).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(text = "$currentPage")
