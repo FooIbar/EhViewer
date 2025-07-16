@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -48,6 +49,7 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
                             wvNavigator.loadUrl(APPLY_JS)
                             navigator.popBackStack()
                         },
+                        shapes = IconButtonDefaults.shapes(),
                     ) {
                         Icon(imageVector = Icons.Default.Check, contentDescription = null)
                     }

@@ -45,6 +45,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBoxDefaults
@@ -242,6 +243,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                 DownloadManager.addLabel(text)
                             }
                         },
+                        shapes = IconButtonDefaults.shapes(),
                     ) {
                         Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
                     }
@@ -271,6 +273,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                 }()
                             }
                         },
+                        shapes = IconButtonDefaults.shapes(),
                     ) {
                         Icon(imageVector = Icons.Default.Download, contentDescription = null)
                     }
@@ -291,6 +294,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             }()
                         }
                     },
+                    shapes = IconButtonDefaults.shapes(),
                 ) {
                     Icon(imageVector = Icons.Default.Settings, contentDescription = null)
                 }
@@ -409,11 +413,13 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                                 }
                                             }
                                         },
+                                        shapes = IconButtonDefaults.shapes(),
                                     ) {
                                         Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                     }
                                     IconButton(
                                         onClick = {},
+                                        shapes = IconButtonDefaults.shapes(),
                                         modifier = Modifier.draggableHandle(
                                             onDragStarted = {
                                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.START)
@@ -459,11 +465,11 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }
             val sideSheetState = LocalSideSheetState.current
-            IconButton(onClick = { gridView = !gridView }) {
+            IconButton(onClick = { gridView = !gridView }, shapes = IconButtonDefaults.shapes()) {
                 val icon = if (gridView) Icons.AutoMirrored.Default.ViewList else Icons.Default.GridView
                 Icon(imageVector = icon, contentDescription = null)
             }
-            IconButton(onClick = { expanded = !expanded }) {
+            IconButton(onClick = { expanded = !expanded }, shapes = IconButtonDefaults.shapes()) {
                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

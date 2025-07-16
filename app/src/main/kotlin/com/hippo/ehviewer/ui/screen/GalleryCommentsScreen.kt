@@ -37,6 +37,7 @@ import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -490,6 +491,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                     }
                     IconButton(
                         onClick = { launchIO { sendComment() } },
+                        shapes = IconButtonDefaults.shapes(),
                         modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
                     ) {
                         Icon(

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.fork.SwipeToDismissBox
@@ -108,15 +109,18 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
         searchFieldHint = hint,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
-            IconButton(onClick = {
-                launch {
-                    awaitConfirmationOrCancel(
-                        confirmText = R.string.clear_all,
-                        text = { Text(text = stringResource(id = R.string.clear_all_history)) },
-                    )
-                    EhDB.clearHistoryInfo()
-                }
-            }) {
+            IconButton(
+                onClick = {
+                    launch {
+                        awaitConfirmationOrCancel(
+                            confirmText = R.string.clear_all,
+                            text = { Text(text = stringResource(id = R.string.clear_all_history)) },
+                        )
+                        EhDB.clearHistoryInfo()
+                    }
+                },
+                shapes = IconButtonDefaults.shapes(),
+            ) {
                 Icon(imageVector = Icons.Default.ClearAll, contentDescription = null)
             }
         },

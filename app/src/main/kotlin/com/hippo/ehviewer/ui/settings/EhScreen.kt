@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -101,11 +102,14 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                                     state = state,
                                     readOnly = true,
                                     trailingIcon = {
-                                        IconButton(onClick = {
-                                            copyTextToClipboard(state.text, true)
-                                            // Avoid double notify user since system have done that on Tiramisu above
-                                            if (!isAtLeastT) launchSnackBar(copiedToClipboard)
-                                        }) {
+                                        IconButton(
+                                            onClick = {
+                                                copyTextToClipboard(state.text, true)
+                                                // Avoid double notify user since system have done that on Tiramisu above
+                                                if (!isAtLeastT) launchSnackBar(copiedToClipboard)
+                                            },
+                                            shapes = IconButtonDefaults.shapes(),
+                                        ) {
                                             Icon(imageVector = Icons.Default.ContentCopy, contentDescription = null)
                                         }
                                     },
