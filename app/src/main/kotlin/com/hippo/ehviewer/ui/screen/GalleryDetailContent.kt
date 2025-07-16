@@ -30,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FolderZip
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -288,12 +289,14 @@ fun GalleryDetailContent(
                     Row {
                         FilledTonalButton(
                             onClick = ::onDownloadButtonClick,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
                         ) {
                             Text(text = downloadButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
                         }
                         Button(
                             onClick = ::onReadButtonClick,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
                         ) {
                             Text(text = readButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
@@ -346,6 +349,7 @@ fun GalleryDetailContent(
                         Spacer(modifier = modifier.height(16.dp))
                         Button(
                             onClick = ::onReadButtonClick,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                         ) {
                             Text(text = readButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
@@ -353,6 +357,7 @@ fun GalleryDetailContent(
                         Spacer(modifier = modifier.height(24.dp))
                         FilledTonalButton(
                             onClick = ::onDownloadButtonClick,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                         ) {
                             Text(text = downloadButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)

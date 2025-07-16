@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -111,12 +112,12 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                 AlertDialog(
                     onDismissRequest = { cont.cancel() },
                     confirmButton = {
-                        TextButton(onClick = ::invalidateAndSave) {
+                        TextButton(onClick = ::invalidateAndSave, shapes = ButtonDefaults.shapes()) {
                             Text(text = stringResource(id = R.string.add))
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { cont.cancel() }) {
+                        TextButton(onClick = { cont.cancel() }, shapes = ButtonDefaults.shapes()) {
                             Text(text = stringResource(id = android.R.string.cancel))
                         }
                     },

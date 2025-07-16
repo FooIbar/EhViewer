@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -202,12 +203,14 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                     Row(modifier = Modifier.padding(top = dimensionResource(R.dimen.keyline_margin))) {
                         FilledTonalButton(
                             onClick = { openBrowser(EhUrl.URL_REGISTER) },
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
                         ) {
                             Text(text = stringResource(id = R.string.register))
                         }
                         Button(
                             onClick = ::signIn,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
                         ) {
                             Text(text = stringResource(id = R.string.sign_in))
@@ -216,6 +219,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                     Row(modifier = Modifier.padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(
                             onClick = { navigate(WebViewSignInScreenDestination) },
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.weight(1f),
                         ) {
                             Text(
@@ -233,6 +237,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                                 Settings.gallerySite.value = EhUrl.SITE_E
                                 Settings.needSignIn.value = false
                             },
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.weight(1f),
                         ) {
                             Text(
@@ -283,12 +288,14 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                         Row(horizontalArrangement = Arrangement.Center) {
                             Button(
                                 onClick = ::signIn,
+                                shapes = ButtonDefaults.shapes(),
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(text = stringResource(id = R.string.sign_in))
                             }
                             FilledTonalButton(
                                 onClick = { openBrowser(EhUrl.URL_REGISTER) },
+                                shapes = ButtonDefaults.shapes(),
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(text = stringResource(id = R.string.register))
@@ -298,6 +305,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                         Row(horizontalArrangement = Arrangement.Center) {
                             TextButton(
                                 onClick = { navigate(WebViewSignInScreenDestination) },
+                                shapes = ButtonDefaults.shapes(),
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(
@@ -315,6 +323,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                                     Settings.gallerySite.value = EhUrl.SITE_E
                                     Settings.needSignIn.value = false
                                 },
+                                shapes = ButtonDefaults.shapes(),
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(

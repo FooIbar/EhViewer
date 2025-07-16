@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -141,7 +142,11 @@ fun PagerItem(
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                    Button(onClick = { pageLoader.retryPage(page.index) }, modifier = Modifier.padding(8.dp)) {
+                    Button(
+                        onClick = { pageLoader.retryPage(page.index) },
+                        shapes = ButtonDefaults.shapes(),
+                        modifier = Modifier.padding(8.dp),
+                    ) {
                         Text(text = stringResource(id = R.string.action_retry))
                     }
                 }
