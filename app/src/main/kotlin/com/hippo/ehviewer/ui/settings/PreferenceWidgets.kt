@@ -23,9 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.integerArrayResource
 import androidx.compose.ui.res.stringArrayResource
@@ -59,7 +57,7 @@ object PreferenceTokens {
 
 @Composable
 fun PreferenceHeader(
-    icon: Painter,
+    icon: ImageVector,
     @StringRes title: Int,
     childRoute: DirectionDestinationSpec,
     navigator: DestinationsNavigator,
@@ -69,24 +67,11 @@ fun PreferenceHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Spacer(modifier = Modifier.size(PreferenceTokens.PreferenceIconPadding))
-        Icon(painter = icon, contentDescription = null, modifier = Modifier.size(PreferenceTokens.PreferenceIconSize), tint = MaterialTheme.colorScheme.primary)
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(PreferenceTokens.PreferenceIconSize), tint = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.size(PreferenceTokens.PreferenceIconPadding))
         Text(text = stringResource(id = title), modifier = Modifier.padding(PreferenceTextPadding), style = MaterialTheme.typography.bodyLarge)
     }
 }
-
-@Composable
-fun PreferenceHeader(
-    icon: ImageVector,
-    @StringRes title: Int,
-    childRoute: DirectionDestinationSpec,
-    navigator: DestinationsNavigator,
-) = PreferenceHeader(
-    icon = rememberVectorPainter(image = icon),
-    title = title,
-    childRoute = childRoute,
-    navigator = navigator,
-)
 
 @Composable
 fun Preference(title: String, summary: String? = null, onClick: () -> Unit = {}) {
