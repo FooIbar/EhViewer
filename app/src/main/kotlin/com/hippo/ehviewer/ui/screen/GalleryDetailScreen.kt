@@ -14,6 +14,7 @@ import androidx.compose.material3.AppBarRow
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarResult
@@ -187,7 +188,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 actions = {
                     AppBarRow(
                         overflowIndicator = {
-                            IconButton(onClick = { it.show() }) {
+                            IconButton(onClick = { it.show() }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
                             }
                         },

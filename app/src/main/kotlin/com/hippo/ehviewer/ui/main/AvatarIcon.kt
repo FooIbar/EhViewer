@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -173,6 +174,7 @@ fun AvatarIcon() {
                     }
                 }
             },
+            shapes = IconButtonDefaults.shapes(),
         ) {
             val avatar by Settings.avatar.collectAsState()
             AnimatedContent(targetState = avatar == null) { noAvatar ->
@@ -206,6 +208,7 @@ fun AvatarIcon() {
                     EhUtils.signOut()
                 }
             },
+            shapes = IconButtonDefaults.shapes(),
         ) {
             Icon(imageVector = Icons.Default.NoAccounts, contentDescription = null)
         }

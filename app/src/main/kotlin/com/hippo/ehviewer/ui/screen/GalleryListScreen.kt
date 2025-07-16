@@ -32,6 +32,7 @@ import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -239,13 +240,16 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                 title = { Text(text = stringResource(id = R.string.quick_search)) },
                 colors = topBarOnDrawerColor(),
                 actions = {
-                    IconButton(onClick = {
-                        launch {
-                            awaitConfirmationOrCancel(title = R.string.quick_search, showCancelButton = false) {
-                                Text(text = stringResource(id = R.string.add_quick_search_tip))
+                    IconButton(
+                        onClick = {
+                            launch {
+                                awaitConfirmationOrCancel(title = R.string.quick_search, showCancelButton = false) {
+                                    Text(text = stringResource(id = R.string.add_quick_search_tip))
+                                }
                             }
-                        }
-                    }) {
+                        },
+                        shapes = IconButtonDefaults.shapes(),
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.Help,
                             contentDescription = stringResource(id = R.string.readme),
@@ -293,6 +297,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                                 }
                             }
                         },
+                        shapes = IconButtonDefaults.shapes(),
                         enabled = data.loadState.isIdle,
                     ) {
                         Icon(
@@ -379,6 +384,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                                     trailingContent = {
                                         IconButton(
                                             onClick = {},
+                                            shapes = IconButtonDefaults.shapes(),
                                             modifier = Modifier.draggableHandle(
                                                 onDragStarted = {
                                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.START)
@@ -485,7 +491,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
-            IconButton(onClick = { launch { sheetState.open() } }) {
+            IconButton(onClick = { launch { sheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
                 Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
             }
             AvatarIcon()

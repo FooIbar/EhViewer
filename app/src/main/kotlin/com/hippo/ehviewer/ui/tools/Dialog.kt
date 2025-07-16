@@ -46,6 +46,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -249,6 +250,7 @@ suspend fun awaitSelectTags(): List<String> = dialog { cont ->
                                         state.clearText()
                                     }
                                 },
+                                shapes = IconButtonDefaults.shapes(),
                                 content = {
                                     Icon(
                                         imageVector = Icons.Default.Add,
@@ -697,7 +699,7 @@ suspend fun awaitSelectItemWithIconAndTextField(
                 label = { Text(text = stringResource(id = hint)) },
                 trailingIcon = {
                     if (note.text.isNotEmpty()) {
-                        IconButton(onClick = { note.clearText() }) {
+                        IconButton(onClick = { note.clearText() }, shapes = IconButtonDefaults.shapes()) {
                             Icon(imageVector = Icons.Default.Close, contentDescription = null)
                         }
                     }

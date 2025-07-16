@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -251,12 +252,12 @@ fun SearchBarScreen(
                     },
                     leadingIcon = {
                         if (expanded) {
-                            IconButton(onClick = { hideSearchView() }) {
+                            IconButton(onClick = { hideSearchView() }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                             }
                         } else {
                             val drawerState = LocalNavDrawerState.current
-                            IconButton(onClick = { scope.launchUI { drawerState.open() } }) {
+                            IconButton(onClick = { scope.launchUI { drawerState.open() } }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(Icons.Default.Menu, contentDescription = null)
                             }
                         }
@@ -265,11 +266,11 @@ fun SearchBarScreen(
                         if (expanded) {
                             AnimatedContent(targetState = searchFieldState.text.isNotEmpty()) { hasText ->
                                 if (hasText) {
-                                    IconButton(onClick = { searchFieldState.clearText() }) {
+                                    IconButton(onClick = { searchFieldState.clearText() }, shapes = IconButtonDefaults.shapes()) {
                                         Icon(Icons.Default.Close, contentDescription = null)
                                     }
                                 } else {
-                                    IconButton(onClick = { navigate(ImageSearchScreenDestination) }) {
+                                    IconButton(onClick = { navigate(ImageSearchScreenDestination) }, shapes = IconButtonDefaults.shapes()) {
                                         Icon(Icons.Default.ImageSearch, contentDescription = null)
                                     }
                                 }
@@ -304,7 +305,7 @@ fun SearchBarScreen(
                             )
                         },
                         trailingContent = it.canDelete.ifTrueThen {
-                            IconButton(onClick = { deleteKeyword(it.keyword) }) {
+                            IconButton(onClick = { deleteKeyword(it.keyword) }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = null,

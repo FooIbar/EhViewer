@@ -131,7 +131,7 @@ private fun ActionButton(
     IconButton(
         onClick = onClick,
         modifier = modifier.size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
-        shape = IconButtonDefaults.mediumRoundShape,
+        shapes = IconButtonDefaults.shapes(IconButtonDefaults.mediumRoundShape, IconButtonDefaults.mediumPressedShape),
     ) {
         Icon(
             imageVector = imageVector,

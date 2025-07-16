@@ -31,6 +31,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -188,16 +189,19 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                 title = { Text(text = stringResource(id = R.string.filter)) },
                 navigationIcon = { NavigationIcon() },
                 actions = {
-                    IconButton(onClick = {
-                        launch {
-                            awaitConfirmationOrCancel(
-                                title = R.string.filter,
-                                showCancelButton = false,
-                            ) {
-                                Text(text = stringResource(id = R.string.filter_tip))
+                    IconButton(
+                        onClick = {
+                            launch {
+                                awaitConfirmationOrCancel(
+                                    title = R.string.filter,
+                                    showCancelButton = false,
+                                ) {
+                                    Text(text = stringResource(id = R.string.filter_tip))
+                                }
                             }
-                        }
-                    }) {
+                        },
+                        shapes = IconButtonDefaults.shapes(),
+                    ) {
                         Icon(imageVector = Icons.AutoMirrored.Default.Help, contentDescription = null)
                     }
                 },
@@ -256,6 +260,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                                             }
                                         }
                                     },
+                                    shapes = IconButtonDefaults.shapes(),
                                 ) {
                                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                                 }
