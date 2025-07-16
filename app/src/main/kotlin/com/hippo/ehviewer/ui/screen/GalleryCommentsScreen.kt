@@ -33,6 +33,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -446,6 +447,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                                                 refreshing = false
                                             }
                                         },
+                                        shapes = ButtonDefaults.shapes(),
                                         modifier = Modifier.fillMaxWidth(),
                                     ) {
                                         Text(text = stringResource(id = R.string.click_more_comments))

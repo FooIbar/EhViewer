@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
@@ -38,6 +39,7 @@ fun ImageSearch(
     }
     FilledTonalButton(
         onClick = onSelectImage,
+        shapes = ButtonDefaults.shapes(),
         modifier = Modifier.fillMaxWidth().padding(8.dp),
     ) {
         Text(text = stringResource(id = R.string.select_image))

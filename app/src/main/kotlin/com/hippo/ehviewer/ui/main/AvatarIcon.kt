@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.NoAccounts
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -158,6 +159,7 @@ fun AvatarIcon() {
                                                         }
                                                     }
                                                 },
+                                                shapes = ButtonDefaults.shapes(),
                                                 modifier = Modifier.align(Alignment.CenterHorizontally),
                                             ) {
                                                 Icon(

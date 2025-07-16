@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.NewLabel
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
@@ -160,18 +161,19 @@ suspend fun <R> awaitResult(
     AlertDialog(
         onDismissRequest = { cont.cancel() },
         confirmButton = {
-            TextButton(onClick = {
-                if (invalidator == null || errorMsg == null) {
-                    cont.resume(state.value)
-                }
-            }) {
+            TextButton(
+                onClick = {
+                    if (invalidator == null || errorMsg == null) {
+                        cont.resume(state.value)
+                    }
+                },
+                shapes = ButtonDefaults.shapes(),
+            ) {
                 Text(text = stringResource(id = android.R.string.ok))
             }
         },
         dismissButton = {
-            TextButton(onClick = {
-                cont.cancel()
-            }) {
+            TextButton(onClick = { cont.cancel() }, shapes = ButtonDefaults.shapes()) {
                 Text(text = stringResource(id = android.R.string.cancel))
             }
         },
@@ -189,12 +191,14 @@ suspend fun awaitSelectTags(): List<String> = dialog { cont ->
         confirmButton = {
             TextButton(
                 onClick = { cont.resume(selected.toList()) },
+                shapes = ButtonDefaults.shapes(),
                 content = { Text(text = stringResource(id = android.R.string.ok)) },
             )
         },
         dismissButton = {
             TextButton(
                 onClick = { cont.cancel() },
+                shapes = ButtonDefaults.shapes(),
                 content = { Text(text = stringResource(id = android.R.string.cancel)) },
             )
         },
@@ -326,17 +330,20 @@ suspend fun awaitInputText(
             onUserDismiss?.invoke()
         },
         confirmButton = {
-            TextButton(onClick = {
-                val text = state.text.toString()
-                if (invalidator == null) {
-                    cont.resume(text)
-                } else {
-                    coroutineScope.launch {
-                        error = either { invalidator(text) }.leftOrNull()
-                        error ?: cont.resume(text)
+            TextButton(
+                onClick = {
+                    val text = state.text.toString()
+                    if (invalidator == null) {
+                        cont.resume(text)
+                    } else {
+                        coroutineScope.launch {
+                            error = either { invalidator(text) }.leftOrNull()
+                            error ?: cont.resume(text)
+                        }
                     }
-                }
-            }) {
+                },
+                shapes = ButtonDefaults.shapes(),
+            ) {
                 Text(text = stringResource(id = confirmText))
             }
         },
@@ -378,17 +385,20 @@ suspend fun awaitInputTextWithCheckBox(
     AlertDialog(
         onDismissRequest = { cont.cancel() },
         confirmButton = {
-            TextButton(onClick = {
-                val text = state.text.toString()
-                if (invalidator == null) {
-                    cont.resume(text to checkedState)
-                } else {
-                    coroutineScope.launch {
-                        error = either { invalidator(text, checkedState) }.leftOrNull()
-                        error ?: cont.resume(text to checkedState)
+            TextButton(
+                onClick = {
+                    val text = state.text.toString()
+                    if (invalidator == null) {
+                        cont.resume(text to checkedState)
+                    } else {
+                        coroutineScope.launch {
+                            error = either { invalidator(text, checkedState) }.leftOrNull()
+                            error ?: cont.resume(text to checkedState)
+                        }
                     }
-                }
-            }) {
+                },
+                shapes = ButtonDefaults.shapes(),
+            ) {
                 Text(text = stringResource(id = android.R.string.ok))
             }
         },
@@ -440,16 +450,19 @@ suspend fun awaitConfirmationOrCancel(
         onDismissRequest = { cont.cancel() },
         confirmButton = {
             if (showConfirmButton) {
-                TextButton(onClick = { cont.resume(Unit) }) {
+                TextButton(onClick = { cont.resume(Unit) }, shapes = ButtonDefaults.shapes()) {
                     Text(text = stringResource(id = confirmText))
                 }
             }
         },
         dismissButton = showCancelButton.ifTrueThen {
-            TextButton(onClick = {
-                onCancelButtonClick()
-                cont.cancel()
-            }) {
+            TextButton(
+                onClick = {
+                    onCancelButtonClick()
+                    cont.cancel()
+                },
+                shapes = ButtonDefaults.shapes(),
+            ) {
                 Text(text = stringResource(id = dismissText))
             }
         },
@@ -483,12 +496,12 @@ suspend fun awaitSelectDate(
     DatePickerDialog(
         onDismissRequest = { cont.cancel() },
         confirmButton = {
-            TextButton(onClick = { cont.resume(state.selectedDateMillis) }) {
+            TextButton(onClick = { cont.resume(state.selectedDateMillis) }, shapes = ButtonDefaults.shapes()) {
                 Text(text = stringResource(id = android.R.string.ok))
             }
         },
         dismissButton = {
-            TextButton(onClick = { cont.cancel() }) {
+            TextButton(onClick = { cont.cancel() }, shapes = ButtonDefaults.shapes()) {
                 Text(text = stringResource(id = android.R.string.cancel))
             }
         },
@@ -533,7 +546,7 @@ suspend fun awaitSelectTime(
     TimePickerDialog(
         onDismissRequest = { cont.cancel() },
         confirmButton = {
-            TextButton(onClick = { cont.resume(state.hour to state.minute) }) {
+            TextButton(onClick = { cont.resume(state.hour to state.minute) }, shapes = ButtonDefaults.shapes()) {
                 Text(stringResource(id = android.R.string.ok))
             }
         },
@@ -545,7 +558,7 @@ suspend fun awaitSelectTime(
             )
         },
         dismissButton = {
-            TextButton(onClick = { cont.cancel() }) {
+            TextButton(onClick = { cont.cancel() }, shapes = ButtonDefaults.shapes()) {
                 Text(stringResource(id = android.R.string.cancel))
             }
         },
