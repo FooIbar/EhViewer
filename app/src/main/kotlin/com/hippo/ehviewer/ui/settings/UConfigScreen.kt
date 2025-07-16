@@ -10,17 +10,14 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.google.accompanist.web.WebView
+import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhCookieStore
@@ -30,7 +27,8 @@ import com.hippo.ehviewer.util.setDefaultSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlin.concurrent.atomics.AtomicReference
+import moe.tarsin.launch
+import moe.tarsin.snackbar
 
 private const val APPLY_JS = "javascript:(function(){var apply = document.getElementById(\"apply\").children[0];apply.click();})();"
 
@@ -38,8 +36,7 @@ private const val APPLY_JS = "javascript:(function(){var apply = document.getEle
 @Composable
 fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val url = EhUrl.uConfigUrl
-    val webview = remember { AtomicReference<WebView?>(null) }
-    val snackbarHostState = remember { SnackbarHostState() }
+    val wvNavigator = rememberWebViewNavigator()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -52,7 +49,7 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
                 actions = {
                     IconButton(
                         onClick = {
-                            webview.load()?.loadUrl(APPLY_JS)
+                            wvNavigator.loadUrl(APPLY_JS)
                             navigator.popBackStack()
                         },
                     ) {
@@ -61,18 +58,17 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
                 },
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         val state = rememberWebViewState(url = url)
         WebView(
             state = state,
             modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            navigator = wvNavigator,
             onCreated = { it.setDefaultSettings() },
-            factory = { WebView(it).apply { webview.store(this) } },
         )
         val applyTip = stringResource(id = R.string.apply_tip)
-        LaunchedEffect(Unit) { snackbarHostState.showSnackbar(applyTip) }
         DisposableEffect(Unit) {
+            launch { snackbar(applyTip) }
             onDispose {
                 EhCookieStore.flush()
             }

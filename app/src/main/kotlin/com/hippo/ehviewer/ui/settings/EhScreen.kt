@@ -16,15 +16,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -54,18 +50,16 @@ import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
+import moe.tarsin.launch
 import moe.tarsin.navigate
+import moe.tarsin.snackbar
 
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
+    fun launchSnackBar(content: String) = launch { snackbar(content) }
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
     Scaffold(
         topBar = {
@@ -79,7 +73,6 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         val copiedToClipboard = stringResource(id = R.string.copied_to_clipboard)
         Column(
@@ -94,7 +87,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                     title = stringResource(id = R.string.account_name),
                     summary = displayName,
                 ) {
-                    coroutineScope.launch {
+                    launch {
                         val cookies = EhCookieStore.getIdentityCookies()
                         awaitConfirmationOrCancel(
                             confirmText = R.string.settings_eh_sign_out,
@@ -154,7 +147,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 title = stringResource(id = R.string.default_favorites_collection),
                 summary = summary,
             ) {
-                coroutineScope.launch {
+                launch {
                     val items = buildList {
                         add(disabled)
                         add(localFav)
@@ -278,7 +271,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 AnimatedVisibility(visible = reqNews.value) {
                     val pickerTitle = stringResource(id = R.string.settings_eh_request_news_timepicker)
                     Preference(title = pickerTitle) {
-                        coroutineScope.launch {
+                        launch {
                             val time = LocalTime.fromSecondOfDay(Settings.requestNewsTime)
                             val (hour, minute) = awaitSelectTime(pickerTitle, time.hour, time.minute)
                             Settings.requestNewsTime = LocalTime(hour, minute).toSecondOfDay()
