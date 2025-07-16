@@ -107,7 +107,7 @@ include_directories(${libarchive_SOURCE_DIR}/libarchive)
 
 FetchContent_Declare(
         libwebp
-        GIT_REPOSITORY https://chromium.googlesource.com/webm/libwebp
+        GIT_REPOSITORY https://github.com/webmproject/libwebp.git
         GIT_TAG v1.5.0
         GIT_SHALLOW 1
 )
