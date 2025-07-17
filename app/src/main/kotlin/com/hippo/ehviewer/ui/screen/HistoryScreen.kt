@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ui.screen
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,7 +52,6 @@ import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
-import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
@@ -140,7 +138,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
         val showPages by Settings.showGalleryPages.collectAsState()
         FastScrollLazyColumn(
             modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-            contentPadding = paddingValues + PaddingValues(horizontal = marginH),
+            contentPadding = paddingValues,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
         ) {
             items(
@@ -163,7 +161,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
                             onLongClick = { launch { doGalleryInfoAction(info) } },
                             info = info,
                             showPages = showPages,
-                            modifier = Modifier.height(cardHeight),
+                            modifier = Modifier.height(cardHeight).padding(horizontal = marginH),
                         )
                     }
                 } else {
