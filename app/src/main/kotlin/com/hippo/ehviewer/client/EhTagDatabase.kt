@@ -177,9 +177,11 @@ object EhTagDatabase : CoroutineScope {
             }
         }
 
-        val currentSha1 = Either.catch {
-            sha1File.utf8()
-        }.getOrNull()
+        val currentSha1 = if (initialized) {
+            Either.catch { sha1File.utf8() }.getOrNull()
+        } else {
+            null
+        }
         val newSha1 = fetch(sha1Url)
         if (newSha1 == currentSha1) return
 
