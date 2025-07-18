@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import com.hippo.ehviewer.ui.tools.Slider
 
 @Composable
-fun SliderPreference(
+fun IntSliderPreference(
     state: MutableState<Int>,
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,

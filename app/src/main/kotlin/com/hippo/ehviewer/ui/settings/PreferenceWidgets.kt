@@ -32,10 +32,10 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.zhanghai.compose.preference.IntSliderPreference
 import me.zhanghai.compose.preference.ListPreference
 import me.zhanghai.compose.preference.ListPreferenceType
 import me.zhanghai.compose.preference.Preference
-import me.zhanghai.compose.preference.SliderPreference
 import me.zhanghai.compose.preference.SwitchPreference
 
 @Composable
@@ -74,7 +74,7 @@ fun SwitchPreference(title: String, summary: String? = null, state: MutableState
 @Composable
 fun IntSliderPreference(maxValue: Int, minValue: Int = 0, step: Int = maxValue - minValue - 1, title: String, summary: String? = null, state: MutableState<Int>, enabled: Boolean = true, display: (Int) -> Int = { it }) {
     val sliderState = remember { mutableIntStateOf(state.value) }
-    SliderPreference(
+    IntSliderPreference(
         state = state,
         title = { Text(title) },
         valueRange = minValue..maxValue,
