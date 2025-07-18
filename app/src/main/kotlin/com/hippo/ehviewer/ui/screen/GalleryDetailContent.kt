@@ -763,7 +763,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         )
     }
     Spacer(modifier = Modifier.size(keylineMargin))
-    if (Settings.showComments) {
+    if (Settings.showComments.value) {
         GalleryDetailComment(galleryDetail.comments.comments)
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.strip_item_padding_v)))
     }
@@ -808,12 +808,12 @@ private fun GalleryDetail.collectPreviewItems() = rememberInVM(previewList) {
                 val end = (up + getLimit(params, key) - 1).coerceAtMost(pages - 1)
                 runSuspendCatching {
                     (up..end).filterNot { it in previewPagesMap }.map { it / pageSize }.toSet()
-                        .parMap(concurrency = Settings.multiThreadDownload) { page ->
+                        .parMap(concurrency = Settings.multiThreadDownload.value) { page ->
                             val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
                             EhEngine.getPreviewList(url).previews
                         }.flattenForEach {
                             previewPagesMap[it.position] = it
-                            if (Settings.preloadThumbAggressively) {
+                            if (Settings.preloadThumbAggressively.value) {
                                 imageRequest(it) { justDownload() }.executeIn(viewModelScope)
                             }
                         }

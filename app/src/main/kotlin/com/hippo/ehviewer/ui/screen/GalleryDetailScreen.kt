@@ -122,7 +122,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
 
     (galleryInfo as? GalleryDetail)?.apply {
         rememberInVM(this) {
-            if (Settings.preloadThumbAggressively) {
+            if (Settings.preloadThumbAggressively.value) {
                 previewList.forEach {
                     imageRequest(it) { justDownload() }.executeIn(viewModelScope)
                 }

@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.core.net.toUri
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
@@ -41,8 +42,6 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.showRestartDialog
-import com.hippo.ehviewer.ui.tools.observed
-import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.AdsPlaceholderFile
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.CrashHandler
@@ -56,8 +55,6 @@ import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.setAppLanguage
 import com.hippo.files.delete
 import com.hippo.files.toOkioPath
-import com.jamal.composeprefs3.ui.prefs.DropDownPref
-import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -69,6 +66,8 @@ import java.util.zip.ZipOutputStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.merge
+import me.zhanghai.compose.preference.ListPreference
+import me.zhanghai.compose.preference.ListPreferenceType
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.launch
 import moe.tarsin.snackbar
@@ -126,12 +125,12 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
             SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_parse_error_body),
                 summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
-                value = Settings::saveParseErrorBody,
+                state = Settings.saveParseErrorBody.asMutableState(),
             )
             val stripAds = Settings.stripExtraneousAds.asMutableState()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_block_extraneous_ads),
-                value = stripAds.rememberedAccessor,
+                state = stripAds,
             )
             AnimatedVisibility(visible = stripAds.value) {
                 LauncherPreference(
@@ -148,12 +147,10 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                     }
                 }
             }
-            var saveCrashLog by Settings.saveCrashLog.asMutableState()
-            SwitchPref(
-                checked = saveCrashLog,
-                onMutate = { saveCrashLog = !saveCrashLog },
+            SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_crash_log),
                 summary = stringResource(id = R.string.settings_advanced_save_crash_log_summary),
+                state = Settings.saveCrashLog.asMutableState(),
             )
             val dumpLogError = stringResource(id = R.string.settings_advanced_dump_logcat_failed)
             LauncherPreference(
@@ -176,35 +173,34 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                 title = stringResource(id = R.string.settings_advanced_read_cache_size),
                 entry = R.array.read_cache_size_entries,
                 entryValueRes = R.array.read_cache_size_entry_values,
-                value = Settings::readCacheSize.observed,
+                state = Settings.readCacheSize.asMutableState(),
             )
             var currentLanguage by remember { mutableStateOf(getAppLanguage()) }
             val languages = remember { getLanguages() }
-            DropDownPref(
-                title = stringResource(id = R.string.settings_advanced_app_language_title),
-                defaultValue = currentLanguage,
+            ListPreference(
+                value = currentLanguage,
                 onValueChange = {
                     setAppLanguage(it)
                     currentLanguage = it
                 },
-                useSelectedAsSummary = true,
-                entries = languages,
+                values = languages.keys.toList(),
+                title = { Text(stringResource(id = R.string.settings_advanced_app_language_title)) },
+                summary = { Text(languages[currentLanguage].orEmpty()) },
+                type = ListPreferenceType.DROPDOWN_MENU,
+                valueToText = { AnnotatedString(languages[it]!!) },
             )
             if (isAtLeastSExtension7) {
-                var enableCronet by Settings.enableCronet.asMutableState()
-                if (BuildConfig.DEBUG || !enableCronet) {
-                    SwitchPref(
-                        checked = enableCronet,
-                        onMutate = { enableCronet = !enableCronet },
+                val enableCronet = Settings.enableCronet.asMutableState()
+                if (BuildConfig.DEBUG || !enableCronet.value) {
+                    SwitchPreference(
                         title = "Enable Cronet",
+                        state = enableCronet,
                     )
                 }
-                AnimatedVisibility(enableCronet) {
-                    var enableQuic by Settings.enableQuic.asMutableState()
-                    SwitchPref(
-                        checked = enableQuic,
-                        onMutate = { enableQuic = !enableQuic },
+                AnimatedVisibility(enableCronet.value) {
+                    SwitchPreference(
                         title = stringResource(id = R.string.settings_advanced_enable_quic),
+                        state = Settings.enableQuic.asMutableState(),
                     )
                 }
                 LaunchedEffect(Unit) {
@@ -222,26 +218,22 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                     step = 3,
                     title = stringResource(id = R.string.settings_advanced_hardware_bitmap_threshold),
                     summary = stringResource(id = R.string.settings_advanced_hardware_bitmap_threshold_summary),
-                    value = Settings::hardwareBitmapThreshold,
+                    state = Settings.hardwareBitmapThreshold.asMutableState(),
                 )
             }
             SwitchPreference(
                 title = stringResource(id = R.string.preload_thumb_aggressively),
-                value = Settings::preloadThumbAggressively,
+                state = Settings.preloadThumbAggressively.asMutableState(),
             )
-            var animateItems by Settings.animateItems.asMutableState()
-            SwitchPref(
-                checked = animateItems,
-                onMutate = { animateItems = !animateItems },
+            SwitchPreference(
                 title = stringResource(id = R.string.animate_items),
                 summary = stringResource(id = R.string.animate_items_summary),
+                state = Settings.animateItems.asMutableState(),
             )
-            var desktopSite by Settings.desktopSite.asMutableState()
-            SwitchPref(
-                checked = desktopSite,
-                onMutate = { desktopSite = !desktopSite },
+            SwitchPreference(
                 title = stringResource(id = R.string.desktop_site),
                 summary = stringResource(id = R.string.desktop_site_summary),
+                state = Settings.desktopSite.asMutableState(),
             )
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
             LauncherPreference(
@@ -301,7 +293,7 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                             EhDB.putLocalFavorites(result.galleryInfoList)
                             launchSnackbar(string(R.string.settings_advanced_backup_favorite_start, status))
                             if (result.next != null) {
-                                delay(Settings.downloadDelay.toLong())
+                                delay(Settings.downloadDelay.value.toLong())
                                 favListUrlBuilder.setIndex(result.next, true)
                                 doBackup()
                             }

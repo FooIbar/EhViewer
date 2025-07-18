@@ -43,11 +43,8 @@ import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitSelectItem
 import com.hippo.ehviewer.ui.tools.awaitSelectTime
-import com.hippo.ehviewer.ui.tools.observed
-import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.copyTextToClipboard
 import com.hippo.ehviewer.util.isAtLeastT
-import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -124,7 +121,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                     title = stringResource(id = R.string.settings_eh_gallery_site),
                     entry = R.array.gallery_site_entries,
                     entryValueRes = R.array.gallery_site_entry_values,
-                    value = gallerySite,
+                    state = gallerySite,
                 )
                 Preference(
                     title = stringResource(id = R.string.settings_u_config),
@@ -135,7 +132,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                     summary = stringResource(id = R.string.settings_my_tags_summary),
                 ) { navigate(MyTagsScreenDestination) }
             }
-            var defaultFavSlot by Settings::defaultFavSlot.observed
+            var defaultFavSlot by Settings.defaultFavSlot.asMutableState()
             val disabled = stringResource(id = R.string.disabled_nav)
             val localFav = stringResource(id = R.string.local_favorites)
             val summary = when (defaultFavSlot) {
@@ -166,28 +163,28 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 title = stringResource(id = R.string.dark_theme),
                 entry = R.array.night_mode_entries,
                 entryValueRes = R.array.night_mode_values,
-                value = Settings::theme.observed,
+                state = Settings.theme.asMutableState(),
             )
             SwitchPreference(
                 title = stringResource(id = R.string.black_dark_theme),
-                value = Settings.blackDarkTheme::value,
+                state = Settings.blackDarkTheme.asMutableState(),
             )
             SwitchPreference(
                 title = stringResource(id = R.string.harmonize_category_color),
-                value = Settings::harmonizeCategoryColor,
+                state = Settings.harmonizeCategoryColor.asMutableState(),
             )
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_eh_launch_page),
                 entry = R.array.launch_page_entries,
                 entryValueRes = R.array.launch_page_entry_values,
-                value = Settings.launchPage.asMutableState(),
+                state = Settings.launchPage.asMutableState(),
             )
             val listMode = Settings.listMode.asMutableState()
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_eh_list_mode),
                 entry = R.array.list_mode_entries,
                 entryValueRes = R.array.list_mode_entry_values,
-                value = listMode,
+                state = listMode,
             )
             AnimatedVisibility(visible = listMode.value == 0) {
                 Column {
@@ -196,13 +193,13 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                         minValue = 20,
                         step = 7,
                         title = stringResource(id = R.string.list_tile_thumb_size),
-                        value = Settings.listThumbSize::value,
+                        state = Settings.listThumbSize.asMutableState(),
                     )
                     SimpleMenuPreferenceInt(
                         title = stringResource(id = R.string.settings_eh_detail_size),
                         entry = R.array.detail_size_entries,
                         entryValueRes = R.array.detail_size_entry_values,
-                        value = Settings.detailSize.asMutableState(),
+                        state = Settings.detailSize.asMutableState(),
                     )
                 }
             }
@@ -210,24 +207,22 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 maxValue = 10,
                 minValue = 1,
                 title = stringResource(id = R.string.settings_eh_thumb_columns),
-                value = Settings.thumbColumns::value,
+                state = Settings.thumbColumns.asMutableState(),
             )
-            var showGalleryPages by Settings.showGalleryPages.asMutableState()
-            SwitchPref(
-                checked = showGalleryPages,
-                onMutate = { showGalleryPages = !showGalleryPages },
+            SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_gallery_pages),
                 summary = stringResource(id = R.string.settings_eh_show_gallery_pages_summary),
+                state = Settings.showGalleryPages.asMutableState(),
             )
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_vote_status),
-                value = Settings.showVoteStatus::value,
+                state = Settings.showVoteStatus.asMutableState(),
             )
-            val showComments = Settings::showComments.observed
+            val showComments = Settings.showComments.asMutableState()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_gallery_comments),
                 summary = stringResource(id = R.string.settings_eh_show_gallery_comments_summary),
-                value = showComments.rememberedAccessor,
+                state = showComments,
             )
             AnimatedVisibility(visible = showComments.value) {
                 IntSliderPreference(
@@ -235,14 +230,14 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                     minValue = -101,
                     title = stringResource(id = R.string.settings_eh_show_gallery_comment_threshold),
                     summary = stringResource(id = R.string.settings_eh_show_gallery_comment_threshold_summary),
-                    value = Settings::commentThreshold,
+                    state = Settings.commentThreshold.asMutableState(),
                 )
             }
             if (EhTagDatabase.translatable) {
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_show_tag_translations),
                     summary = stringResource(id = R.string.settings_eh_show_tag_translations_summary),
-                    value = Settings::showTagTranslations,
+                    state = Settings.showTagTranslations.asMutableState(),
                 )
                 UrlPreference(
                     title = stringResource(id = R.string.settings_eh_tag_translations_source),
@@ -255,18 +250,18 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
             ) { navigate(FilterScreenDestination) }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_metered_network_warning),
-                value = Settings.meteredNetworkWarning::value,
+                state = Settings.meteredNetworkWarning.asMutableState(),
             )
             if (hasSignedIn) {
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_show_jpn_title),
                     summary = stringResource(id = R.string.settings_eh_show_jpn_title_summary),
-                    value = Settings::showJpnTitle,
+                    state = Settings.showJpnTitle.asMutableState(),
                 )
-                val reqNews = Settings::requestNews.observed
+                val reqNews = Settings.requestNews.asMutableState()
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_request_news),
-                    value = reqNews.rememberedAccessor,
+                    state = reqNews,
                 )
                 AnimatedVisibility(visible = reqNews.value) {
                     val pickerTitle = stringResource(id = R.string.settings_eh_request_news_timepicker)
@@ -280,7 +275,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 }
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_hide_hv_events),
-                    value = Settings::hideHvEvents,
+                    state = Settings.hideHvEvents.asMutableState(),
                 )
             }
         }

@@ -65,7 +65,7 @@ class SpiderDen(val info: GalleryInfo) {
         private set
 
     private var tempDownloadDir: Path? = null
-    private val saveAsCbz = Settings.saveAsCbz
+    private val saveAsCbz = Settings.saveAsCbz.value
     private val archiveName = "$gid.cbz"
 
     private val lock = ReentrantReadWriteLock()

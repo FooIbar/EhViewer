@@ -20,8 +20,6 @@ import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.isAuthenticationSupported
 import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
-import com.hippo.ehviewer.ui.tools.observed
-import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -46,11 +44,11 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
             val security = Settings.security.asMutableState()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_privacy_require_unlock),
-                value = security.rememberedAccessor,
+                state = security,
                 enabled = isAuthenticationSupported(),
             )
             AnimatedVisibility(visible = security.value) {
-                val securityDelay = Settings::securityDelay.observed
+                val securityDelay = Settings.securityDelay.asMutableState()
                 val summary = if (securityDelay.value == 0) {
                     stringResource(id = R.string.settings_privacy_require_unlock_delay_summary_immediately)
                 } else {
@@ -60,14 +58,14 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
                     maxValue = 30,
                     title = stringResource(id = R.string.settings_privacy_require_unlock_delay),
                     summary = summary,
-                    value = securityDelay.rememberedAccessor,
+                    state = securityDelay,
                     enabled = isAuthenticationSupported(),
                 )
             }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_privacy_secure),
                 summary = stringResource(id = R.string.settings_privacy_secure_summary),
-                value = Settings::enabledSecurity,
+                state = Settings.enabledSecurity.asMutableState(),
             )
             val searchHistoryCleared = stringResource(id = R.string.search_history_cleared)
             Preference(

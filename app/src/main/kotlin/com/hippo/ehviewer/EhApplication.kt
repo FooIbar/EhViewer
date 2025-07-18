@@ -96,7 +96,7 @@ class EhApplication :
         initSETConnection()
         // Initialize Settings on first access
         lifecycleScope.launchIO {
-            val mode = Settings.theme
+            val mode = Settings.theme.value
             if (!isAtLeastS) {
                 withUIContext {
                     AppCompatDelegate.setDefaultNightMode(mode)
@@ -140,7 +140,7 @@ class EhApplication :
                 FileUtils.cleanupDirectory(AppConfig.externalParseErrorDir)
             }
             launch { cleanupDownload() }
-            if (Settings.requestNews) {
+            if (Settings.requestNews.value) {
                 launch { checkDawn() }
             }
         }
@@ -237,7 +237,7 @@ class EhApplication :
         val imageCache by lazy {
             diskCache {
                 directory(appCtx.cacheDir.toOkioPath() / "image_cache")
-                maxSizeBytes(Settings.readCacheSize.coerceIn(320, 5120).toLong() * 1024 * 1024)
+                maxSizeBytes(Settings.readCacheSize.value.coerceIn(320, 5120).toLong() * 1024 * 1024)
             }
         }
 

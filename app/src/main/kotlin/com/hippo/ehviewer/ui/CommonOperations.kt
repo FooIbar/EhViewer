@@ -103,7 +103,7 @@ private val lck = Mutex()
 suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation) {
     if (downloadDir.isDirectory) {
         lck.withLock {
-            if (Settings.mediaScan) {
+            if (Settings.mediaScan.value) {
                 removeNoMediaFile(downloadDir)
             } else {
                 ensureNoMediaFile(downloadDir)
@@ -181,7 +181,7 @@ suspend fun modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
     val localFavorited = EhDB.containLocalFavorites(galleryInfo.gid)
     if (Settings.hasSignedIn.value) {
         val isFavorited = galleryInfo.favoriteSlot != NOT_FAVORITED
-        val defaultFavSlot = Settings.defaultFavSlot
+        val defaultFavSlot = Settings.defaultFavSlot.value
         if (defaultFavSlot == -2) {
             val localFav = getFavoriteIcon(localFavorited) to appCtx.getString(R.string.local_favorites)
             val cloudFav = Settings.favCat.mapIndexed { index, name ->

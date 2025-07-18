@@ -469,11 +469,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     private val mWorkerScope = object {
         private val jobs = hashMapOf<Int, Job>()
-        private val semaphore = Semaphore(Settings.multiThreadDownload)
+        private val semaphore = Semaphore(Settings.multiThreadDownload.value)
         private val pTokenLock = Mutex()
         private var showKey: String? = null
         private val showKeyLock = Mutex()
-        private val downloadDelay = Settings.downloadDelay.milliseconds
+        private val downloadDelay = Settings.downloadDelay.value.milliseconds
         private var lastRequestTime = TimeSource.Monotonic.markNow()
         var isDownloadMode = false
             private set
@@ -568,7 +568,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             var originImageUrl: String? = null
             var error: String? = null
             var forceHtml = false
-            val original = Settings.downloadOriginImage || orgImg
+            val original = Settings.downloadOriginImage.value || orgImg
             runSuspendCatching {
                 repeat(3) { retries ->
                     var imageUrl: String? = null

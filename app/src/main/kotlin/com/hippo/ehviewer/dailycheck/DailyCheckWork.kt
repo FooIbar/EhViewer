@@ -66,7 +66,7 @@ private fun getDailyCheckWorkRequest(): PeriodicWorkRequest {
 private const val WORK_NAME = "DailyCheckWork"
 
 fun updateDailyCheckWork(context: Context) {
-    if (Settings.requestNews) {
+    if (Settings.requestNews.value) {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             WORK_NAME,
             ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
@@ -93,7 +93,7 @@ suspend fun checkDawn() = runCatching {
 
 @SuppressLint("MissingPermission")
 fun showEventNotification(html: String) {
-    if (Settings.hideHvEvents && html.contains("You have encountered a monster!")) {
+    if (Settings.hideHvEvents.value && html.contains("You have encountered a monster!")) {
         return
     }
     val notificationManager = NotificationManagerCompat.from(appCtx)

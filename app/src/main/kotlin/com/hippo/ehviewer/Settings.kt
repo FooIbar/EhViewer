@@ -115,6 +115,33 @@ object Settings : DataStorePreferences(null) {
     val languageFilter = intPref("language_filter", -1)
     val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
     val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
+    val downloadDelay = intPref("download_delay_3", 1000)
+    val multiThreadDownload = intPref("download_thread_2", 3)
+    val preloadImage = intPref("preload_image_2", 5)
+    val connTimeout = intPref("conn_timeout", 10)
+    val timeoutSpeed = intPref("timeout_speed_level", 6)
+    val theme = intPref("theme_2", -1).observed { updateWhenThemeChanges() }
+    val readCacheSize = intPref("read_cache_size_2", 640)
+    val commentThreshold = intPref("comment_threshold", -100)
+    val hardwareBitmapThreshold = intPref("hardware_bitmap_threshold", 16384)
+    val showComments = boolPref("show_gallery_comments", true)
+    val requestNews = boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
+    val hideHvEvents = boolPref("hide_hv_events", false)
+    val showJpnTitle = boolPref("show_jpn_title", false)
+    val showTagTranslations = boolPref(KEY_SHOW_TAG_TRANSLATIONS, false).observed { updateWhenTagTranslationChanges() }
+    val enabledSecurity = boolPref("enable_secure", false)
+    val backupBeforeUpdate = boolPref("backup_before_update", true)
+    val useCIUpdateChannel = boolPref("ci_update_channel", AppConfig.isSnapshot)
+    val mediaScan = boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
+    val saveParseErrorBody = boolPref("save_parse_error_body", true)
+    val harmonizeCategoryColor = boolPref("harmonize_category_color", true)
+    val preloadThumbAggressively = boolPref("preload_thumb_aggressively", false)
+    val downloadOriginImage = boolPref("download_origin_image", false)
+    val saveAsCbz = boolPref("save_as_cbz", false)
+    val archiveMetadata = boolPref("archive_metadata", true)
+    val defaultFavSlot = intPref("default_favorite_slot", -2)
+    val securityDelay = intPref("require_unlock_delay", 0)
+    val updateIntervalDays = intPref("update_interval_days", 7)
     val hasSignedIn = boolPref("has_signed_in", EhCookieStore.hasSignedIn())
     val needSignIn = boolPref("need_sign_in", true)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
@@ -139,39 +166,12 @@ object Settings : DataStorePreferences(null) {
     var downloadQuery by stringOrNullPref("image_query", null)
     var downloadFragment by stringOrNullPref("image_fragment", null)
     var archivePasswds by stringSetPref("archive_passwds")
-    var downloadDelay by intPref("download_delay_3", 1000)
-    var multiThreadDownload by intPref("download_thread_2", 3)
-    var preloadImage by intPref("preload_image_2", 5)
-    var connTimeout by intPref("conn_timeout", 10)
-    var timeoutSpeed by intPref("timeout_speed_level", 6)
-    var theme by intPref("theme_2", -1).observed { updateWhenThemeChanges() }
-    var readCacheSize by intPref("read_cache_size_2", 640)
-    var commentThreshold by intPref("comment_threshold", -100)
-    var hardwareBitmapThreshold by intPref("hardware_bitmap_threshold", 16384)
-    var showComments by boolPref("show_gallery_comments", true)
-    var requestNews by boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
-    var hideHvEvents by boolPref("hide_hv_events", false)
-    var showJpnTitle by boolPref("show_jpn_title", false)
-    var showTagTranslations by boolPref(KEY_SHOW_TAG_TRANSLATIONS, false).observed { updateWhenTagTranslationChanges() }
     var appLinkVerifyTip by boolPref("app_link_verify_tip", false)
-    var enabledSecurity by boolPref("enable_secure", false)
-    var backupBeforeUpdate by boolPref("backup_before_update", true)
-    var useCIUpdateChannel by boolPref("ci_update_channel", AppConfig.isSnapshot)
-    var mediaScan by boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
     var hasDefaultDownloadLabel by boolPref("has_default_download_label", false)
-    var saveParseErrorBody by boolPref("save_parse_error_body", true)
     var removeImageFiles by boolPref("include_pic", true)
-    var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
-    var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
-    var downloadOriginImage by boolPref("download_origin_image", false)
-    var saveAsCbz by boolPref("save_as_cbz", false)
-    var archiveMetadata by boolPref("archive_metadata", true)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
-    var defaultFavSlot by intPref("default_favorite_slot", -2)
-    var securityDelay by intPref("require_unlock_delay", 0)
     var clipboardTextHashCode by intPref("clipboard_text_hash_code", 0)
     var requestNewsTime by intPref("request_news_time", 0).observed { updateWhenRequestNewsChanges() }
-    var updateIntervalDays by intPref("update_interval_days", 7)
     var lastDawnDays by intPref("last_dawn_days", 0)
     var recentToplist by stringPref("recent_toplist", "11")
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
@@ -214,7 +214,7 @@ object Settings : DataStorePreferences(null) {
     init {
         if ("CN" == Locale.getDefault().country) {
             edit {
-                if (KEY_SHOW_TAG_TRANSLATIONS !in prefs) showTagTranslations = true
+                if (KEY_SHOW_TAG_TRANSLATIONS !in prefs) showTagTranslations.value = true
             }
         }
         if (downloadFilterMode.value == DownloadsFilterMode.ARTIST.flag && recentDownloadLabel.value == null) {

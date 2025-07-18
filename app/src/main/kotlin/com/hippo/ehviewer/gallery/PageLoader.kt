@@ -68,7 +68,7 @@ abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: I
 
     val pages = (0 until size).map { Page(it) }
 
-    private val prefetchPageCount = Settings.preloadImage
+    private val prefetchPageCount = Settings.preloadImage.value
 
     fun restart() {
         lock.write { cache.evictAll() }

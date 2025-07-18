@@ -186,6 +186,8 @@ dependencies {
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.compiler)
 
+    implementation(libs.compose.preference)
+
     implementation(libs.androidx.core)
     implementation(libs.androidx.core.splashscreen)
 
