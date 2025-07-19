@@ -90,8 +90,8 @@ fun <T> PrefDelegate<T>.asMutableState(): MutableState<T> {
                 set(value) {
                     setValue(value)
                 }
-            override fun component1() = TODO()
-            override fun component2() = TODO()
+            override fun component1() = readOnly.value
+            override fun component2() = ::setValue
         }
     }
 }
