@@ -25,13 +25,13 @@ import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.LicenseScreenDestination
 import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
-import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.updater.Release
 import com.hippo.ehviewer.util.AppConfig
@@ -100,17 +100,17 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
             )
             SwitchPreference(
                 title = stringResource(id = R.string.backup_before_update),
-                value = Settings::backupBeforeUpdate,
+                state = Settings.backupBeforeUpdate.asMutableState(),
             )
             SwitchPreference(
                 title = stringResource(id = R.string.use_ci_update_channel),
-                value = Settings::useCIUpdateChannel,
+                state = Settings.useCIUpdateChannel.asMutableState(),
             )
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.auto_updates),
                 entry = R.array.update_frequency,
                 entryValueRes = R.array.update_frequency_values,
-                value = Settings::updateIntervalDays.observed,
+                state = Settings.updateIntervalDays.asMutableState(),
             )
             WorkPreference(title = stringResource(id = R.string.settings_about_check_for_updates)) {
                 runSuspendCatching {
@@ -138,7 +138,7 @@ suspend fun showNewVersion(release: Release) {
             Text(text = release.changelog)
         }
     }
-    if (Settings.backupBeforeUpdate) {
+    if (Settings.backupBeforeUpdate.value) {
         val time = ReadableTime.getFilenamableTime()
         EhDB.exportDB(ctx, (downloadLocation / "$time.db"))
     }

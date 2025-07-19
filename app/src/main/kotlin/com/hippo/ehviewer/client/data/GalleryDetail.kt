@@ -68,7 +68,7 @@ data class GalleryDetail(
 
     suspend fun filterComments() {
         comments = with(comments) {
-            val scoreThreshold = Settings.commentThreshold
+            val scoreThreshold = Settings.commentThreshold.value
             copy(
                 comments = comments.filter {
                     it.uploader ||

@@ -169,7 +169,7 @@ fun SearchBarScreen(
             val index = if (localSearch) query.lastIndexOf(' ') else query.lastIndexOfAny(TagTerminators)
             val keyword = query.substring(index + 1).trimStart()
             if (keyword.isNotEmpty()) {
-                EhTagDatabase.suggestion(keyword, Settings.showTagTranslations).take(50)
+                EhTagDatabase.suggestion(keyword, Settings.showTagTranslations.value).take(50)
                     .forEach { emit(TagSuggestion(it.hint, it.tag)) }
             }
         }

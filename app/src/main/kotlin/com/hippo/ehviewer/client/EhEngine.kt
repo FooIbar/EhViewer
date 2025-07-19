@@ -140,7 +140,7 @@ fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuffer>, e: 
 
     if (e is ParseException || e is SerializationException) {
         body.onLeft { if ("<" !in it) throw EhException(it) }
-        if (Settings.saveParseErrorBody) body.saveParseError(e)
+        if (Settings.saveParseErrorBody.value) body.saveParseError(e)
         throw EhException(appCtx.getString(R.string.error_parse_error), e)
     }
 

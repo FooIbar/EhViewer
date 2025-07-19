@@ -37,14 +37,14 @@ fun updateWhenThemeChanges() {
     collectScope.launch {
         delay(100) // Avoid recompose being cancelled
         if (isAtLeastS) {
-            val mode = when (Settings.theme) {
+            val mode = when (Settings.theme.value) {
                 AppCompatDelegate.MODE_NIGHT_NO -> UiModeManager.MODE_NIGHT_NO
                 AppCompatDelegate.MODE_NIGHT_YES -> UiModeManager.MODE_NIGHT_YES
                 else -> UiModeManager.MODE_NIGHT_AUTO
             }
             uiModeManager.setApplicationNightMode(mode)
         }
-        AppCompatDelegate.setDefaultNightMode(Settings.theme)
+        AppCompatDelegate.setDefaultNightMode(Settings.theme.value)
     }
 }
 

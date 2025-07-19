@@ -135,7 +135,7 @@ fun GalleryInfoListItem(
                     Text(
                         text = categoryText,
                         modifier = Modifier.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
-                        color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
+                        color = if (Settings.harmonizeCategoryColor.value) Color.Unspecified else EhUtils.categoryTextColor,
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(text = info.posted.orEmpty())
@@ -187,7 +187,7 @@ fun GalleryInfoGridItem(
         Badge(
             modifier = Modifier.align(Alignment.TopEnd).widthIn(min = 32.dp).height(24.dp),
             containerColor = categoryColor,
-            contentColor = if (Settings.harmonizeCategoryColor) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
+            contentColor = if (Settings.harmonizeCategoryColor.value) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
         ) {
             val shouldShowLanguage = showLanguage && info.simpleLanguage != null
             if (showPages && info.pages > 0) {

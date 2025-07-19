@@ -143,7 +143,7 @@ object EhUtils {
                 else -> BG_COLOR_UNKNOWN
             }.toInt(),
         )
-        return if (Settings.harmonizeCategoryColor) {
+        return if (Settings.harmonizeCategoryColor.value) {
             val primaryContainer = MaterialTheme.colorScheme.primaryContainer
             mergeColor(primaryContainer, primary)
         } else {
@@ -163,7 +163,7 @@ object EhUtils {
         Settings.needSignIn.value = true
     }
 
-    fun getSuitableTitle(gi: GalleryInfo): String = if (Settings.showJpnTitle) {
+    fun getSuitableTitle(gi: GalleryInfo): String = if (Settings.showJpnTitle.value) {
         if (gi.titleJpn.isNullOrEmpty()) gi.title else gi.titleJpn
     } else {
         if (gi.title.isNullOrEmpty()) gi.titleJpn else gi.title
@@ -201,7 +201,7 @@ object EhUtils {
                 r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                 downloadManager.enqueue(r)
             }
-            if (Settings.archiveMetadata) {
+            if (Settings.archiveMetadata.value) {
                 SpiderDen(galleryDetail).apply {
                     initDownloadDir()
                     writeComicInfo()

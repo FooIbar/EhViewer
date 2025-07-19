@@ -41,7 +41,7 @@ abstract class EhActivity : AppCompatActivity() {
     override fun onResume() {
         interceptSecurityOrReturn()
         super.onResume()
-        window.setSecureScreen(Settings.enabledSecurity)
+        window.setSecureScreen(Settings.enabledSecurity.value)
     }
 
     override fun finish() {

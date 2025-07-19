@@ -121,7 +121,10 @@ android {
     }
 
     androidResources {
-        ignoreAssetsPatterns += "!PublicSuffixDatabase.list" // OkHttp
+        ignoreAssetsPatterns += listOf(
+            "!PublicSuffixDatabase.list", // OkHttp
+            "!composepreference.preference.generated.resources",
+        )
         generateLocaleConfig = true
         localeFilters += listOf(
             "zh",
@@ -185,6 +188,8 @@ dependencies {
 
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.compiler)
+
+    implementation(libs.compose.preference)
 
     implementation(libs.androidx.core)
     implementation(libs.androidx.core.splashscreen)

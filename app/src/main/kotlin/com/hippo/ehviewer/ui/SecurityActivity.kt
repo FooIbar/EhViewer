@@ -94,7 +94,7 @@ val lockObserver = object : DefaultLifecycleObserver {
 fun Context.interceptSecurityOrReturn() {
     val lockedResumeTime = System.currentTimeMillis() / 1000
     val lockedDelayTime = lockedResumeTime - lockedLastLeaveTime
-    if (lockedDelayTime < Settings.securityDelay * 60) {
+    if (lockedDelayTime < Settings.securityDelay.value * 60) {
         locked = false
     } else if (Settings.security.value && isAuthenticationSupported() && locked) {
         startActivity(Intent(this, SecurityActivity::class.java))

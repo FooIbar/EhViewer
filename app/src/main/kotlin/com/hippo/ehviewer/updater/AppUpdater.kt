@@ -34,10 +34,10 @@ object AppUpdater {
     suspend fun checkForUpdate(forceCheck: Boolean = false): Release? {
         val now = Clock.System.now()
         val last = Instant.fromEpochSeconds(Settings.lastUpdateTime)
-        val interval = Settings.updateIntervalDays
+        val interval = Settings.updateIntervalDays.value
         if (forceCheck || interval != 0 && now > last + interval.days) {
             Settings.lastUpdateTime = now.epochSeconds
-            if (Settings.useCIUpdateChannel) {
+            if (Settings.useCIUpdateChannel.value) {
                 val curSha = BuildConfig.COMMIT_SHA
                 val branch = ghStatement(API_URL).executeAndParseAs<GithubRepo>().defaultBranch
                 val workflowRunsUrl = "$API_URL/actions/workflows/ci.yml/runs?branch=$branch&event=push&status=success&per_page=1"

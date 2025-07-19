@@ -17,6 +17,7 @@ arrow = "2.1.2"
 coil = "3.2.0"
 compose-bom = "2025.07.00"
 compose-destinations = "2.2.0"
+compose-preference = "2.0.0"
 kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
 kotlinx-datetime = "0.7.1"
@@ -77,6 +78,8 @@ compose-ui-util = { module = "androidx.compose.ui:ui-util" }
 
 compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "compose-destinations" }
 compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose-destinations" }
+
+compose-preference = { module = "me.zhanghai.compose.preference:preference", version.ref = "compose-preference" }
 
 material-motion-core = "io.github.fornewid:material-motion-compose-core:2.0.1"
 material-kolor = "com.materialkolor:material-kolor:3.0.0"

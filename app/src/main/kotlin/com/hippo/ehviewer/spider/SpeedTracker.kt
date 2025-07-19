@@ -72,8 +72,8 @@ suspend inline fun <R> timeoutBySpeed(
 ) = coroutineScope {
     val onTimeout = AtomicReference<OnTimeout?>(t).let { { e: IOException -> it.exchange(null)?.invoke(e) } }
     val watchdog = launch {
-        delay(Settings.connTimeout.seconds)
-        onTimeout(ConnectTimeoutException(url, Settings.connTimeout * 1000L))
+        delay(Settings.connTimeout.value.seconds)
+        onTimeout(ConnectTimeoutException(url, Settings.connTimeout.value * 1000L))
     }
     val tracker = SpeedTracker(2.seconds)
     request {
@@ -89,7 +89,7 @@ suspend inline fun <R> timeoutBySpeed(
         watchdog.cancel()
         resp.status.ensureSuccess()
         val speedWatchdog = launch {
-            val timeoutSpeed = speedLevelToSpeed(Settings.timeoutSpeed) * 1024.0
+            val timeoutSpeed = speedLevelToSpeed(Settings.timeoutSpeed.value) * 1024.0
             tracker.speedFlow(1.seconds).collect { speed ->
                 if (timeoutSpeed != 0.0 && speed < timeoutSpeed) {
                     onTimeout(LowSpeedException(url, speed.toLong()))
