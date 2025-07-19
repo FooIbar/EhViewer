@@ -18,9 +18,6 @@
 # Ktor logger
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 
-# https://youtrack.jetbrains.com/issue/CMP-7875
--dontwarn androidx.test.platform.app.InstrumentationRegistry
-
 # https://issuetracker.google.com/222232895
 -dontwarn androidx.window.extensions.**
 -dontwarn androidx.window.sidecar.Sidecar*

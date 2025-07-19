@@ -32,9 +32,8 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.zhanghai.compose.preference.DropdownListPreference
 import me.zhanghai.compose.preference.IntSliderPreference
-import me.zhanghai.compose.preference.ListPreference
-import me.zhanghai.compose.preference.ListPreferenceType
 import me.zhanghai.compose.preference.Preference
 import me.zhanghai.compose.preference.SwitchPreference
 
@@ -116,13 +115,11 @@ fun SimpleMenuPreferenceInt(title: String, summary: String? = null, @ArrayRes en
         val iter = entryArray.iterator()
         valuesArray.associateWith { iter.next() }
     }
-    ListPreference(
+    DropdownListPreference(
         state = state,
-        values = valuesArray.asList(),
+        items = map,
         title = { Text(title) },
         summary = { Text(summary ?: map[state.value].orEmpty()) },
-        type = ListPreferenceType.DROPDOWN_MENU,
-        valueToText = { AnnotatedString(map[it]!!) },
     )
 }
 

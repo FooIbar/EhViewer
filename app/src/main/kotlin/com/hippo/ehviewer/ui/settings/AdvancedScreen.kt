@@ -29,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.core.net.toUri
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
@@ -66,8 +65,7 @@ import java.util.zip.ZipOutputStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.merge
-import me.zhanghai.compose.preference.ListPreference
-import me.zhanghai.compose.preference.ListPreferenceType
+import me.zhanghai.compose.preference.DropdownListPreference
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.launch
 import moe.tarsin.snackbar
@@ -177,17 +175,15 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
             )
             var currentLanguage by remember { mutableStateOf(getAppLanguage()) }
             val languages = remember { getLanguages() }
-            ListPreference(
+            DropdownListPreference(
                 value = currentLanguage,
                 onValueChange = {
                     setAppLanguage(it)
                     currentLanguage = it
                 },
-                values = languages.keys.toList(),
+                items = languages,
                 title = { Text(stringResource(id = R.string.settings_advanced_app_language_title)) },
                 summary = { Text(languages[currentLanguage].orEmpty()) },
-                type = ListPreferenceType.DROPDOWN_MENU,
-                valueToText = { AnnotatedString(languages[it]!!) },
             )
             if (isAtLeastSExtension7) {
                 val enableCronet = Settings.enableCronet.asMutableState()
