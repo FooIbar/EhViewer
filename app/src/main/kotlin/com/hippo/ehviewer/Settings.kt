@@ -106,59 +106,70 @@ object Settings : DataStorePreferences(null) {
     var favCount by intArrayPref("fav_count", 10).emitTo(_favFlow)
     var favCloudCount by intPref("fav_cloud", 0).emitTo(_favFlow)
 
+    // Eh
     val gallerySite = intPref("gallery_site_2", 0).observed { updateWhenGallerySiteChanges() }
+    val defaultFavSlot = intPref("default_favorite_slot", -2)
+    val theme = intPref("theme_2", -1).observed { updateWhenThemeChanges() }
+    val blackDarkTheme = boolPref("black_dark_theme", false)
+    val harmonizeCategoryColor = boolPref("harmonize_category_color", true)
     val launchPage = intPref("launch_page_2", 0)
     val listMode = intPref("list_mode_2", 0)
+    val listThumbSize = intPref("list_tile_size", 40)
     val detailSize = intPref("detail_size_2", 0)
     val thumbColumns = intPref("thumb_columns", 3)
-    val listThumbSize = intPref("list_tile_size", 40)
-    val languageFilter = intPref("language_filter", -1)
-    val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
-    val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
-    val downloadDelay = intPref("download_delay_3", 1000)
-    val multiThreadDownload = intPref("download_thread_2", 3)
-    val preloadImage = intPref("preload_image_2", 5)
-    val connTimeout = intPref("conn_timeout", 10)
-    val timeoutSpeed = intPref("timeout_speed_level", 6)
-    val theme = intPref("theme_2", -1).observed { updateWhenThemeChanges() }
-    val readCacheSize = intPref("read_cache_size_2", 640)
-    val commentThreshold = intPref("comment_threshold", -100)
-    val hardwareBitmapThreshold = intPref("hardware_bitmap_threshold", 16384)
+    val showGalleryPages = boolPref("show_gallery_pages", true)
+    val showVoteStatus = boolPref("show_vote_status", false)
     val showComments = boolPref("show_gallery_comments", true)
+    val commentThreshold = intPref("comment_threshold", -100)
+    val showTagTranslations = boolPref(KEY_SHOW_TAG_TRANSLATIONS, false).observed { updateWhenTagTranslationChanges() }
+    val meteredNetworkWarning = boolPref("cellular_network_warning", false)
+    val showJpnTitle = boolPref("show_jpn_title", false)
     val requestNews = boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
     val hideHvEvents = boolPref("hide_hv_events", false)
-    val showJpnTitle = boolPref("show_jpn_title", false)
-    val showTagTranslations = boolPref(KEY_SHOW_TAG_TRANSLATIONS, false).observed { updateWhenTagTranslationChanges() }
-    val enabledSecurity = boolPref("enable_secure", false)
-    val backupBeforeUpdate = boolPref("backup_before_update", true)
-    val useCIUpdateChannel = boolPref("ci_update_channel", AppConfig.isSnapshot)
+
+    // Download
     val mediaScan = boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
-    val saveParseErrorBody = boolPref("save_parse_error_body", true)
-    val harmonizeCategoryColor = boolPref("harmonize_category_color", true)
-    val preloadThumbAggressively = boolPref("preload_thumb_aggressively", false)
+    val multiThreadDownload = intPref("download_thread_2", 3)
+    val downloadDelay = intPref("download_delay_3", 1000)
+    val connTimeout = intPref("conn_timeout", 10)
+    val timeoutSpeed = intPref("timeout_speed_level", 6)
+    val preloadImage = intPref("preload_image_2", 5)
     val downloadOriginImage = boolPref("download_origin_image", false)
     val saveAsCbz = boolPref("save_as_cbz", false)
     val archiveMetadata = boolPref("archive_metadata", true)
-    val defaultFavSlot = intPref("default_favorite_slot", -2)
-    val securityDelay = intPref("require_unlock_delay", 0)
-    val updateIntervalDays = intPref("update_interval_days", 7)
-    val hasSignedIn = boolPref("has_signed_in", EhCookieStore.hasSignedIn())
-    val needSignIn = boolPref("need_sign_in", true)
-    val meteredNetworkWarning = boolPref("cellular_network_warning", false)
-    val blackDarkTheme = boolPref("black_dark_theme", false)
-    val gridView = boolPref("grid_view", false)
-    val showGalleryPages = boolPref("show_gallery_pages", true)
-    val qSSaveProgress = boolPref("qs_save_progress", true)
+
+    // Privacy
     val security = boolPref("require_unlock", false)
+    val securityDelay = intPref("require_unlock_delay", 0)
+    val enabledSecurity = boolPref("enable_secure", false)
+
+    // Advanced
+    val saveParseErrorBody = boolPref("save_parse_error_body", true)
     val saveCrashLog = boolPref("save_crash_log", true)
-    val animateItems = boolPref("animate_items", true)
+    val readCacheSize = intPref("read_cache_size_2", 640)
     val enableCronet = boolPref("enable_cronet", true)
     val enableQuic = boolPref("enable_quic", true)
+    val hardwareBitmapThreshold = intPref("hardware_bitmap_threshold", 16384)
+    val preloadThumbAggressively = boolPref("preload_thumb_aggressively", false)
+    val animateItems = boolPref("animate_items", true)
     val desktopSite = boolPref("desktop_site", true)
+
+    // About
+    val backupBeforeUpdate = boolPref("backup_before_update", true)
+    val useCIUpdateChannel = boolPref("ci_update_channel", AppConfig.isSnapshot)
+    val updateIntervalDays = intPref("update_interval_days", 7)
+
+    // Misc
+    val languageFilter = intPref("language_filter", -1)
+    val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
+    val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
+    val hasSignedIn = boolPref("has_signed_in", EhCookieStore.hasSignedIn())
+    val needSignIn = boolPref("need_sign_in", true)
+    val gridView = boolPref("grid_view", false)
+    val qSSaveProgress = boolPref("qs_save_progress", true)
     val displayName = stringOrNullPref("display_name", null)
     val avatar = stringOrNullPref("avatar", null)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
-    val showVoteStatus = boolPref("show_vote_status", false)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)
