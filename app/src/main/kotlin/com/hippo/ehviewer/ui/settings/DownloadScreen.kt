@@ -80,6 +80,8 @@ import okio.Path
 import okio.Path.Companion.toOkioPath
 import splitties.init.appCtx
 
+private const val URI_FLAGS = FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION
+
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = Screen(navigator) {
@@ -100,8 +102,11 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
             val selectDownloadDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { treeUri ->
                 treeUri?.run {
                     launchIO {
-                        runCatching {
-                            contextOf<Context>().contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
+                        contextOf<Context>().contentResolver.runCatching {
+                            persistedUriPermissions.forEach {
+                                releasePersistableUriPermission(it.uri, URI_FLAGS)
+                            }
+                            takePersistableUriPermission(treeUri, URI_FLAGS)
                             val path = DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri)).toOkioPath()
                             check(path.isDirectory) { "$path is not a directory" }
                             keepNoMediaFileStatus(path) // Check if the directory is writable
@@ -130,7 +135,14 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                             },
                             title = R.string.waring,
                             onCancelButtonClick = {
-                                downloadLocationState = path
+                                if (downloadLocationState != path) {
+                                    contextOf<Context>().contentResolver.run {
+                                        persistedUriPermissions.forEach {
+                                            releasePersistableUriPermission(it.uri, URI_FLAGS)
+                                        }
+                                    }
+                                    downloadLocationState = path
+                                }
                             },
                         ) {
                             Text(stringResource(id = R.string.default_download_dir_not_empty))
