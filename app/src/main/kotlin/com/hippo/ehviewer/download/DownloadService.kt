@@ -16,6 +16,7 @@
 package com.hippo.ehviewer.download
 
 import android.Manifest
+import android.app.ForegroundServiceStartNotAllowedException
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
@@ -37,6 +38,7 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
+import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.ehviewer.util.unsafeLazy
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
@@ -67,12 +69,18 @@ class DownloadService :
             NotificationChannelCompat.Builder(channelId, NotificationManagerCompat.IMPORTANCE_LOW)
                 .setName(getString(R.string.download_service)).build(),
         )
-        downloadingNotification.builder.run {
+        downloadingNotification.builder.runCatching {
             setContentTitle(getString(R.string.download_service))
                 .setContentText(null)
                 .setSubText(null)
                 .setProgress(0, 0, true)
             startForeground(ID_DOWNLOADING, build())
+        }.onFailure {
+            if (isAtLeastS && it is ForegroundServiceStartNotAllowedException) {
+                logcat(it)
+            } else {
+                throw it
+            }
         }
         launch {
             deferredMgr.await().setDownloadListener(this@DownloadService)
