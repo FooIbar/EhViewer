@@ -311,16 +311,6 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         }
     }
 
-    suspend fun stopCurrentDownload() {
-        val info = stopCurrentDownloadInternal()
-        if (info != null) {
-            // Update listener
-            mutableNotifyFlow.emit(info)
-            // Ensure download
-            ensureDownload()
-        }
-    }
-
     suspend fun stopRangeDownload(gidList: LongArray) {
         stopRangeDownloadInternal(gidList)
 

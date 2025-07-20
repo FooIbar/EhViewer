@@ -117,19 +117,11 @@ class DownloadService :
                 }
             }
 
-            ACTION_START_ALL -> {
-                deferredMgr.await().startAllDownload()
-            }
-
-            ACTION_STOP_ALL -> deferredMgr.await().run {
-                if (isIdle) stopSelf() else stopAllDownload()
-            }
-
-            ACTION_CLEAR -> {
-                clear()
-                checkStopSelf()
-            }
+            ACTION_START_ALL -> deferredMgr.await().startAllDownload()
+            ACTION_STOP_ALL -> deferredMgr.await().stopAllDownload()
+            ACTION_CLEAR -> clear()
         }
+        checkStopSelf()
     }
 
     override fun onBind(intent: Intent) = null
