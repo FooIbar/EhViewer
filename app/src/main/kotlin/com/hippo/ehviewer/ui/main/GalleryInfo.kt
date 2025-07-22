@@ -51,8 +51,8 @@ import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.listThumbGenerator
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 
-context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 fun GalleryInfoListItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
@@ -145,8 +145,8 @@ fun GalleryInfoListItem(
     }
 }
 
-context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 fun GalleryInfoGridItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,

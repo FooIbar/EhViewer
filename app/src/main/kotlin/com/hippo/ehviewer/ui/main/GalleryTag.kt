@@ -30,8 +30,8 @@ import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.includeFontPadding
 
-context(_: Context)
 @Composable
+context(_: Context)
 fun GalleryTags(
     tagGroups: List<GalleryTagGroup>,
     onTagClick: (String) -> Unit,

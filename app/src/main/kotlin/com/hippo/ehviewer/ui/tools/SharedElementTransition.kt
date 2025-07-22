@@ -25,12 +25,12 @@ val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptySet())
 @Stable
 value class TransitionsVisibilityScope(val scopes: Set<AnimatedVisibilityScope>)
 
-context(visScope: TransitionsVisibilityScope)
 @Composable
+context(visScope: TransitionsVisibilityScope)
 inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(visScope.scopes, scope) { TransitionsVisibilityScope(visScope.scopes + scope) })
 
-context(shareScope: SharedTransitionScope, visScope: TransitionsVisibilityScope, generator: SETNodeGenerator)
 @Composable
+context(shareScope: SharedTransitionScope, visScope: TransitionsVisibilityScope, generator: SETNodeGenerator)
 fun Modifier.sharedBounds(
     key: String,
     enter: EnterTransition = fadeIn(),
@@ -53,8 +53,8 @@ fun Modifier.sharedBounds(
     }
 }
 
-context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 @Composable
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 inline fun SharedElementBox(key: String, shape: Shape, crossinline content: @Composable BoxScope.() -> Unit) {
     val modifier = Modifier.sharedBounds(key = key).clip(shape)
     CompositionLocalProvider { Box(modifier = modifier, content = content) }

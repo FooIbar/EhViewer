@@ -140,8 +140,8 @@ fun AnnotatedString.toBBCode() = buildString {
     }
 }
 
-context(activity: MainActivity)
 @Composable
+context(activity: MainActivity)
 fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): TextToolbar {
     var tfv by textFieldValue
     val view = LocalView.current

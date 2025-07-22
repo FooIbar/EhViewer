@@ -617,9 +617,9 @@ fun AnimatedVisibilityScope.GalleryListScreen(
 
 const val TOPLIST_PAGES = 200
 
-context(_: Context)
 @Composable
 @Stable
+context(_: Context)
 private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder, appName: Boolean = true): String? {
     val keyword = urlBuilder.keyword
     val category = urlBuilder.category

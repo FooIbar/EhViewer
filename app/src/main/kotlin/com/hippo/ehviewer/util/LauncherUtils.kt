@@ -82,8 +82,8 @@ suspend fun requestPermission(key: String): Boolean {
 context(_: Context)
 suspend fun pickVisualMedia(type: VisualMediaType): Uri? = awaitActivityResult(ActivityResultContracts.PickVisualMedia(), PickVisualMediaRequest(mediaType = type))
 
-context(ctx: Context)
 @RequiresApi(Build.VERSION_CODES.O)
+context(ctx: Context)
 suspend fun requestInstallPermission(): Boolean = with(ctx) {
     if (packageManager.canRequestPackageInstalls()) return true
     val granted = requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)

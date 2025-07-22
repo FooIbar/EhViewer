@@ -76,8 +76,8 @@ fun GalleryDetailHeaderInfoCard(
     }
 }
 
-context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 fun GalleryDetailHeaderCard(
     info: GalleryInfo,
     onInfoCardClick: () -> Unit,

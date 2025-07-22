@@ -19,8 +19,8 @@ import com.hippo.ehviewer.util.findActivity
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 
-context(scope: AnimatedVisibilityScope)
 @Composable
+context(scope: AnimatedVisibilityScope)
 inline fun <R> Screen(
     navigator: DestinationsNavigator,
     block: @Composable context(MainActivity, SnackbarHostState, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)

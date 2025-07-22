@@ -60,8 +60,8 @@ private val categoryTable = arrayOf(
     EhUtils.MISC to R.string.misc,
 )
 
-context(_: DialogState, _: CoroutineScope, _: Context)
 @Composable
+context(_: DialogState, _: CoroutineScope, _: Context)
 fun SearchFilter(
     modifier: Modifier = Modifier,
     category: Int,

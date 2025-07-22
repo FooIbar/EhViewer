@@ -62,8 +62,8 @@ private fun GalleryDetail.content() = arrayOf(
     R.string.favorite_name to favoriteName,
 )
 
-context(_: Context, _: DestinationsNavigator)
 @Composable
+context(_: Context, _: DestinationsNavigator)
 fun GalleryInfoBottomSheet(detail: GalleryDetail) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(

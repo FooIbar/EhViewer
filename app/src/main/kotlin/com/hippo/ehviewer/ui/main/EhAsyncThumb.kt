@@ -32,8 +32,8 @@ fun requestOf(model: GalleryInfo) = with(LocalContext.current) {
     remember(model) { imageRequest(model) }
 }
 
-context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 @Composable
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 fun EhAsyncCropThumb(
     key: GalleryInfo,
     modifier: Modifier = Modifier,
@@ -56,8 +56,8 @@ fun EhAsyncCropThumb(
     )
 }
 
-context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 @Composable
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 fun EhThumbCard(
     key: GalleryInfo,
     modifier: Modifier = Modifier,

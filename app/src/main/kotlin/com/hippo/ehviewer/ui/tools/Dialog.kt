@@ -119,8 +119,8 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
     @Composable
     fun rememberLocal() = remember { DialogState(mutex) }
 
-    context(scope: BoxScope)
     @Composable
+    context(scope: BoxScope)
     fun Place() = value?.let { it(scope) }
 
     fun dismiss() {

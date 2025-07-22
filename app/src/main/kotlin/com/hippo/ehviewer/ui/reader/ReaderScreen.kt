@@ -182,8 +182,8 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
     }
 }
 
-context(activity: MainActivity, _: SnackbarHostState, _: DialogState, _: CoroutineScope)
 @Composable
+context(activity: MainActivity, _: SnackbarHostState, _: DialogState, _: CoroutineScope)
 fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
     LaunchedEffect(Unit) {
         val orientation = activity.requestedOrientation
