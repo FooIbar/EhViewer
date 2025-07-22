@@ -8,8 +8,8 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
-context(navigator: DestinationsNavigator)
 @Composable
+context(navigator: DestinationsNavigator)
 fun NavigationIcon() = IconButton(onClick = { navigator.popBackStack() }, shapes = IconButtonDefaults.shapes()) {
     Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
 }

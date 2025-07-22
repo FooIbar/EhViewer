@@ -107,8 +107,8 @@ abstract class Suggestion {
 
 suspend fun SearchDao.suggestions(prefix: String, limit: Int) = (if (prefix.isBlank()) list(limit) else rawSuggestions(prefix, limit))
 
-context(_: DialogState, _: DestinationsNavigator)
 @Composable
+context(_: DialogState, _: DestinationsNavigator)
 fun SearchBarScreen(
     onApplySearch: (String) -> Unit,
     expanded: Boolean,

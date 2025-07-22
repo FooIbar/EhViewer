@@ -78,8 +78,8 @@ operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
     override fun calculateTopPadding() = l.calculateTopPadding() + r.calculateTopPadding()
 }
 
-context(_: CoroutineScope, ctx: Context)
 @Composable
+context(_: CoroutineScope, ctx: Context)
 fun GalleryList(
     modifier: Modifier = Modifier,
     data: LazyPagingItems<BaseGalleryInfo>,

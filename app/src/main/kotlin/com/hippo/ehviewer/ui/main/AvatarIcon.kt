@@ -84,8 +84,8 @@ private val limitFlow: StateFlow<Result> = refreshEvent.conflate()
     .let { src -> merge(src, invalidateEvent.map { none() }) }
     .stateIn(limitScope, SharingStarted.Eagerly, none())
 
-context(_: CoroutineScope, _: DialogState, _: SnackbarHostState, _: DestinationsNavigator)
 @Composable
+context(_: CoroutineScope, _: DialogState, _: SnackbarHostState, _: DestinationsNavigator)
 fun AvatarIcon() {
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
     if (hasSignedIn) {

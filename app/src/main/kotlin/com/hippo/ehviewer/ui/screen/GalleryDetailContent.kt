@@ -164,8 +164,8 @@ import moe.tarsin.navigate
 import moe.tarsin.snackbar
 import moe.tarsin.string
 
-context(_: CoroutineScope, _: DestinationsNavigator, _: DialogState, _: MainActivity, _: SnackbarHostState, _: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
+context(_: CoroutineScope, _: DestinationsNavigator, _: DialogState, _: MainActivity, _: SnackbarHostState, _: SharedTransitionScope, _: TransitionsVisibilityScope)
 fun GalleryDetailContent(
     galleryInfo: GalleryInfo,
     contentPadding: PaddingValues,
@@ -393,8 +393,8 @@ fun GalleryDetailContent(
     }
 }
 
-context(ctx: Context, _: CoroutineScope, _: DestinationsNavigator, _: DialogState, _: SnackbarHostState)
 @Composable
+context(ctx: Context, _: CoroutineScope, _: DestinationsNavigator, _: DialogState, _: SnackbarHostState)
 fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     @Composable
     fun EhIconButton(
@@ -786,8 +786,8 @@ private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt())
 
 private fun List<GalleryTagGroup>.artistTag() = find { (ns, _) -> ns == TagNamespace.Artist || ns == TagNamespace.Cosplayer }?.let { (ns, tags) -> "$ns:${tags[0].text}" }
 
-context(_: Context)
 @Composable
+context(_: Context)
 private fun GalleryDetail.collectPreviewItems() = rememberInVM(previewList) {
     val pageSize = previewList.size
     val pages = pages

@@ -98,8 +98,8 @@ fun interface FabBuilder {
     fun onClick(icon: ImageVector, that: suspend () -> Unit) = onClick(icon, true, that)
 }
 
-context(_: CoroutineScope)
 @Composable
+context(_: CoroutineScope)
 fun FabLayout(
     hidden: Boolean,
     expanded: Boolean,

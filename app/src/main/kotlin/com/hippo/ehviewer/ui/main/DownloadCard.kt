@@ -50,8 +50,8 @@ import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.listThumbGenerator
 import com.hippo.ehviewer.util.FileUtils
 
-context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 fun DownloadCard(
     onClick: () -> Unit,
     onThumbClick: () -> Unit,
