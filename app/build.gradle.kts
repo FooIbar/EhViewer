@@ -61,8 +61,8 @@ android {
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
         versionCode = 180063
-        versionName = "1.14.0"
-        // versionNameSuffix = "-SNAPSHOT"
+        versionName = "1.15.0"
+        versionNameSuffix = "-SNAPSHOT"
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("long", "COMMIT_TIME", commitTime)
