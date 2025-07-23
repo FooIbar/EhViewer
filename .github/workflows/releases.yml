@@ -40,12 +40,12 @@ jobs:
         with:
           path: app/.cxx
           key: cmake-
-          restore-keys: cmake-
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
+          cache-read-only: true
 
       - name: Generate Baseline Profile
         run: ./gradlew generateBaselineProfile
