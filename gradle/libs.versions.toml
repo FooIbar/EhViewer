@@ -98,7 +98,7 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 
 logcat = "com.squareup.logcat:logcat:0.2.3"
 
-okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
+okio-bom = { module = "com.squareup.okio:okio-bom", version.ref = "okio" }
 
 reorderable = "sh.calvin.reorderable:reorderable:2.5.1"
 

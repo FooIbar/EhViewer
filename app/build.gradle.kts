@@ -216,7 +216,7 @@ dependencies {
     // https://square.github.io/okhttp/changelogs/changelog/
     implementation(platform(libs.okhttp.bom))
 
-    implementation(libs.okio.jvm)
+    implementation(platform(libs.okio.bom))
 
     implementation(libs.logcat)
 
