@@ -82,7 +82,7 @@ compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinat
 compose-preference = { module = "me.zhanghai.compose.preference:preference", version.ref = "compose-preference" }
 
 material-motion-core = "io.github.fornewid:material-motion-compose-core:2.0.1"
-material-kolor = "com.materialkolor:material-kolor:3.0.0"
+material-kolor = "com.materialkolor:material-kolor:3.0.1"
 
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
 
