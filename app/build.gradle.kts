@@ -284,6 +284,7 @@ kotlin {
         )
         freeCompilerArgs.addAll(
             "-Xcontext-parameters",
+            "-Xwhen-expressions=indy",
             "-Xannotation-default-target=param-property",
         )
     }
