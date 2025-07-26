@@ -50,19 +50,19 @@ import com.hippo.ehviewer.ktbuilder.execute
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
-import com.hippo.ehviewer.util.updateAndGet
 import com.hippo.files.openFileDescriptor
 import com.hippo.files.toUri
 import java.nio.ByteBuffer
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.decrementAndFetch
+import kotlin.concurrent.atomics.updateAndFetch
 import okio.Path
 import splitties.init.appCtx
 
 class Image private constructor(image: CoilImage, private val src: ImageSource) {
     val refcnt = AtomicInt(1)
 
-    fun pin() = refcnt.updateAndGet { if (it != 0) it + 1 else 0 } != 0
+    fun pin() = refcnt.updateAndFetch { if (it != 0) it + 1 else 0 } != 0
 
     fun unpin() = (refcnt.decrementAndFetch() == 0).also { if (it) recycle() }
 
