@@ -96,7 +96,7 @@ ktlint = "com.pinterest.ktlint:ktlint-cli:1.7.1"
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
-logcat = "com.squareup.logcat:logcat:0.3"
+logcat = "com.squareup.logcat:logcat:0.4"
 
 okio-bom = { module = "com.squareup.okio:okio-bom", version.ref = "okio" }
 
