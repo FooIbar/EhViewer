@@ -39,7 +39,7 @@ fun copyTextToClipboard(text: CharSequence?, isSensitive: Boolean) {
     )
 }
 
-context(ctx: Context)
+context(_: Context)
 fun addTextToClipboard(text: CharSequence?, useToast: Boolean = false) {
     copyTextToClipboard(text, false)
     // Avoid double notify user since system have done that on Tiramisu above

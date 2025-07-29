@@ -25,7 +25,7 @@ private fun urlToDestination(url: String): Direction? {
 }
 
 @MainThread
-context(nav: DestinationsNavigator)
+context(_: DestinationsNavigator)
 fun navWithUrl(url: String): Boolean {
     val dest = urlToDestination(url) ?: return false
     navigate(dest)

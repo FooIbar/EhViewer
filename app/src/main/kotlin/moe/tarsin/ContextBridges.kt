@@ -39,7 +39,7 @@ fun string(@StringRes id: Int, vararg args: Any?) = ctx.getString(id, *args)
 context(activity: MainActivity)
 fun tip(message: String, useToast: Boolean = false) = activity.showTip(message, useToast)
 
-context(activity: MainActivity)
+context(_: MainActivity)
 fun tip(@StringRes id: Int, useToast: Boolean = false) = tip(string(id), useToast)
 
 context(state: SnackbarHostState)

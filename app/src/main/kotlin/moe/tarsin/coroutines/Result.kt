@@ -13,5 +13,5 @@ inline fun <R> runSuspendCatching(block: () -> R) = runCatching(block).except<R,
 
 inline fun <T, R> T.runSuspendCatching(block: T.() -> R) = runCatching(block).except<R, CancellationException>()
 
-context(state: SnackbarHostState, scope: CoroutineScope)
+context(_: SnackbarHostState, _: CoroutineScope)
 inline fun <R> runSwallowingWithUI(block: () -> R) = runSuspendCatching(block).onFailure { e -> launch { snackbar(e.displayString()) } }
