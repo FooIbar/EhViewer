@@ -829,7 +829,7 @@ private fun GalleryDetail.collectPreviewItems() = rememberInVM(previewList) {
     }.flow.cachedIn(viewModelScope)
 }.collectAsLazyPagingItems()
 
-context(ctx: Context)
+context(_: Context)
 private fun LazyGridScope.galleryPreview(detail: GalleryDetail, data: LazyPagingItems<GalleryPreview>, onClick: (Int) -> Unit) {
     val isV2Thumb = detail.previewList.first() is V2GalleryPreview
     items(

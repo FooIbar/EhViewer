@@ -114,7 +114,7 @@ suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation) {
 
 fun getFavoriteIcon(favorited: Boolean) = if (favorited) Icons.Default.Favorite else Icons.Default.FavoriteBorder
 
-context(_: DialogState, context: MainActivity)
+context(_: DialogState, _: MainActivity)
 suspend fun startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGalleryInfo) {
     if (isAtLeastT) {
         requestPermission(Manifest.permission.POST_NOTIFICATIONS)

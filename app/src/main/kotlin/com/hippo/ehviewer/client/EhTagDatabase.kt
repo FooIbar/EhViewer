@@ -82,7 +82,7 @@ object EhTagDatabase : CoroutineScope {
 
     data class Tag(val tag: String, val hint: String?, val score: Float)
 
-    context(ctx: Context)
+    context(_: Context)
     fun suggestion(rawKeyword: String, expectTranslate: Boolean): List<Tag> {
         val keyword = PREFIXES.fold(rawKeyword) { kwd, pfx -> kwd.removePrefix(pfx) }
         if (!initialized || keyword.isEmpty()) return emptyList()
