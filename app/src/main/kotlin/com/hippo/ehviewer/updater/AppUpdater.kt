@@ -109,8 +109,8 @@ private suspend inline fun ghStatement(
 private val GithubTokenParts = arrayOf(
     "github",
     "pat",
-    "11A4H2ACI0XXTRsYkt1Mps",
-    "uJ5n8UbLv20j6Ue4k1x25Z7u63EaCdDNYooxSeI4GJaQYKXWDZEtTmDVwnh",
+    "11A4H2ACI0iGDuL1O6wPYW",
+    "OTFg8xaCNUwR1NHaJE1AT3LoYPfz6bouI7E7ReLf8GjIRFHCL5UsHL9EnWP",
 )
 
 data class Release(
