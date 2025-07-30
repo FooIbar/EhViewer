@@ -1,20 +1,15 @@
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule
 import java.util.regex.Pattern
-import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 val isRelease: Boolean
     get() = gradle.startParameter.taskNames.any { it.contains("Release") }
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ehviewer.android.application)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.spotless)
     alias(libs.plugins.aboutlibrariesPlugin)
-    alias(libs.plugins.composeCompilerReportGenerator)
     alias(libs.plugins.baselineprofile)
 }
 
@@ -79,9 +74,10 @@ android {
     flavorDimensions += "api"
 
     productFlavors {
-        create("default")
+        create("default") {
+            minSdk = 26
+        }
         create("marshmallow") {
-            minSdk = 23
             applicationIdSuffix = ".m"
             versionNameSuffix = "-M"
         }
@@ -95,12 +91,6 @@ android {
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-    }
-
-    lint {
-        checkReleaseBuilds = false
-        disable += setOf("MissingTranslation", "MissingQuantity")
-        error += setOf("InlinedApi")
     }
 
     packaging {
@@ -254,38 +244,13 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(21)
-
-    // https://kotlinlang.org/docs/gradle-compiler-options.html#all-compiler-options
     compilerOptions {
-        jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
-        progressiveMode = true
         optIn.addAll(
             "coil3.annotation.ExperimentalCoilApi",
-            "androidx.compose.foundation.layout.ExperimentalLayoutApi",
-            "androidx.compose.material3.ExperimentalMaterial3Api",
-            "androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
-            "androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
-            "androidx.compose.ui.ExperimentalComposeUiApi",
-            "androidx.compose.foundation.ExperimentalFoundationApi",
-            "androidx.compose.animation.ExperimentalAnimationApi",
-            "androidx.compose.animation.ExperimentalSharedTransitionApi",
-            "androidx.compose.runtime.ExperimentalComposeRuntimeApi",
             "androidx.paging.ExperimentalPagingApi",
-            "kotlin.ExperimentalStdlibApi",
-            "kotlin.concurrent.atomics.ExperimentalAtomicApi",
-            "kotlin.contracts.ExperimentalContracts",
-            "kotlin.time.ExperimentalTime",
-            "kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "kotlinx.coroutines.FlowPreview",
             "kotlinx.serialization.ExperimentalSerializationApi",
             "splitties.experimental.ExperimentalSplittiesApi",
             "splitties.preferences.DataStorePreferencesPreview",
-        )
-        freeCompilerArgs.addAll(
-            "-Xcontext-parameters",
-            "-Xwhen-expressions=indy",
-            "-Xannotation-default-target=param-property",
         )
     }
 }
@@ -303,18 +268,5 @@ aboutLibraries {
         exclusionPatterns.add(Pattern.compile("org\\.jetbrains\\.(?:compose|androidx)\\..*"))
         duplicationMode = DuplicateMode.MERGE
         duplicationRule = DuplicateRule.GROUP
-    }
-}
-
-val ktlintVersion = libs.ktlint.get().version
-
-spotless {
-    kotlin {
-        // https://github.com/diffplug/spotless/issues/111
-        target("src/**/*.kt")
-        ktlint(ktlintVersion)
-    }
-    kotlinGradle {
-        ktlint(ktlintVersion)
     }
 }
