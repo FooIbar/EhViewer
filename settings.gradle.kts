@@ -27,7 +27,7 @@ dependencyResolutionManagement {
 }
 
 plugins {
-    id("com.android.settings") version "8.11.1"
+    id("com.android.settings") version "8.12.0"
 }
 
 android {
