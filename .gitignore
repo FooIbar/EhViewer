@@ -1,8 +1,9 @@
 .gradle
 /local.properties
 .DS_Store
-/build
-/.kotlin
+build
+.cxx
+.kotlin
 *.iml
 .idea
 .vscode

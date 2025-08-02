@@ -42,6 +42,9 @@ jobs:
         with:
           cache-read-only: true
 
+      - name: Check build-logic
+        run: ./gradlew :build-logic:convention:check
+
       - name: Spotless Check
         run: ./gradlew spotlessCheck
 

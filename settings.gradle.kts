@@ -1,6 +1,6 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
-        gradlePluginPortal()
         google {
             content {
                 includeGroupByRegex("com\\.android.*")
@@ -9,6 +9,7 @@ pluginManagement {
             }
         }
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
@@ -32,7 +33,7 @@ plugins {
 
 android {
     compileSdk = 36
-    minSdk = 26
+    minSdk = 23
     targetSdk = 36
     ndkVersion = "28.2.13676358"
     buildToolsVersion = "36.0.0"
