@@ -16,10 +16,10 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 @Suppress("unused")
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
-        apply(plugin = libs.findPlugin("kotlin-android").get().get().pluginId)
-        apply(plugin = libs.findPlugin("android-application").get().get().pluginId)
-        apply(plugin = libs.findPlugin("compose-compiler").get().get().pluginId)
-        apply(plugin = libs.findPlugin("composeCompilerReportGenerator").get().get().pluginId)
+        apply(plugin = libs.plugins.kotlin.android.get().pluginId)
+        apply(plugin = libs.plugins.android.application.get().pluginId)
+        apply(plugin = libs.plugins.compose.compiler.get().pluginId)
+        apply(plugin = libs.plugins.composeCompilerReportGenerator.get().pluginId)
 
         configure<KotlinAndroidExtension> {
             jvmToolchain(21)

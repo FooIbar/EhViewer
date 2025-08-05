@@ -7,6 +7,9 @@ dependencies {
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.spotless.gradlePlugin)
+
+    // https://github.com/gradle/gradle/issues/15383#issuecomment-779893192
+    compileOnly(files(libs::class.java.superclass.protectionDomain.codeSource.location))
 }
 
 gradlePlugin {

@@ -1,8 +1,8 @@
 package com.ehviewer
 
+import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.Project
-import org.gradle.api.artifacts.VersionCatalogsExtension
-import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.the
 
 internal val Project.libs
-    get() = extensions.getByType<VersionCatalogsExtension>().named("libs")
+    get(): LibrariesForLibs = the()

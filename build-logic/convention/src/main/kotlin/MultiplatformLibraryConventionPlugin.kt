@@ -18,9 +18,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 class MultiplatformLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
-        apply(plugin = libs.findPlugin("kotlin-multiplatform").get().get().pluginId)
-        apply(plugin = libs.findPlugin("android-kotlin-multiplatform-library").get().get().pluginId)
-        apply(plugin = libs.findPlugin("android-lint").get().get().pluginId)
+        apply(plugin = libs.plugins.kotlin.multiplatform.get().pluginId)
+        apply(plugin = libs.plugins.android.kotlin.multiplatform.library.get().pluginId)
+        apply(plugin = libs.plugins.android.lint.get().pluginId)
 
         configure<KotlinMultiplatformExtension> {
             jvmToolchain(21)
@@ -60,7 +60,7 @@ class MultiplatformLibraryConventionPlugin : Plugin<Project> {
         configureSpotless()
 
         dependencies {
-            "coreLibraryDesugaring"(libs.findLibrary("desugar").get())
+            "coreLibraryDesugaring"(libs.desugar)
         }
     }
 }
