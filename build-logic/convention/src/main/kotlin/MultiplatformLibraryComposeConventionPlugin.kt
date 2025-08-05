@@ -10,9 +10,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 class MultiplatformLibraryComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         apply<MultiplatformLibraryConventionPlugin>()
-        apply(plugin = libs.findPlugin("compose-compiler").get().get().pluginId)
-        apply(plugin = libs.findPlugin("compose-multiplatform").get().get().pluginId)
-        apply(plugin = libs.findPlugin("composeCompilerReportGenerator").get().get().pluginId)
+        apply(plugin = libs.plugins.compose.compiler.get().pluginId)
+        apply(plugin = libs.plugins.compose.multiplatform.get().pluginId)
+        apply(plugin = libs.plugins.composeCompilerReportGenerator.get().pluginId)
 
         configure<KotlinMultiplatformExtension> {
             compilerOptions {
