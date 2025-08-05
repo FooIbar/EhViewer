@@ -86,6 +86,7 @@
     <string name="quick_search_tip">點選“+”以新增快速搜尋</string>
     <string name="add_quick_search_dialog_title">新增快速搜尋</string>
     <string name="name_is_empty">名稱是空的</string>
+    <string name="translate_tag_for_tagger">使用翻譯標籤</string>
     <string name="delete">刪除</string>
     <string name="add_quick_search_tip">圖庫列表的狀態將被儲存為快速搜尋。如果你想儲存搜尋面板的狀態，請先進行搜尋。</string>
     <string name="readme">ReadMe</string>
@@ -299,6 +300,7 @@
     <string name="settings_eh_show_jpn_title_summary">需同時在 EHentai 網站設定中啟用 Japanese Title</string>
     <string name="settings_eh_show_gallery_pages">顯示圖庫頁數</string>
     <string name="settings_eh_show_gallery_pages_summary">在圖庫列表中顯示頁數</string>
+    <string name="settings_eh_show_vote_status">顯示標籤投票狀態</string>
     <string name="settings_eh_show_gallery_comments">顯示圖庫評論</string>
     <string name="settings_eh_show_gallery_comments_summary">在圖庫詳情頁中顯示評論</string>
     <string name="settings_eh_show_gallery_comment_threshold">評論分數閥值</string>
@@ -309,6 +311,9 @@
     <string name="settings_eh_tag_translations_source_url">https://github.com/EhTagTranslation/Editor/wiki</string>
     <string name="settings_eh_filter">隱藏圖庫</string>
     <string name="settings_eh_filter_summary">根據標題、上傳者、標籤、評論者隱藏圖庫或評論</string>
+    <string name="settings_read_reverse_controls">反轉物理按鍵控制</string>
+    <string name="settings_block_extraneous_ads">[實驗性] 阻擋外部廣告</string>
+    <string name="settings_ads_placeholder">[選用] 選擇替換外部廣告的圖片</string>
     <string name="settings_download">下載</string>
     <string name="settings_download_download_location">下載路徑</string>
     <string name="settings_download_cant_get_download_location">無法取得下載路徑</string>
@@ -348,13 +353,15 @@
     <string name="settings_advanced_dump_logcat_to">已將紀錄檔儲存至 %s</string>
     <string name="settings_advanced_read_cache_size">閱讀快取大小</string>
     <string name="settings_advanced_app_language_title">應用程式介面語言</string>
-    <string name="settings_advanced_export_data">匯出檔案</string>
+    <string name="settings_advanced_hardware_bitmap_threshold">硬體點陣（效能更好）臨界值</string>
+    <string name="settings_advanced_hardware_bitmap_threshold_summary">若長圖無法載入請嘗試降低此值</string>
+    <string name="settings_advanced_export_data">匯出資料</string>
     <string name="settings_advanced_export_data_summary">儲存資料至外接儲存裝置，例如下載列表，快速搜尋列表</string>
     <string name="settings_advanced_export_data_to">已匯出資料至 %s</string>
     <string name="settings_advanced_export_data_failed">無法匯出資料</string>
-    <string name="settings_advanced_import_data">匯入檔案</string>
+    <string name="settings_advanced_import_data">匯入資料</string>
     <string name="settings_advanced_import_data_summary">從之前儲存的檔案匯入</string>
-    <string name="settings_advanced_import_data_successfully">成功將資料匯入</string>
+    <string name="settings_advanced_import_data_successfully">資料匯入成功</string>
     <string name="settings_advanced_backup_favorite">備份收藏列表</string>
     <string name="settings_advanced_backup_favorite_summary">備份雲端收藏列表到本機</string>
     <string name="settings_advanced_backup_favorite_start">正在備份收藏列表 %s</string>
@@ -366,10 +373,10 @@
     <string name="settings_about_author">作者</string>
     <string name="settings_about_latest_release">最新版本</string>
     <string name="settings_about_source">原始碼</string>
+    <string name="license">授權條款</string>
     <string name="settings_about_version">版本號碼</string>
     <string name="settings_about_commit_time">於 %s 提交</string>
     <string name="settings_about_check_for_updates">檢查更新</string>
-    <string name="license">授權條款</string>
     <!-- ExcludedLanguagesScene -->
     <string name="please_wait">請稍候</string>
     <string name="cant_read_the_file">無法讀取檔案</string>
@@ -410,6 +417,8 @@
     <string name="insufficient_funds">餘額不足</string>
     <string name="image_limits">圖片配額</string>
     <string name="image_limits_summary">已用：</string>
+    <string name="image_limits_normal">未受限制</string>
+    <string name="image_limits_restricted">圖片解析度限制為 1280x</string>
     <string name="reset_cost">花費 %d GP 重置</string>
     <string name="reset">重置</string>
     <string name="settings_privacy">隱私</string>
@@ -440,6 +449,8 @@
     <string name="download_start_all_reversed">全部開始（倒序）</string>
     <string name="settings_download_download_delay">下載延時</string>
     <string name="settings_download_download_delay_summary">每次下載延時 %s 毫秒</string>
+    <string name="settings_download_connection_timeout">連線超時（秒）</string>
+    <string name="settings_download_timeout_speed">最低回應速度（KB/s）</string>
     <string name="no_browser_installed">請安裝一個瀏覽器。</string>
     <string name="toplist_alltime">從始至終</string>
     <string name="toplist_pastyear">過去一年</string>
@@ -448,18 +459,21 @@
     <string name="toplist">排行</string>
     <string name="tag_vote_down">不，這不是</string>
     <string name="tag_vote_up">是的，這很正確</string>
+    <string name="tag_vote_withdraw">撤銷投票</string>
     <string name="tag_vote_successfully">投票成功</string>
     <string name="delete_search_history">從搜尋記錄中刪除“%s”？</string>
     <string name="action_add_tag">增加標籤</string>
     <string name="action_add_tag_tip">增加新標籤</string>
     <string name="comment_user_uploader">%s （上傳者）</string>
+    <string name="no_network">無網路</string>
     <string name="settings_eh_metered_network_warning">流量計費網路警告</string>
     <string name="metered_network_warning">正在使用流量計費網路</string>
     <string name="read_from">從第 %d 頁閱讀</string>
-    <string name="settings_eh_request_news">啟動時請求新聞頁面</string>
+    <string name="settings_eh_request_news">定時請求新聞頁面</string>
     <string name="settings_eh_hide_hv_events">隱藏 HV 事件通知</string>
     <string name="copy_trans">複製翻譯</string>
-    <string name="reset_download_location">恢復預設路徑</string>
+    <string name="default_download_dir_not_empty">預設的下載路徑不是空的！</string>
+    <string name="reset_download_location">復原預設路徑</string>
     <string name="pick_new_download_location">選擇新路徑</string>
     <string name="dont_show_again">不再顯示</string>
     <string name="open_settings">開啟設定</string>
@@ -589,6 +603,8 @@
     <string name="dark_theme_off">總是關閉</string>
     <string name="dark_theme_on">總是開啟</string>
     <string name="pref_crop_borders">邊緣裁剪</string>
+    <string name="blocked_image">已阻擋的圖片</string>
+    <string name="show_blocked_image">顯示已阻擋的圖片</string>
     <!-- Tachiyomi Reader End-->
 
     <plurals name="page_count">
