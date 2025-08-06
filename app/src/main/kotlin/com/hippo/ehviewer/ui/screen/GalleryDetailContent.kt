@@ -68,8 +68,8 @@ import androidx.paging.compose.itemKey
 import arrow.core.partially1
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
@@ -174,7 +174,7 @@ fun GalleryDetailContent(
     voteTag: VoteTag,
     modifier: Modifier,
 ) {
-    val keylineMargin = dimensionResource(R.dimen.keyline_margin)
+    val keylineMargin = dimensionResource(com.hippo.ehviewer.R.dimen.keyline_margin)
     val galleryDetail = galleryInfo.asGalleryDetail()
     val windowSizeClass = LocalWindowSizeClass.current
     val thumbColumns by Settings.thumbColumns.collectAsState()
@@ -262,8 +262,8 @@ fun GalleryDetailContent(
             columns = GridCells.Fixed(thumbColumns),
             contentPadding = contentPadding,
             modifier = modifier.padding(horizontal = keylineMargin),
-            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding_v)),
         ) {
             item(
                 key = "header",
@@ -325,8 +325,8 @@ fun GalleryDetailContent(
             columns = GridCells.Fixed(thumbColumns),
             contentPadding = contentPadding,
             modifier = modifier.padding(horizontal = keylineMargin),
-            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding_v)),
         ) {
             item(
                 key = "header",
@@ -340,7 +340,7 @@ fun GalleryDetailContent(
                         onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
                         onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
                         onCategoryChipClick = ::onCategoryChipClick,
-                        modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
+                        modifier = Modifier.width(dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
                     )
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -443,7 +443,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = dimensionResource(id = R.dimen.strip_item_padding_v))
+                    .padding(bottom = dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding_v))
                     .clip(RoundedCornerShape(16.dp))
                     .clickable(onClick = ::navigateToCommentScreen),
                 contentAlignment = Alignment.Center,
@@ -463,7 +463,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             navigate(info.gid asDstWith info.token)
         }
     }
-    val keylineMargin = dimensionResource(R.dimen.keyline_margin)
+    val keylineMargin = dimensionResource(com.hippo.ehviewer.R.dimen.keyline_margin)
     Spacer(modifier = Modifier.size(keylineMargin))
     if (galleryDetail.newerVersions.isNotEmpty()) {
         Box(contentAlignment = Alignment.Center) {
@@ -765,7 +765,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     Spacer(modifier = Modifier.size(keylineMargin))
     if (Settings.showComments.value) {
         GalleryDetailComment(galleryDetail.comments.comments)
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.strip_item_padding_v)))
+        Spacer(modifier = Modifier.size(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding_v)))
     }
 }
 

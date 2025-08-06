@@ -21,8 +21,8 @@ import arrow.core.partially2
 import arrow.core.right
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder

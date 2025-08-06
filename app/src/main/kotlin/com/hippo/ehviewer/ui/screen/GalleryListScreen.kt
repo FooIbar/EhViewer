@@ -69,8 +69,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
@@ -194,8 +194,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(
     FavouriteStatusRouter.Observe(data)
     val listMode by Settings.listMode.collectAsState()
 
-    val entries = stringArrayResource(id = R.array.toplist_entries)
-    val values = stringArrayResource(id = R.array.toplist_values)
+    val entries = stringArrayResource(id = com.hippo.ehviewer.R.array.toplist_entries)
+    val values = stringArrayResource(id = com.hippo.ehviewer.R.array.toplist_values)
     val toplists = remember { entries zip values }
     val quickSearchName = getSuitableTitleForUrlBuilder(urlBuilder, false)
     var saveProgress by Settings.qSSaveProgress.asMutableState()

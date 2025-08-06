@@ -21,7 +21,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import kotlin.concurrent.atomics.AtomicInt

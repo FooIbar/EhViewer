@@ -53,7 +53,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhFilter
 import com.hippo.ehviewer.client.EhFilter.forget
@@ -88,7 +88,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
     fun addFilter() {
         launch {
             dialog { cont ->
-                val types = stringArrayResource(id = R.array.filter_entries)
+                val types = stringArrayResource(id = com.hippo.ehviewer.R.array.filter_entries)
                 val type = rememberTextFieldState(types[0])
                 val state = rememberTextFieldState()
                 var error by remember { mutableStateOf<String?>(null) }

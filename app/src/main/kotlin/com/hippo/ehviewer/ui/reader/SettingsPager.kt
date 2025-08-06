@@ -15,7 +15,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import kotlinx.coroutines.launch
 
 private val tabs = intArrayOf(

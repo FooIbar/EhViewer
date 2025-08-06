@@ -37,8 +37,8 @@ import coil3.DrawableImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import com.ehviewer.core.i18n.R
 import com.google.accompanist.drawablepainter.DrawablePainter
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.Page

@@ -21,9 +21,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.download.downloadLocation
@@ -108,8 +108,8 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
             )
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.auto_updates),
-                entry = R.array.update_frequency,
-                entryValueRes = R.array.update_frequency_values,
+                entry = com.hippo.ehviewer.R.array.update_frequency,
+                entryValueRes = com.hippo.ehviewer.R.array.update_frequency_values,
                 state = Settings.updateIntervalDays.asMutableState(),
             )
             WorkPreference(title = stringResource(id = R.string.settings_about_check_for_updates)) {

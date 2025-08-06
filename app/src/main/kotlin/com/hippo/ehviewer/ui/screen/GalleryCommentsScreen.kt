@@ -84,7 +84,7 @@ import androidx.core.text.buildSpannedString
 import androidx.core.text.getSpans
 import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
@@ -298,7 +298,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
             }
         },
     ) { paddingValues ->
-        val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
+        val keylineMargin = dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)
         var editTextMeasured by remember { mutableStateOf(MinimumContentPaddingEditText) }
         var isRefreshing by remember { mutableStateOf(false) }
         val refreshState = rememberPullToRefreshState()

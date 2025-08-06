@@ -33,7 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import arrow.core.raise.ensure
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
@@ -117,7 +117,7 @@ fun SearchFilter(
             selectedItemIndex = language + 1,
             onSelectedItemIndexChange = { onLanguageChange(it - 1) },
         )
-        val minRatingItems = stringArrayResource(id = R.array.search_min_rating)
+        val minRatingItems = stringArrayResource(id = com.hippo.ehviewer.R.array.search_min_rating)
         val minRatingStr = stringResource(id = R.string.search_sr)
         DropdownFilterChip(
             label = minRatingStr,

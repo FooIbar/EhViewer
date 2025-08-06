@@ -29,8 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parMapNotNull
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhEngine.fillGalleryListByApi
@@ -178,16 +178,16 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_download_concurrency),
                 summary = stringResource(id = R.string.settings_download_concurrency_summary, multiThreadDownload.value),
-                entry = R.array.multi_thread_download_entries,
-                entryValueRes = R.array.multi_thread_download_entry_values,
+                entry = com.hippo.ehviewer.R.array.multi_thread_download_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.multi_thread_download_entry_values,
                 state = multiThreadDownload,
             )
             val downloadDelay = Settings.downloadDelay.asMutableState()
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_download_download_delay),
                 summary = stringResource(id = R.string.settings_download_download_delay_summary, downloadDelay.value),
-                entry = R.array.download_delay_entries,
-                entryValueRes = R.array.download_delay_entry_values,
+                entry = com.hippo.ehviewer.R.array.download_delay_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.download_delay_entry_values,
                 state = downloadDelay,
             )
             IntSliderPreference(
@@ -209,8 +209,8 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_download_preload_image),
                 summary = stringResource(id = R.string.settings_download_preload_image_summary, preloadImage.value),
-                entry = R.array.preload_image_entries,
-                entryValueRes = R.array.preload_image_entry_values,
+                entry = com.hippo.ehviewer.R.array.preload_image_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.preload_image_entry_values,
                 state = preloadImage,
             )
             SwitchPreference(

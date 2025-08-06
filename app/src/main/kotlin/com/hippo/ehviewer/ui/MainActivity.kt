@@ -104,7 +104,7 @@ import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.compose.rememberNavController
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
@@ -394,7 +394,7 @@ class MainActivity : EhActivity() {
                                         .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
                                 ) {
                                     Image(
-                                        painter = painterResource(id = R.drawable.sadpanda_low_poly),
+                                        painter = painterResource(id = com.hippo.ehviewer.R.drawable.sadpanda_low_poly),
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                                         contentScale = ContentScale.FillWidth,

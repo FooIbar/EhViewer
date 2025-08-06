@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.openBrowser
@@ -37,7 +37,7 @@ fun AnimatedVisibilityScope.LicenseScreen(navigator: DestinationsNavigator) = Sc
             )
         },
     ) { paddingValues ->
-        val libraries by rememberLibraries(R.raw.aboutlibraries)
+        val libraries by rememberLibraries(com.hippo.ehviewer.R.raw.aboutlibraries)
         LibrariesContainer(
             libraries = libraries,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

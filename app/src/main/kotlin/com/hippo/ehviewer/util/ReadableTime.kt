@@ -18,7 +18,7 @@ package com.hippo.ehviewer.util
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import java.util.Locale
 import kotlin.time.Clock
 import kotlin.time.Instant

@@ -31,7 +31,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.dao.DownloadInfo
@@ -137,7 +137,7 @@ class DownloadService :
             .setAutoCancel(false)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .addAction(
-                R.drawable.v_pause_x24,
+                com.hippo.ehviewer.R.drawable.v_pause_x24,
                 getString(R.string.stat_download_action_stop_all),
                 piStopAll,
             )
@@ -174,7 +174,7 @@ class DownloadService :
 
     private fun init509Notification(): NotificationHandler {
         val builder = NotificationCompat.Builder(applicationContext, channelId)
-            .setSmallIcon(R.drawable.ic_baseline_warning_24)
+            .setSmallIcon(com.hippo.ehviewer.R.drawable.ic_baseline_warning_24)
             .setContentTitle(getString(R.string.stat_509_alert_title))
             .setContentText(getString(R.string.stat_509_alert_text))
             .setStyle(

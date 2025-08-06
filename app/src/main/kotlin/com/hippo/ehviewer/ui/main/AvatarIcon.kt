@@ -43,7 +43,7 @@ import arrow.core.none
 import arrow.core.some
 import coil3.compose.AsyncImage
 import coil3.network.HttpException
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils
@@ -107,7 +107,7 @@ fun AvatarIcon() {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 CircularWavyProgressIndicator()
-                                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+                                Spacer(modifier = Modifier.size(dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)))
                                 Text(text = placeholder)
                             }
                         }

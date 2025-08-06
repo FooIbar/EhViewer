@@ -28,7 +28,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhCookieStore
@@ -94,7 +94,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                                 val warning = stringResource(id = R.string.settings_eh_identity_cookies_signed)
                                 val state = rememberTextFieldState(cookies.joinToString("\n") { (k, v) -> "$k: $v" })
                                 Text(text = AnnotatedString.fromHtml(warning))
-                                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+                                Spacer(modifier = Modifier.size(dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)))
                                 OutlinedTextField(
                                     state = state,
                                     readOnly = true,
@@ -119,8 +119,8 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 val gallerySite = Settings.gallerySite.asMutableState()
                 SimpleMenuPreferenceInt(
                     title = stringResource(id = R.string.settings_eh_gallery_site),
-                    entry = R.array.gallery_site_entries,
-                    entryValueRes = R.array.gallery_site_entry_values,
+                    entry = com.hippo.ehviewer.R.array.gallery_site_entries,
+                    entryValueRes = com.hippo.ehviewer.R.array.gallery_site_entry_values,
                     state = gallerySite,
                 )
                 Preference(
@@ -161,8 +161,8 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
             }
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.dark_theme),
-                entry = R.array.night_mode_entries,
-                entryValueRes = R.array.night_mode_values,
+                entry = com.hippo.ehviewer.R.array.night_mode_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.night_mode_values,
                 state = Settings.theme.asMutableState(),
             )
             SwitchPreference(
@@ -175,15 +175,15 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
             )
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_eh_launch_page),
-                entry = R.array.launch_page_entries,
-                entryValueRes = R.array.launch_page_entry_values,
+                entry = com.hippo.ehviewer.R.array.launch_page_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.launch_page_entry_values,
                 state = Settings.launchPage.asMutableState(),
             )
             val listMode = Settings.listMode.asMutableState()
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_eh_list_mode),
-                entry = R.array.list_mode_entries,
-                entryValueRes = R.array.list_mode_entry_values,
+                entry = com.hippo.ehviewer.R.array.list_mode_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.list_mode_entry_values,
                 state = listMode,
             )
             AnimatedVisibility(visible = listMode.value == 0) {
@@ -197,8 +197,8 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                     )
                     SimpleMenuPreferenceInt(
                         title = stringResource(id = R.string.settings_eh_detail_size),
-                        entry = R.array.detail_size_entries,
-                        entryValueRes = R.array.detail_size_entry_values,
+                        entry = com.hippo.ehviewer.R.array.detail_size_entries,
+                        entryValueRes = com.hippo.ehviewer.R.array.detail_size_entry_values,
                         state = Settings.detailSize.asMutableState(),
                     )
                 }
