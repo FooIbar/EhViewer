@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="page_count">
+        <item quantity="one">%d side</item>
+        <item quantity="other">%d sider</item>
+    </plurals>
+    <plurals name="some_minutes_ago">
+        <item quantity="one">Et minutt siden</item>
+        <item quantity="other">%d minutter siden</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">min</item>
+        <item quantity="other">min</item>
+    </plurals>
+    <plurals name="some_hours_ago">
+        <item quantity="one">Én time siden</item>
+        <item quantity="other">%d timer siden</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="one">time</item>
+        <item quantity="other">timer</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">sek</item>
+        <item quantity="other">sek</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="one">dag</item>
+        <item quantity="other">dager</item>
+    </plurals>
+    <plurals name="year">
+        <item quantity="one">år</item>
+        <item quantity="other">år</item>
+    </plurals>
+</resources>

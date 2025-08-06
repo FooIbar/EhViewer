@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="page_count">
+        <item quantity="one">%d page</item>
+        <item quantity="other">%d pages</item>
+    </plurals>
+    <plurals name="some_minutes_ago">
+        <item quantity="one">Il y a %d minute</item>
+        <item quantity="other">Il y a %d minutes</item>
+    </plurals>
+    <plurals name="some_hours_ago">
+        <item quantity="one">Il y a %d heure</item>
+        <item quantity="other">Il y a %d heures</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">%d sec</item>
+        <item quantity="other">secs</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">%d min</item>
+        <item quantity="other">mins</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="one">%d heure</item>
+        <item quantity="other">heures</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="one">%d jour</item>
+        <item quantity="other">jours</item>
+    </plurals>
+    <plurals name="year">
+        <item quantity="one">%d an</item>
+        <item quantity="other">ans</item>
+    </plurals>
+</resources>
