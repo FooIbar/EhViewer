@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer
 import androidx.annotation.StringRes
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import eu.kanade.tachiyomi.ui.reader.setting.TappingInvertMode
 import eu.kanade.tachiyomi.ui.reader.viewer.navigation.DisabledNavigation
 import eu.kanade.tachiyomi.ui.reader.viewer.navigation.EdgeNavigation
@@ -14,11 +14,11 @@ import eu.kanade.tachiyomi.util.lang.invert
 
 abstract class ViewerNavigation {
     sealed class NavigationRegion(@StringRes val nameRes: Int, val colorRes: Int) {
-        data object MENU : NavigationRegion(R.string.action_menu, R.color.navigation_menu)
-        data object PREV : NavigationRegion(R.string.nav_zone_prev, R.color.navigation_prev)
-        data object NEXT : NavigationRegion(R.string.nav_zone_next, R.color.navigation_next)
-        data object LEFT : NavigationRegion(R.string.nav_zone_left, R.color.navigation_left)
-        data object RIGHT : NavigationRegion(R.string.nav_zone_right, R.color.navigation_right)
+        data object MENU : NavigationRegion(R.string.action_menu, com.hippo.ehviewer.R.color.navigation_menu)
+        data object PREV : NavigationRegion(R.string.nav_zone_prev, com.hippo.ehviewer.R.color.navigation_prev)
+        data object NEXT : NavigationRegion(R.string.nav_zone_next, com.hippo.ehviewer.R.color.navigation_next)
+        data object LEFT : NavigationRegion(R.string.nav_zone_left, com.hippo.ehviewer.R.color.navigation_left)
+        data object RIGHT : NavigationRegion(R.string.nav_zone_right, com.hippo.ehviewer.R.color.navigation_right)
     }
 
     data class Region(val rect: Rect, val type: NavigationRegion) {

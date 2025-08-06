@@ -30,9 +30,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhEngine
@@ -169,8 +169,8 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
             }
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_advanced_read_cache_size),
-                entry = R.array.read_cache_size_entries,
-                entryValueRes = R.array.read_cache_size_entry_values,
+                entry = com.hippo.ehviewer.R.array.read_cache_size_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.read_cache_size_entry_values,
                 state = Settings.readCacheSize.asMutableState(),
             )
             var currentLanguage by remember { mutableStateOf(getAppLanguage()) }

@@ -20,7 +20,7 @@ import androidx.annotation.IntDef
 import arrow.core.Either
 import arrow.core.getOrElse
 import arrow.core.partially1
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl

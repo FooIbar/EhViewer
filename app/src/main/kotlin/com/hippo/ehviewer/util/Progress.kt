@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import com.hippo.ehviewer.R.string
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.ui.tools.DialogState
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
@@ -40,7 +40,7 @@ fun ProgressDialog() {
             ) {
                 CircularWavyProgressIndicator()
                 Spacer(modifier = Modifier.size(18.dp))
-                Text(text = stringResource(id = string.please_wait))
+                Text(text = stringResource(id = R.string.please_wait))
             }
         }
     }

@@ -15,7 +15,7 @@
  */
 package com.hippo.ehviewer.util
 
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException

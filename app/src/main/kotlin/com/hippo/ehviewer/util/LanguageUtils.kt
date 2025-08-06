@@ -3,13 +3,13 @@ package com.hippo.ehviewer.util
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import org.xmlpull.v1.XmlPullParser
 
 context(ctx: Context)
 fun getLanguages(): Map<String, String> = with(ctx) {
     val languages = mutableMapOf("system" to getString(R.string.app_language_system))
-    resources.getXml(R.xml._generated_res_locale_config).use { parser ->
+    resources.getXml(com.hippo.ehviewer.R.xml._generated_res_locale_config).use { parser ->
         var event = parser.eventType
         while (event != XmlPullParser.END_DOCUMENT) {
             if (event == XmlPullParser.START_TAG && parser.name == "locale") {

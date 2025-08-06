@@ -51,7 +51,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.exception.NoHitsFoundException
@@ -95,8 +95,8 @@ fun GalleryList(
     onRefresh: () -> Unit,
     onLoading: () -> Unit,
 ) {
-    val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
-    val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
+    val marginH = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h)
+    val marginV = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_v)
 
     var isRefreshing by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
@@ -132,8 +132,8 @@ fun GalleryList(
                 modifier = contentModifier.fillMaxSize(),
                 state = detailListState,
                 contentPadding = contentPadding + PaddingValues(marginH, marginV),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(com.hippo.ehviewer.R.dimen.gallery_list_interval)),
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(com.hippo.ehviewer.R.dimen.gallery_list_interval)),
             ) {
                 items(
                     count = data.itemCount,
@@ -155,7 +155,7 @@ fun GalleryList(
                 }
             }
         } else {
-            val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
+            val gridInterval = dimensionResource(com.hippo.ehviewer.R.dimen.gallery_grid_interval)
             val thumbColumns by Settings.thumbColumns.collectAsState()
             FastScrollLazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(thumbColumns),

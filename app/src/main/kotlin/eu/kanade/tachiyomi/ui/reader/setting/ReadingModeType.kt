@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.setting
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.reader.ContinuousVertical
 import com.hippo.ehviewer.icons.reader.Default

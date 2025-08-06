@@ -27,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
 import com.hippo.ehviewer.ui.Screen
@@ -50,8 +50,8 @@ import moe.tarsin.snackbar
 @Composable
 fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val selectImageFirst = stringResource(R.string.select_image_first)
-    val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
-    val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
+    val marginH = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h)
+    val marginV = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_v)
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     Scaffold(
@@ -87,19 +87,19 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
             modifier = Modifier.padding(
                 paddingValues = contentPadding + PaddingValues(marginH, marginV),
             ).padding(
-                vertical = dimensionResource(id = R.dimen.search_layout_margin_v),
+                vertical = dimensionResource(id = com.hippo.ehviewer.R.dimen.search_layout_margin_v),
             ),
         ) {
             Column(
                 modifier = Modifier.padding(
-                    horizontal = dimensionResource(id = R.dimen.search_category_padding_h),
-                    vertical = dimensionResource(id = R.dimen.search_category_padding_v),
+                    horizontal = dimensionResource(id = com.hippo.ehviewer.R.dimen.search_category_padding_h),
+                    vertical = dimensionResource(id = com.hippo.ehviewer.R.dimen.search_category_padding_v),
                 ).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = stringResource(id = R.string.search_image),
-                    modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
+                    modifier = Modifier.height(dimensionResource(id = com.hippo.ehviewer.R.dimen.search_category_title_height)),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium,
                 )

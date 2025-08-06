@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.parseAsHtml
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.legacy.LinkifyTextView
@@ -50,7 +50,7 @@ fun GalleryCommentCard(
         },
         modifier = modifier,
     ) {
-        val margin = dimensionResource(id = R.dimen.keyline_margin)
+        val margin = dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)
         Row(
             modifier = Modifier.padding(horizontal = margin, vertical = 8.dp).fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

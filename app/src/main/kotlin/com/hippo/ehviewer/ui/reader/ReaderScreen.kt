@@ -59,9 +59,9 @@ import arrow.core.Either
 import arrow.core.Either.Companion.catch
 import arrow.core.raise.ensure
 import arrow.core.right
+import com.ehviewer.core.i18n.R
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.collectAsState
@@ -407,7 +407,7 @@ suspend inline fun <T> usePageLoader(args: ReaderScreenArgs, crossinline block: 
 
 @Composable
 private fun collectBackgroundColorAsState(): State<Color> {
-    val grey = colorResource(R.color.reader_background_dark)
+    val grey = colorResource(com.hippo.ehviewer.R.color.reader_background_dark)
     val dark = isSystemInDarkTheme()
     return Settings.readerTheme.collectAsState { theme ->
         when (theme) {

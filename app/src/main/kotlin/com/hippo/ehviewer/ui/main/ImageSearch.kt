@@ -17,7 +17,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 
 @Composable
 fun ImageSearch(
@@ -29,7 +29,7 @@ fun ImageSearch(
 ) {
     AnimatedVisibility(visible = image != null, modifier = Modifier.align(Alignment.CenterHorizontally)) {
         Card {
-            val maxSize = dimensionResource(id = R.dimen.image_search_max_size)
+            val maxSize = dimensionResource(id = com.hippo.ehviewer.R.dimen.image_search_max_size)
             AsyncImage(
                 model = image,
                 contentDescription = null,

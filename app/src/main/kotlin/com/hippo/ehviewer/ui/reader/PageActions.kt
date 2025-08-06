@@ -13,8 +13,8 @@ import android.webkit.MimeTypeMap
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
 import androidx.core.content.FileProvider
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.BuildConfig.APPLICATION_ID
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.gallery.Page
