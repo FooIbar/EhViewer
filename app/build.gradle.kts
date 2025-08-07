@@ -181,7 +181,10 @@ dependencies {
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.compiler)
 
-    implementation(libs.compose.preference)
+    implementation(libs.compose.preference) {
+        // R8 won't remove it because it adds a content provider
+        exclude(group = "org.jetbrains.compose.components", module = "components-resources")
+    }
 
     implementation(libs.androidx.core)
     implementation(libs.androidx.core.splashscreen)
