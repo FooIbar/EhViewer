@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.MapColumn
 import androidx.room.Query
+import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
@@ -12,11 +13,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DownloadsDao {
-    @Suppress("ktlint:standard:annotation")
+    // https://issuetracker.google.com/327583152
+    @Suppress("ktlint:standard:annotation", RoomWarnings.UNNECESSARY_NULLABILITY_IN_DAO_RETURN_TYPE)
     @Query("SELECT LABEL, COUNT(*) AS COUNT FROM DOWNLOADS LEFT JOIN DOWNLOAD_LABELS USING(LABEL) GROUP BY LABEL")
     fun countByLabel(): Flow<Map<@MapColumn("LABEL") String?, @MapColumn("COUNT") Int>>
 
-    @Suppress("ktlint:standard:annotation")
+    @Suppress("ktlint:standard:annotation", RoomWarnings.UNNECESSARY_NULLABILITY_IN_DAO_RETURN_TYPE)
     @Query("SELECT ARTIST, COUNT(*) AS COUNT FROM DOWNLOADS LEFT JOIN DOWNLOAD_ARTISTS USING(GID) GROUP BY ARTIST ORDER BY COUNT DESC, ARTIST")
     fun countByArtist(): Flow<Map<@MapColumn("ARTIST") String?, @MapColumn("COUNT") Int>>
 

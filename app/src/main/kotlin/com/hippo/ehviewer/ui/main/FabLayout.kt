@@ -156,7 +156,7 @@ fun FabLayout(
                 }
             }
             onExpandChanged(false)
-        } catch (e: CancellationException) {
+        } catch (_: CancellationException) {
             launch { state.expand() }
         }
     }

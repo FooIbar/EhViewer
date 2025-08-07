@@ -249,7 +249,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                     ) {
                                         Text(text = stringResource(id = R.string.clear_image_cache_confirm))
                                     }
-                                    (0..<gd.pages).forEach {
+                                    repeat(gd.pages) {
                                         val key = getImageKey(gd.gid, it)
                                         imageCache.remove(key)
                                     }

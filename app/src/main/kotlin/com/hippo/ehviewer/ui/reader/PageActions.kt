@@ -121,7 +121,7 @@ suspend fun save(page: Page) {
                 try {
                     ctx.contentResolver.delete(imageUri, null, null)
                 } catch (e: Exception) {
-                    e.logcat(e)
+                    logcat("SavePage", e)
                 }
                 snackbar(cannotSave)
             } else if (isAtLeastQ) {

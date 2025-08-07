@@ -75,7 +75,7 @@ fun animateFloatMergePredictiveBackAsState(
                 animatable.snapTo(transformed)
             }
             onBack()
-        } catch (e: CancellationException) {
+        } catch (_: CancellationException) {
             channel.trySend(0f)
         }
     }

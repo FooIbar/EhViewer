@@ -32,7 +32,7 @@ fun openBrowser(url: String) {
     if (url.isEmpty()) return
     try {
         intent.launchUrl(ctx, url.toUri())
-    } catch (e: ActivityNotFoundException) {
+    } catch (_: ActivityNotFoundException) {
         Toast.makeText(ctx, R.string.no_browser_installed, Toast.LENGTH_LONG).show()
     }
 }
