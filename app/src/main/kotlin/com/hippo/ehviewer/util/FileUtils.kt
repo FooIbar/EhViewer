@@ -20,9 +20,6 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
 import io.ktor.utils.io.rethrowCloseCauseIfNeeded
 import java.io.File
-import java.util.Locale
-import kotlin.math.ln
-import kotlin.math.pow
 import okio.Path
 
 object FileUtils {
@@ -38,15 +35,15 @@ object FileUtils {
      * @param bytes the bytes to convert
      * @return the human readable string
      */
-    // http://stackoverflow.com/questions/3758606/
     fun humanReadableByteCount(bytes: Long): String {
-        if (bytes < 1024) return "$bytes B"
-        val exp = (ln(bytes.toDouble()) / ln(1024f)).toInt()
-        return "%.1f %sB".format(
-            Locale.US,
-            bytes / 1024.toDouble().pow(exp.toDouble()),
-            ("KMGTPE")[exp - 1].toString() + "i",
-        )
+        val units = "KMGTPE"
+        var exp = -1
+        var result = bytes.toDouble()
+        while (result >= 1024.0 && exp < units.length - 1) {
+            exp++
+            result /= 1024.0
+        }
+        return if (exp == -1) "$bytes B" else "%.1f %siB".format(result, units[exp])
     }
 
     fun cleanupDirectory(dir: File?, maxFiles: Int = 10) {

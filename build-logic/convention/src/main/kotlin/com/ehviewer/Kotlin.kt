@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
 // https://kotlinlang.org/docs/gradle-compiler-options.html#all-compiler-options
 internal fun KotlinCommonCompilerOptions.configureKotlin() {
     progressiveMode = true
+    allWarningsAsErrors = true
     optIn.addAll(
         "kotlin.ExperimentalStdlibApi",
         "kotlin.concurrent.atomics.ExperimentalAtomicApi",
