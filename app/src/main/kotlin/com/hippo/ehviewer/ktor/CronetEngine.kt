@@ -10,6 +10,7 @@ import android.net.http.UrlRequest
 import android.net.http.UrlResponseInfo
 import android.os.Build
 import androidx.annotation.RequiresExtension
+import com.ehviewer.core.preferences.edit
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.util.restartApplication
 import io.ktor.client.engine.HttpClientEngineBase
@@ -40,7 +41,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.job
 import kotlinx.coroutines.suspendCancellableCoroutine
-import splitties.preferences.edit
 
 class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cronet") {
     // Limit thread to 1 since we are async & non-blocking
@@ -108,7 +108,7 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
                 val message = error.message.orEmpty()
                 if ("ERR_FILE_NOT_FOUND" in message || "ERR_PROXY_CONNECTION_FAILED" in message) {
                     Settings.edit(true) {
-                        enableCronet.value = false
+                        it[enableCronet] = false
                     }
                     with(config.context) { restartApplication() }
                 }

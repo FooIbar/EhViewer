@@ -9,6 +9,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import com.ehviewer.core.preferences.DataStorePreferences
+import com.ehviewer.core.preferences.PrefDelegate
+import com.ehviewer.core.preferences.edit
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.download.DownloadsFilterMode
@@ -25,47 +28,12 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
-import splitties.preferences.BoolPref
-import splitties.preferences.DataStorePreferences
-import splitties.preferences.FloatPref
-import splitties.preferences.IntPref
-import splitties.preferences.LongPref
-import splitties.preferences.PrefDelegate
-import splitties.preferences.StringOrNullPref
-import splitties.preferences.StringPref
-import splitties.preferences.StringSetOrNullPref
-import splitties.preferences.StringSetPref
-import splitties.preferences.edit
-
-@Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
-fun <T> PrefDelegate<T>.getValue(): T = when (this) {
-    is BoolPref -> value
-    is IntPref -> value
-    is FloatPref -> value
-    is LongPref -> value
-    is StringPref -> value
-    is StringOrNullPref -> value
-    is StringSetPref -> value
-    is StringSetOrNullPref -> value
-} as T
-
-@Suppress("UNCHECKED_CAST")
-fun <T> PrefDelegate<T>.setValue(newValue: T) = when (this) {
-    is BoolPref -> value = newValue as Boolean
-    is IntPref -> value = newValue as Int
-    is FloatPref -> value = newValue as Float
-    is LongPref -> value = newValue as Long
-    is StringPref -> value = newValue as String
-    is StringOrNullPref -> value = newValue as? String
-    is StringSetPref -> value = newValue as Set<String?>
-    is StringSetOrNullPref -> value = newValue as? Set<String?>
-}
 
 @Stable
 @Composable
 inline fun <R, T> PrefDelegate<T>.collectAsState(crossinline transform: @DisallowComposableCalls (T) -> R): State<R> {
     val flow = remember { valueFlow().map { transform(it) } }
-    val init = getValue()
+    val init = value
     return flow.collectAsState(transform(init))
 }
 
@@ -73,32 +41,28 @@ inline fun <R, T> PrefDelegate<T>.collectAsState(crossinline transform: @Disallo
 @Composable
 fun <T> PrefDelegate<T>.collectAsState(): State<T> {
     val flow = remember { valueFlow() }
-    val init = getValue()
+    val init = value
     return flow.collectAsState(init)
 }
 
 @Stable
 @Composable
 fun <T> PrefDelegate<T>.asMutableState(): MutableState<T> {
-    val flow = remember { valueFlow() }
-    val init = getValue()
-    val readOnly = flow.collectAsState(init)
+    val readOnly = collectAsState()
     return remember {
         object : MutableState<T> {
             override var value: T
                 get() = readOnly.value
                 set(value) {
-                    setValue(value)
+                    this@asMutableState.value = value
                 }
             override fun component1() = readOnly.value
-            override fun component2() = ::setValue
+            override fun component2() = this@asMutableState::value::set
         }
     }
 }
 
 object Settings : DataStorePreferences(null) {
-    private const val KEY_SHOW_TAG_TRANSLATIONS = "show_tag_translations"
-
     @Suppress("ktlint:standard:backing-property-naming")
     private val _favFlow = MutableSharedFlow<Unit>()
     val favChangesFlow = _favFlow.debounce(1000)
@@ -121,7 +85,7 @@ object Settings : DataStorePreferences(null) {
     val showVoteStatus = boolPref("show_vote_status", false)
     val showComments = boolPref("show_gallery_comments", true)
     val commentThreshold = intPref("comment_threshold", -100)
-    val showTagTranslations = boolPref(KEY_SHOW_TAG_TRANSLATIONS, false).observed { updateWhenTagTranslationChanges() }
+    val showTagTranslations = boolPref("show_tag_translations", false).observed { updateWhenTagTranslationChanges() }
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
     val showJpnTitle = boolPref("show_jpn_title", false)
     val requestNews = boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
@@ -167,15 +131,15 @@ object Settings : DataStorePreferences(null) {
     val needSignIn = boolPref("need_sign_in", true)
     val gridView = boolPref("grid_view", false)
     val qSSaveProgress = boolPref("qs_save_progress", true)
-    val displayName = stringOrNullPref("display_name", null)
-    val avatar = stringOrNullPref("avatar", null)
-    val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
+    val displayName = stringOrNullPref("display_name")
+    val avatar = stringOrNullPref("avatar")
+    val recentDownloadLabel = stringOrNullPref("recent_download_label")
 
-    var downloadScheme by stringOrNullPref("image_scheme", null)
-    var downloadAuthority by stringOrNullPref("image_authority", null)
-    var downloadPath by stringOrNullPref("image_path", null)
-    var downloadQuery by stringOrNullPref("image_query", null)
-    var downloadFragment by stringOrNullPref("image_fragment", null)
+    var downloadScheme by stringOrNullPref("image_scheme")
+    var downloadAuthority by stringOrNullPref("image_authority")
+    var downloadPath by stringOrNullPref("image_path")
+    var downloadQuery by stringOrNullPref("image_query")
+    var downloadFragment by stringOrNullPref("image_fragment")
     var archivePasswds by stringSetPref("archive_passwds")
     var appLinkVerifyTip by boolPref("app_link_verify_tip", false)
     var hasDefaultDownloadLabel by boolPref("has_default_download_label", false)
@@ -185,7 +149,7 @@ object Settings : DataStorePreferences(null) {
     var requestNewsTime by intPref("request_news_time", 0).observed { updateWhenRequestNewsChanges() }
     var lastDawnDays by intPref("last_dawn_days", 0)
     var recentToplist by stringPref("recent_toplist", "11")
-    var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
+    var defaultDownloadLabel by stringOrNullPref("default_download_label")
     var lastUpdateTime by longPref("last_update_time", BuildConfig.COMMIT_TIME)
 
     // Reader
@@ -223,13 +187,13 @@ object Settings : DataStorePreferences(null) {
     val stripExtraneousAds = boolPref("strip_extraneous_ads", false)
 
     init {
-        if ("CN" == Locale.getDefault().country) {
-            edit {
-                if (KEY_SHOW_TAG_TRANSLATIONS !in prefs) showTagTranslations.value = true
+        edit { pref ->
+            if ("CN" == Locale.getDefault().country) {
+                if (showTagTranslations !in pref) pref[showTagTranslations] = true
             }
-        }
-        if (downloadFilterMode.value == DownloadsFilterMode.ARTIST.flag && recentDownloadLabel.value == null) {
-            recentDownloadLabel.value = ""
+            if (pref[downloadFilterMode] == DownloadsFilterMode.ARTIST.flag && pref[recentDownloadLabel] == null) {
+                pref[recentDownloadLabel] = ""
+            }
         }
     }
 
@@ -247,7 +211,7 @@ object Settings : DataStorePreferences(null) {
         override fun getValue(thisRef: Any?, prop: KProperty<*>?): IntArray = _value.map { it.value }.toIntArray()
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: IntArray) {
             check(value.size == count)
-            edit { value.zip(_value) { v, d -> d.value = v } }
+            edit { pref -> value.zip(_value) { v, d -> pref[d] = v } }
         }
     }
 
@@ -259,7 +223,7 @@ object Settings : DataStorePreferences(null) {
         override fun getValue(thisRef: Any?, prop: KProperty<*>?): Array<String> = _value.map { it.value }.toTypedArray()
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: Array<String>) {
             check(value.size == count)
-            edit { value.zip(_value) { v, d -> d.value = v } }
+            edit { pref -> value.zip(_value) { v, d -> pref[d] = v } }
         }
     }
 }

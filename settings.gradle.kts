@@ -44,4 +44,5 @@ enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 rootProject.name = "EhViewer"
 include(":app")
 include(":benchmark")
+include(":core:data")
 include(":core:i18n")

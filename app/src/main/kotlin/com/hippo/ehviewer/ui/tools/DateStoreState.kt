@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.datastore.dataStoreFile
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.byteArrayPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +22,7 @@ import kotlinx.serialization.serializer
 import splitties.init.appCtx
 
 val dataStoreScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-val dataStore = PreferenceDataStoreFactory.create { appCtx.dataStoreFile("Remembered.preferences_pb") }
+val dataStore = PreferenceDataStoreFactory.create { appCtx.preferencesDataStoreFile("Remembered") }
 val dataStateFlow = dataStore.data.stateIn(dataStoreScope, SharingStarted.Eagerly, emptyPreferences())
 
 // Find out how make this work with any generic `Serializable` type

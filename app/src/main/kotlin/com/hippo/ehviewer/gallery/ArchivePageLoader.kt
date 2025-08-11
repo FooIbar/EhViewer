@@ -53,7 +53,7 @@ suspend inline fun <T> useArchivePageLoader(
             { _, _ -> closeArchive() },
         )
         check(size > 0) { "Archive have no content!" }
-        if (needPassword() && archivePasswds.filterNotNull().none(::providePassword)) {
+        if (needPassword() && archivePasswds.none(::providePassword)) {
             archivePasswds += passwdProvider(::providePassword)
         }
         val loader = install(
