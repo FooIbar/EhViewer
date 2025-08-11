@@ -130,7 +130,7 @@ class EhApplication :
             launchIO { dataStateFlow.value }
             launchIO { OSUtils.totalMemory }
             launch {
-                if (DownloadManager.labelList.isNotEmpty() && Settings.downloadFilterMode.key !in Settings.prefs) {
+                if (DownloadManager.labelList.isNotEmpty() && Settings.downloadFilterMode !in Settings.snapshot()) {
                     Settings.downloadFilterMode.value = DownloadsFilterMode.CUSTOM.flag
                 }
                 DownloadManager.readMetadataFromLocal()

@@ -2,6 +2,7 @@ package com.hippo.ehviewer
 
 import android.app.UiModeManager
 import androidx.appcompat.app.AppCompatDelegate
+import com.ehviewer.core.preferences.PrefDelegate
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dailycheck.updateDailyCheckWork
@@ -16,7 +17,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import splitties.init.appCtx
-import splitties.preferences.PrefDelegate
 import splitties.systemservices.uiModeManager
 
 private val collectScope = CoroutineScope(Dispatchers.Main + SupervisorJob())

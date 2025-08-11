@@ -166,6 +166,7 @@ baselineProfile {
 }
 
 dependencies {
+    implementation(projects.core.data)
     implementation(projects.core.i18n)
 
     // https://developer.android.com/jetpack/androidx/releases/activity
@@ -254,8 +255,6 @@ kotlin {
             "coil3.annotation.ExperimentalCoilApi",
             "androidx.paging.ExperimentalPagingApi",
             "kotlinx.serialization.ExperimentalSerializationApi",
-            "splitties.experimental.ExperimentalSplittiesApi",
-            "splitties.preferences.DataStorePreferencesPreview",
         )
     }
 }

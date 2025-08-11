@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.core.util.size
 import arrow.fx.coroutines.parMapNotNull
+import com.ehviewer.core.preferences.edit
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -64,7 +65,6 @@ import logcat.LogPriority
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
-import splitties.preferences.edit
 
 object DownloadManager : OnSpiderListener, CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
