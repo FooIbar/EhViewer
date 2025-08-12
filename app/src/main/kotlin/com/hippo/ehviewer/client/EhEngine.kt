@@ -212,7 +212,8 @@ object EhEngine {
         return ehRequest(url, EhUrl.URL_FORUMS).fetchUsingAsByteBuffer(ProfileParser::parse)
     }
 
-    suspend fun getUConfig(url: String = EhUrl.uConfigUrl) {
+    suspend fun getUConfig(gallerySite: Int) {
+        val url = EhUrl.getUConfigUrl(gallerySite)
         runSuspendCatching {
             ehRequest(url).fetchUsingAsByteBuffer(UserConfigParser::parse)
         }.onFailure { throwable ->

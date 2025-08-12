@@ -100,10 +100,10 @@ private fun ensureNoMediaFile(downloadDir: Path) {
 
 private val lck = Mutex()
 
-suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation) {
+suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation, mediaScan: Boolean = Settings.mediaScan.value) {
     if (downloadDir.isDirectory) {
         lck.withLock {
-            if (Settings.mediaScan.value) {
+            if (mediaScan) {
                 removeNoMediaFile(downloadDir)
             } else {
                 ensureNoMediaFile(downloadDir)

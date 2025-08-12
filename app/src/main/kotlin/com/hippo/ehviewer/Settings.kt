@@ -71,9 +71,9 @@ object Settings : DataStorePreferences(null) {
     var favCloudCount by intPref("fav_cloud", 0).emitTo(_favFlow)
 
     // Eh
-    val gallerySite = intPref("gallery_site_2", 0).observed { updateWhenGallerySiteChanges() }
+    val gallerySite = intPref("gallery_site_2", 0).observed(::updateWhenGallerySiteChanges)
     val defaultFavSlot = intPref("default_favorite_slot", -2)
-    val theme = intPref("theme_2", -1).observed { updateWhenThemeChanges() }
+    val theme = intPref("theme_2", -1).observed(::updateWhenThemeChanges)
     val blackDarkTheme = boolPref("black_dark_theme", false)
     val harmonizeCategoryColor = boolPref("harmonize_category_color", true)
     val launchPage = intPref("launch_page_2", 0)
@@ -85,14 +85,14 @@ object Settings : DataStorePreferences(null) {
     val showVoteStatus = boolPref("show_vote_status", false)
     val showComments = boolPref("show_gallery_comments", true)
     val commentThreshold = intPref("comment_threshold", -100)
-    val showTagTranslations = boolPref("show_tag_translations", false).observed { updateWhenTagTranslationChanges() }
+    val showTagTranslations = boolPref("show_tag_translations", false).observed(::updateWhenTagTranslationChanges)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
     val showJpnTitle = boolPref("show_jpn_title", false)
     val requestNews = boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
     val hideHvEvents = boolPref("hide_hv_events", false)
 
     // Download
-    val mediaScan = boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
+    val mediaScan = boolPref("media_scan", false).observed(::updateWhenKeepMediaStatusChanges)
     val multiThreadDownload = intPref("download_thread_2", 3)
     val downloadDelay = intPref("download_delay_3", 1000)
     val connTimeout = intPref("conn_timeout", 10)
@@ -198,32 +198,28 @@ object Settings : DataStorePreferences(null) {
     }
 
     interface Delegate<R> {
-        val flowGetter: () -> Flow<Unit>
+        fun changesFlow(): Flow<Unit>
         operator fun getValue(thisRef: Any?, prop: KProperty<*>?): R
         operator fun setValue(thisRef: Any?, prop: KProperty<*>?, value: R)
     }
 
     private fun intArrayPref(key: String, count: Int) = object : Delegate<IntArray> {
-        override val flowGetter: () -> Flow<Unit> = { _value.asFlow().flatMapMerge { it.changesFlow() }.conflate() }
-
-        @Suppress("ktlint:standard:backing-property-naming")
-        private var _value = (0 until count).map { intPref("${key}_$it", 0) }.toTypedArray()
-        override fun getValue(thisRef: Any?, prop: KProperty<*>?): IntArray = _value.map { it.value }.toIntArray()
+        private val delegates = Array(count) { intPref("${key}_$it", 0) }
+        override fun changesFlow(): Flow<Unit> = delegates.asFlow().flatMapMerge { it.changesFlow() }.conflate()
+        override fun getValue(thisRef: Any?, prop: KProperty<*>?) = IntArray(delegates.size) { delegates[it].value }
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: IntArray) {
             check(value.size == count)
-            edit { pref -> value.zip(_value) { v, d -> pref[d] = v } }
+            edit { pref -> value.zip(delegates) { v, d -> pref[d] = v } }
         }
     }
 
     private fun stringArrayPref(key: String, count: Int, defMetaValue: String) = object : Delegate<Array<String>> {
-        override val flowGetter: () -> Flow<Unit> = { _value.asFlow().flatMapMerge { it.changesFlow() }.conflate() }
-
-        @Suppress("ktlint:standard:backing-property-naming")
-        private var _value = (0 until count).map { stringPref("${key}_$it", "$defMetaValue $it") }.toTypedArray()
-        override fun getValue(thisRef: Any?, prop: KProperty<*>?): Array<String> = _value.map { it.value }.toTypedArray()
+        private val delegates = Array(count) { stringPref("${key}_$it", "$defMetaValue $it") }
+        override fun changesFlow(): Flow<Unit> = delegates.asFlow().flatMapMerge { it.changesFlow() }.conflate()
+        override fun getValue(thisRef: Any?, prop: KProperty<*>?) = Array(delegates.size) { delegates[it].value }
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: Array<String>) {
             check(value.size == count)
-            edit { pref -> value.zip(_value) { v, d -> pref[d] = v } }
+            edit { pref -> value.zip(delegates) { v, d -> pref[d] = v } }
         }
     }
 }
