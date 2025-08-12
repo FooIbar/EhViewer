@@ -35,7 +35,7 @@ private const val APPLY_JS = "javascript:(function(){var apply = document.getEle
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Screen(navigator) {
-    val url = EhUrl.uConfigUrl
+    val url = EhUrl.getUConfigUrl()
     val wvNavigator = rememberWebViewNavigator()
     Scaffold(
         topBar = {

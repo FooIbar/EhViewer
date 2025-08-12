@@ -80,12 +80,11 @@ object EhUrl {
             else -> ORIGIN_E
         }
 
-    val uConfigUrl: String
-        get() = when (Settings.gallerySite.value) {
-            SITE_E -> URL_UCONFIG_E
-            SITE_EX -> URL_UCONFIG_EX
-            else -> URL_UCONFIG_E
-        }
+    fun getUConfigUrl(gallerySite: Int = Settings.gallerySite.value) = when (gallerySite) {
+        SITE_E -> URL_UCONFIG_E
+        SITE_EX -> URL_UCONFIG_EX
+        else -> URL_UCONFIG_E
+    }
 
     val myTagsUrl: String
         get() = when (Settings.gallerySite.value) {

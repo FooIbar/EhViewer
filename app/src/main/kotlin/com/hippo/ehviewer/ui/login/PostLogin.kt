@@ -36,7 +36,7 @@ fun postLogin() = GlobalScope.async(Dispatchers.IO) {
     // Get cookies for image limits
     launch {
         catch {
-            EhEngine.getUConfig(EhUrl.URL_UCONFIG_E)
+            EhEngine.getUConfig(EhUrl.SITE_E)
             EhCookieStore.flush()
         }.onLeft {
             logcat(it)
@@ -45,7 +45,7 @@ fun postLogin() = GlobalScope.async(Dispatchers.IO) {
 
     // Sad panda check
     catch {
-        EhEngine.getUConfig(EhUrl.URL_UCONFIG_EX)
+        EhEngine.getUConfig(EhUrl.SITE_EX)
         EhCookieStore.flush()
         Settings.gallerySite.value = EhUrl.SITE_EX
     }.onLeft {
