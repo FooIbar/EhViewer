@@ -104,7 +104,9 @@ suspend inline fun <R> timeoutBySpeed(
     }
 }
 
-fun speedLevelToSpeed(level: Int) = 2f.pow(level).roundToInt()
+const val MIN_SPEED_LEVEL = 3
+
+fun speedLevelToSpeed(level: Int) = if (level == MIN_SPEED_LEVEL) 0 else 2f.pow(level).roundToInt()
 
 inline fun <T, R> MutableObjectIntMap<T>.fold(initial: R, operation: (acc: R, T, Int) -> R): R {
     var accumulator = initial
