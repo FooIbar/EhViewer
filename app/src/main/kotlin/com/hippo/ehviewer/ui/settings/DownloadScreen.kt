@@ -44,6 +44,7 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
+import com.hippo.ehviewer.spider.MIN_SPEED_LEVEL
 import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.readComicInfo
@@ -193,14 +194,12 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
             IntSliderPreference(
                 maxValue = 10,
                 minValue = 2,
-                step = 7,
                 title = stringResource(id = R.string.settings_download_connection_timeout),
                 state = Settings.connTimeout.asMutableState(),
             )
             IntSliderPreference(
                 maxValue = 10,
-                minValue = 4,
-                step = 5,
+                minValue = MIN_SPEED_LEVEL,
                 title = stringResource(id = R.string.settings_download_timeout_speed),
                 state = Settings.timeoutSpeed.asMutableState(),
                 display = ::speedLevelToSpeed,
