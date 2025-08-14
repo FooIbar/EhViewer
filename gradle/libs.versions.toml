@@ -72,8 +72,7 @@ coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3" }
 compose-bom = { module = "androidx.compose:compose-bom-alpha", version.ref = "compose-bom" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-# https://issuetracker.google.com/427778135
-compose-material3 = { module = "androidx.compose.material3:material3-android", version = { strictly = "1.4.0-alpha15" } }
+compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
