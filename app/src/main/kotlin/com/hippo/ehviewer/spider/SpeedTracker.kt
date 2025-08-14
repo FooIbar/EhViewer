@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -47,7 +47,7 @@ class SpeedTracker(val window: Duration = 1.seconds) {
         }
     }
 
-    fun speedFlow(sample: Duration = 1.seconds) = fixedRate(sample).map {
+    fun speedFlow(sample: Duration = 1.seconds) = fixedRate(sample).mapNotNull {
         mutex.withLock {
             start?.let { start ->
                 val now = Clock.System.now()
@@ -55,8 +55,8 @@ class SpeedTracker(val window: Duration = 1.seconds) {
                 val window = passed.coerceIn(10.milliseconds, window)
                 val cutoff = now - window
                 received.removeIf { time, _ -> time < cutoff }
-                received.fold(0) { total, _, v -> total + v } / (window / 1.seconds)
-            } ?: 0.0
+                (received.fold(0) { total, _, v -> total + v } / (window / 1.seconds)).toLong()
+            }
         }
     }
 }
@@ -80,8 +80,12 @@ suspend inline fun <R> timeoutBySpeed(
         var prev = 0L
         onDownload { done, total ->
             val bytesRead = (done - prev).toInt()
-            tracker.track(bytesRead)
-            l(total!!, done, bytesRead)
+            if (done == total!!) {
+                tracker.reset()
+            } else {
+                tracker.track(bytesRead)
+            }
+            l(total, done, bytesRead)
             prev = done
         }
         timeout { reset() }
@@ -89,10 +93,10 @@ suspend inline fun <R> timeoutBySpeed(
         watchdog.cancel()
         resp.status.ensureSuccess()
         val speedWatchdog = launch {
-            val timeoutSpeed = speedLevelToSpeed(Settings.timeoutSpeed.value) * 1024.0
-            tracker.speedFlow(1.seconds).collect { speed ->
-                if (timeoutSpeed != 0.0 && speed < timeoutSpeed) {
-                    onTimeout(LowSpeedException(url, speed.toLong()))
+            val timeoutSpeed = speedLevelToSpeed(Settings.timeoutSpeed.value) * 1024L
+            tracker.speedFlow().collect { speed ->
+                if (speed < timeoutSpeed) {
+                    onTimeout(LowSpeedException(url, speed))
                 }
             }
         }
