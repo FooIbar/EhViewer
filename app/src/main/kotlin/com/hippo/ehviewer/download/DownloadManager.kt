@@ -711,9 +711,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         fun start() {
             if (currentJob == null) {
                 currentJob = launch {
-                    tracker.speedFlow().collect { speed ->
-                        updateSpeed(speed.toLong())
-                    }
+                    tracker.speedFlow().collect(::updateSpeed)
                 }
             }
         }
