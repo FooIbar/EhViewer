@@ -40,6 +40,17 @@
       "versioningTemplate": "regex:^(?<major>\\d{4})-(?<minor>\\d{2})-(?<patch>\\d{2})$",
       "datasourceTemplate": "custom.rust-nightly",
       "depNameTemplate": "rust-nightly"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "settings.gradle.kts"
+      ],
+      "matchStrings": [
+        "ndkVersion = \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "NDK",
+      "datasourceTemplate": "custom.ndk"
     }
   ],
   "customDatasources": {
@@ -50,6 +61,12 @@
     "rust-nightly": {
       "defaultRegistryUrlTemplate": "https://rust-lang.github.io/rustup-components-history/aarch64-linux-android/rust-std",
       "format": "plain"
+    },
+    "ndk": {
+      "defaultRegistryUrlTemplate": "https://api.github.com/repos/android/ndk/releases/latest",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":$match(body,/ndkVersion \"([^\"]+)\"/).groups[0]}],\"changelogUrl\":html_url}"
+      ]
     }
   },
   "packageRules": [
