@@ -129,6 +129,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(ANDROID 1)
 endif ()
 
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ../../../../rust-toolchain.toml)
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
