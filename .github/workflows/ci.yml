@@ -21,7 +21,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android
+        run: rustup target add armv7-linux-androideabi
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -64,7 +64,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android
+        run: rustup target add armv7-linux-androideabi
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -82,7 +82,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: app/.cxx
-          key: cmake-default-${{ hashFiles('settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/rust/Cargo.lock') }}
+          key: cmake-default-${{ hashFiles('rust-toolchain.toml', 'settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/rust/Cargo.lock') }}
           restore-keys: cmake-default-
 
       - name: Build
@@ -132,7 +132,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android
+        run: rustup target add armv7-linux-androideabi
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -150,7 +150,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: app/.cxx
-          key: cmake-marshmallow-${{ hashFiles('settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/rust/Cargo.lock') }}
+          key: cmake-marshmallow-${{ hashFiles('rust-toolchain.toml', 'settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/rust/Cargo.lock') }}
           restore-keys: cmake-marshmallow-
 
       - name: Build
