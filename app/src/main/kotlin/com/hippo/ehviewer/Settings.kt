@@ -95,7 +95,6 @@ object Settings : DataStorePreferences(null) {
     val mediaScan = boolPref("media_scan", false).observed(::updateWhenKeepMediaStatusChanges)
     val multiThreadDownload = intPref("download_thread_2", 3)
     val downloadDelay = intPref("download_delay_3", 1000)
-    val connTimeout = intPref("conn_timeout", 10)
     val timeoutSpeed = intPref("timeout_speed_level", 6)
     val preloadImage = intPref("preload_image_2", 5)
     val downloadOriginImage = boolPref("download_origin_image", false)

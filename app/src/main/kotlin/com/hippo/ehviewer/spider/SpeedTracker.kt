@@ -72,8 +72,9 @@ suspend inline fun <R> timeoutBySpeed(
 ) = coroutineScope {
     val onTimeout = AtomicReference<OnTimeout?>(t).let { { e: IOException -> it.exchange(null)?.invoke(e) } }
     val watchdog = launch {
-        delay(Settings.connTimeout.value.seconds)
-        onTimeout(ConnectTimeoutException(url, Settings.connTimeout.value * 1000L))
+        val timeout = 10.seconds
+        delay(timeout)
+        onTimeout(ConnectTimeoutException(url, timeout.inWholeMilliseconds))
     }
     val tracker = SpeedTracker(2.seconds)
     request {
