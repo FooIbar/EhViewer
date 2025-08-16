@@ -1,5 +1,18 @@
 # 变更日志
 
+## [未发布]
+
+### 改进
+
+* [下载] 支持将最低下载速度设为 0 [#2545](https://github.com/FooIbar/EhViewer/issues/2545)
+* [下载] 移除令人困惑的连接超时设置 [#2556](https://github.com/FooIbar/EhViewer/issues/2556)
+
+### Bug 修复
+
+* 下载速度计算不准确导致下载失败误报 [#2545](https://github.com/FooIbar/EhViewer/issues/2545)
+* 无法解析带有 location: 标签的画廊
+
+
 ## [1.14.1] - 2025-07-31
 
 ### 改进
