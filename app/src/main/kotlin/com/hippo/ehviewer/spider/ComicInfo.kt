@@ -12,6 +12,7 @@ import com.hippo.ehviewer.client.data.TagNamespace.Character
 import com.hippo.ehviewer.client.data.TagNamespace.Cosplayer
 import com.hippo.ehviewer.client.data.TagNamespace.Female
 import com.hippo.ehviewer.client.data.TagNamespace.Group
+import com.hippo.ehviewer.client.data.TagNamespace.Location
 import com.hippo.ehviewer.client.data.TagNamespace.Male
 import com.hippo.ehviewer.client.data.TagNamespace.Mixed
 import com.hippo.ehviewer.client.data.TagNamespace.Other
@@ -60,7 +61,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
                     Group -> groups.addAll(list)
                     Character -> characters.addAll(list)
                     Parody -> parodies.addAll(list)
-                    Other -> otherTags.addAll(list)
+                    Location, Other -> otherTags.addAll(list)
                     Female, Male, Mixed -> ns.prefix.let { prefix ->
                         list.forEach { tag -> otherTags.add("$prefix:$tag") }
                     }
@@ -76,7 +77,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
                     Group -> groups.add(tag)
                     Character -> characters.add(tag)
                     Parody -> if (tag != TAG_ORIGINAL) parodies.add(tag)
-                    Other -> otherTags.add(tag)
+                    Location, Other -> otherTags.add(tag)
                     Female, Male, Mixed -> ns.prefix.let { otherTags.add("$it:$tag") }
                     else -> Unit
                 }
