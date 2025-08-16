@@ -16,6 +16,7 @@ sealed class TagNamespace(val value: String, val prefix: String?) {
     object Female : TagNamespace("female", "f")
     object Group : TagNamespace("group", "g")
     object Language : TagNamespace("language", "l")
+    object Location : TagNamespace("location", "loc")
     object Male : TagNamespace("male", "m")
     object Mixed : TagNamespace("mixed", "x")
     object Other : TagNamespace("other", "o")
@@ -31,6 +32,7 @@ sealed class TagNamespace(val value: String, val prefix: String?) {
             Female.value -> Female
             Group.value -> Group
             Language.value -> Language
+            Location.value -> Location
             Male.value -> Male
             Mixed.value -> Mixed
             Other.value -> Other

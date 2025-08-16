@@ -68,6 +68,7 @@ object EhTagDatabase : CoroutineScope {
     // Copied from https://github.com/EhTagTranslation/EhSyringe/blob/c0cf88da04081072492829673aca34380b14dae6/src/plugin/suggest.ts#L37
     // TODO: Optimize
     private val nsScore = mapOf(
+        TagNamespace.Location.prefix to 10f,
         TagNamespace.Other.prefix to 10f,
         TagNamespace.Female.prefix to 9f,
         TagNamespace.Male.prefix to 8.5f,
