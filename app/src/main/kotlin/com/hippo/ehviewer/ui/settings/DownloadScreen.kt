@@ -193,12 +193,6 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
             )
             IntSliderPreference(
                 maxValue = 10,
-                minValue = 2,
-                title = stringResource(id = R.string.settings_download_connection_timeout),
-                state = Settings.connTimeout.asMutableState(),
-            )
-            IntSliderPreference(
-                maxValue = 10,
                 minValue = MIN_SPEED_LEVEL,
                 title = stringResource(id = R.string.settings_download_timeout_speed),
                 state = Settings.timeoutSpeed.asMutableState(),
