@@ -85,6 +85,10 @@ jobs:
           key: cmake-default-${{ hashFiles('rust-toolchain.toml', 'settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/rust/Cargo.lock') }}
           restore-keys: cmake-default-
 
+      # https://github.com/mikepenz/AboutLibraries/issues/1225
+      - name: Generate aboutlibraries.json
+        run: ./gradlew :app:prepareLibraryDefinitionsDefaultRelease --rerun
+
       - name: Build
         run: ./gradlew assembleDefaultRelease
 
@@ -152,6 +156,10 @@ jobs:
           path: app/.cxx
           key: cmake-marshmallow-${{ hashFiles('rust-toolchain.toml', 'settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/rust/Cargo.lock') }}
           restore-keys: cmake-marshmallow-
+
+      # https://github.com/mikepenz/AboutLibraries/issues/1225
+      - name: Generate aboutlibraries.json
+        run: ./gradlew :app:prepareLibraryDefinitionsMarshmallowRelease --rerun
 
       - name: Build
         run: ./gradlew assembleMarshmallowRelease
