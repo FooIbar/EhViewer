@@ -105,7 +105,7 @@ moko-resources = { module = "dev.icerock.moko:resources", version.ref = "moko-re
 
 okio-bom = { module = "com.squareup.okio:okio-bom", version.ref = "okio" }
 
-reorderable = "sh.calvin.reorderable:reorderable:2.5.1"
+reorderable = "sh.calvin.reorderable:reorderable:3.0.0"
 
 serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
