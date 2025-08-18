@@ -97,6 +97,9 @@ android {
         dex {
             useLegacyPackaging = false
         }
+        jniLibs {
+            excludes += "**/libdatastore_shared_counter.so" // DataStore multi-process
+        }
         resources {
             // Required by Layout Inspector
             pickFirsts += "/META-INF/androidx.compose.ui_ui.version"
