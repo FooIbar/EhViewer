@@ -22,10 +22,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.paging.compose.LazyPagingItems
+import com.ehviewer.core.ui.util.launchInVM
+import com.ehviewer.core.ui.util.rememberUpdatedStateInVM
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.ui.tools.launchInVM
-import com.hippo.ehviewer.ui.tools.rememberUpdatedStateInVM
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.FlowCollector

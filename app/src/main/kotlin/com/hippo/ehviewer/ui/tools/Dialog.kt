@@ -94,6 +94,8 @@ import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.right
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.FastScrollLazyColumn
+import com.ehviewer.core.ui.component.LabeledCheckbox
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhTagDatabase.suggestion
 import com.jamal.composeprefs3.ui.ifNotNullThen

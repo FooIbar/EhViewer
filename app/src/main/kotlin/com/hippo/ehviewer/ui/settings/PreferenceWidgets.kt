@@ -21,7 +21,7 @@ import androidx.compose.ui.res.integerArrayResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import com.hippo.ehviewer.ui.main.RollingNumber
+import com.ehviewer.core.ui.component.RollingNumber
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.util.ProgressDialog
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator

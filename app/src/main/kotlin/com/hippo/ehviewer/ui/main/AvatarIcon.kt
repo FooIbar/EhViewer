@@ -44,6 +44,10 @@ import arrow.core.some
 import coil3.compose.AsyncImage
 import coil3.network.HttpException
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.RollingNumber
+import com.ehviewer.core.ui.component.RollingNumberPlaceholder
+import com.ehviewer.core.util.launch
+import com.ehviewer.core.util.launchIO
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils
@@ -65,8 +69,6 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import moe.tarsin.coroutines.runSwallowingWithUI
-import moe.tarsin.launch
-import moe.tarsin.launchIO
 
 private val limitScope = CoroutineScope(Dispatchers.IO)
 private val refreshEvent = MutableSharedFlow<Unit>()

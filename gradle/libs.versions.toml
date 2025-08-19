@@ -2,14 +2,14 @@
 aboutlibraries = "12.2.4"
 accompanist = "0.37.3"
 agp = "8.12.1"
-androidx-activity = "1.10.1"
+androidx-activity = "1.12.0-alpha06"
 androidx-appcompat = "1.7.1"
 androidx-biometric = "1.4.0-alpha04"
 androidx-browser = "1.9.0"
 androidx-core = "1.17.0"
 androidx-core-splashscreen = "1.2.0-rc01"
 androidx-datastore = "1.1.7"
-androidx-lifecycle = "2.9.2"
+androidx-lifecycle = "2.10.0-alpha02"
 androidx-paging = "3.3.6"
 androidx-room = "2.7.2"
 androidx-work = "2.10.3"
@@ -51,6 +51,7 @@ androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", versi
 androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging" }
 
@@ -73,7 +74,7 @@ compose-bom = { module = "androidx.compose:compose-bom-alpha", version.ref = "co
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
-compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
+compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version = "1.1.2" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 compose-ui-util = { module = "androidx.compose.ui:ui-util" }

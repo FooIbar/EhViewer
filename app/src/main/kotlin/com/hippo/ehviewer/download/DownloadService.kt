@@ -32,6 +32,7 @@ import androidx.core.content.ContextCompat
 import androidx.savedstate.serialization.decodeFromSavedState
 import androidx.savedstate.serialization.encodeToSavedState
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.unsafeLazy
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.dao.DownloadInfo
@@ -39,7 +40,6 @@ import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.isAtLeastS
-import com.hippo.ehviewer.util.unsafeLazy
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

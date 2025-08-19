@@ -1,10 +1,10 @@
 package moe.tarsin.coroutines
 
 import androidx.compose.material3.SnackbarHostState
+import com.ehviewer.core.util.launch
 import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import moe.tarsin.launch
 import moe.tarsin.snackbar
 
 inline fun <T, reified E : Throwable> Result<T>.except() = onFailure { if (it is E) throw it }
