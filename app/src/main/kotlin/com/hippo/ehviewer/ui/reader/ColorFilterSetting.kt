@@ -22,9 +22,9 @@ import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.RollingNumber
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import com.hippo.ehviewer.ui.main.RollingNumber
 
 @Composable
 fun ColorFilterSetting() = Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {

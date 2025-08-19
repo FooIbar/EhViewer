@@ -18,9 +18,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.ehviewer.core.ui.component.scrollbarStyle
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.ui.tools.scrollbarStyle
 import com.hippo.ehviewer.util.isAtLeastOMR1
 import com.hippo.ehviewer.util.isAtLeastS
 import com.materialkolor.dynamicColorScheme

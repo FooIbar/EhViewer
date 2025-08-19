@@ -27,12 +27,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.icons.EhIcons
+import com.ehviewer.core.ui.icons.filled.Crop
+import com.ehviewer.core.ui.icons.filled.CropOff
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.filled.Crop
-import com.hippo.ehviewer.icons.filled.CropOff
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.PreferenceType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType

@@ -19,11 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.ehviewer.core.ui.component.Slider
+import com.ehviewer.core.ui.component.defaultMaxTickCount
+import com.ehviewer.core.ui.util.LocalWindowSizeClass
+import com.ehviewer.core.ui.util.isExpanded
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
-import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
-import com.hippo.ehviewer.ui.tools.Slider
-import com.hippo.ehviewer.ui.tools.defaultMaxTickCount
-import com.hippo.ehviewer.ui.tools.isExpanded
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 
 @Composable

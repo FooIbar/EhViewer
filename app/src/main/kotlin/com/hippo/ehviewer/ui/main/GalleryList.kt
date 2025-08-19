@@ -52,22 +52,22 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.FastScrollLazyVerticalGrid
+import com.ehviewer.core.ui.component.FastScrollLazyVerticalStaggeredGrid
+import com.ehviewer.core.ui.icons.EhIcons
+import com.ehviewer.core.ui.icons.big.SadAndroid
+import com.ehviewer.core.util.launch
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.exception.NoHitsFoundException
 import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
-import moe.tarsin.launch
 
 @Stable
 operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {

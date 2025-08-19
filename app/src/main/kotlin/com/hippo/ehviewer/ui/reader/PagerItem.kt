@@ -38,6 +38,7 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.util.thenIf
 import com.google.accompanist.drawablepainter.DrawablePainter
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
@@ -47,7 +48,6 @@ import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.progressObserved
 import com.hippo.ehviewer.gallery.statusObserved
 import com.hippo.ehviewer.image.Image
-import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.AdsPlaceholderFile
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
 import kotlinx.coroutines.awaitCancellation

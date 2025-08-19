@@ -14,13 +14,13 @@ import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
+import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import moe.tarsin.coroutines.runSuspendCatching

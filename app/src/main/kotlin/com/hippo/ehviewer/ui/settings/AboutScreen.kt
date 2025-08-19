@@ -22,6 +22,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.launch
+import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
@@ -42,9 +44,7 @@ import com.hippo.files.delete
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import moe.tarsin.coroutines.runSuspendCatching
-import moe.tarsin.launch
 import moe.tarsin.navigate
 import moe.tarsin.snackbar
 import moe.tarsin.string

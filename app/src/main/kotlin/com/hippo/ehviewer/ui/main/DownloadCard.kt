@@ -40,14 +40,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.CrystalCard
+import com.ehviewer.core.ui.util.TransitionsVisibilityScope
+import com.ehviewer.core.ui.util.listThumbGenerator
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
-import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
-import com.hippo.ehviewer.ui.tools.listThumbGenerator
 import com.hippo.ehviewer.util.FileUtils
 
 @Composable

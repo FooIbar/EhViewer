@@ -22,7 +22,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.ehviewer.core.i18n.R
-import eu.kanade.tachiyomi.util.lang.withUIContext
+import com.ehviewer.core.util.withUIContext
 import java.io.File
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.fetchAndIncrement

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.launch
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
@@ -23,7 +24,6 @@ import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import moe.tarsin.launch
 import moe.tarsin.snackbar
 
 @Destination<RootGraph>

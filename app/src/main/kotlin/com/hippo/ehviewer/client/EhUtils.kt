@@ -27,6 +27,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import arrow.core.memoize
+import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -38,7 +39,6 @@ import com.hippo.ehviewer.util.addTextToClipboard
 import com.materialkolor.hct.Hct
 import com.materialkolor.ktx.from
 import com.materialkolor.ktx.toColor
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import splitties.systemservices.downloadManager
 
 object EhUtils {
