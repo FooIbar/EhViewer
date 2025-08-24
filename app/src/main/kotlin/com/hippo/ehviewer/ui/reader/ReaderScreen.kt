@@ -366,7 +366,6 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
                         ) {
                             SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
                                 isColorFilter = page == 2
-                                appbarVisible = !isColorFilter
                             }
                         }
                     }
