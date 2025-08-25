@@ -51,7 +51,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -70,7 +69,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -105,10 +103,10 @@ import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.openBrowser
+import com.hippo.ehviewer.ui.tools.addBBCodeTextContextMenuItems
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitSelectAction
 import com.hippo.ehviewer.ui.tools.normalizeSpan
-import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
 import com.hippo.ehviewer.ui.tools.showNoButton
 import com.hippo.ehviewer.ui.tools.toBBCode
 import com.hippo.ehviewer.ui.tools.updateSpan
@@ -119,7 +117,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlin.collections.forEach
 import kotlin.math.roundToInt
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.navigate
@@ -479,18 +476,15 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                     },
                 ) {
                     val color = MaterialTheme.colorScheme.onPrimaryContainer
-                    val toolbar = rememberBBCodeTextToolbar(userCommentBackField)
-                    CompositionLocalProvider(LocalTextToolbar provides toolbar) {
-                        BasicTextField(
-                            value = userComment,
-                            onValueChange = { textFieldValue ->
-                                userComment = textFieldValue.updateSpan(userComment)
-                            },
-                            modifier = Modifier.weight(1f).padding(keylineMargin),
-                            textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        )
-                    }
+                    BasicTextField(
+                        value = userComment,
+                        onValueChange = { textFieldValue ->
+                            userComment = textFieldValue.updateSpan(userComment)
+                        },
+                        modifier = Modifier.weight(1f).padding(keylineMargin).addBBCodeTextContextMenuItems(userCommentBackField),
+                        textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    )
                     IconButton(
                         onClick = { launchIO { sendComment() } },
                         shapes = IconButtonDefaults.shapes(),
