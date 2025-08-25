@@ -21,6 +21,7 @@ import android.content.Context
 import android.os.StrictMode
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.foundation.layout.ComposeFoundationLayoutFlags
 import androidx.compose.runtime.Composer
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.coroutineScope
@@ -93,6 +94,8 @@ class EhApplication :
     Application(),
     SingletonImageLoader.Factory {
     override fun onCreate() {
+        // https://issuetracker.google.com/440947109
+        ComposeFoundationLayoutFlags.isWindowInsetsModifierLocalNodeImplementationEnabled = false
         initSETConnection()
         // Initialize Settings on first access
         lifecycleScope.launchIO {
