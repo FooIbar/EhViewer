@@ -146,6 +146,8 @@ object EhDB {
         dao.fill(raw.position)
     }
 
+    suspend fun searchDownloadLabel(keyword: String, limit: Int) = db.downloadLabelDao().search("%$keyword%", limit)
+
     suspend fun putDownloadArtist(gid: Long, artists: List<DownloadArtist>) {
         if (artists.isNotEmpty()) {
             val dao = db.downloadArtistDao()

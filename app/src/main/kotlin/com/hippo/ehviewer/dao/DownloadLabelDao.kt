@@ -14,6 +14,9 @@ interface DownloadLabelDao {
     @Query("SELECT * FROM DOWNLOAD_LABELS ORDER BY POSITION LIMIT :limit OFFSET :offset")
     suspend fun list(offset: Int, limit: Int): List<DownloadLabel>
 
+    @Query("SELECT LABEL FROM DOWNLOAD_LABELS WHERE LABEL LIKE :pattern ORDER BY POSITION LIMIT :limit")
+    suspend fun search(pattern: String, limit: Int): List<String>
+
     @Query("UPDATE DOWNLOAD_LABELS SET POSITION = POSITION - 1 WHERE POSITION > :position")
     suspend fun fill(position: Int)
 

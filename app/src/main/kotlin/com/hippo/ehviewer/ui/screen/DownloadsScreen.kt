@@ -23,6 +23,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -451,6 +453,15 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
     }
 
+    val searchFieldState = rememberTextFieldState()
+    class DownloadLabelSuggestion(private val label: String) : Suggestion() {
+        override val keyword = LABEL_PREFIX + label
+        override fun onClick() {
+            searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
+            searchBarExpanded = false
+            switchLabel(label)
+        }
+    }
     SearchBarScreen(
         onApplySearch = { filterState = filterState.copy(keyword = it) },
         expanded = searchBarExpanded,
@@ -461,6 +472,15 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         },
         title = title,
         searchFieldHint = hint,
+        searchFieldState = searchFieldState,
+        suggestionProvider = { query ->
+            val label = query.substringAfter(LABEL_PREFIX, "")
+            if (label.isEmpty()) {
+                emptyList()
+            } else {
+                EhDB.searchDownloadLabel(label, 10).map(::DownloadLabelSuggestion)
+            }
+        },
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }
@@ -712,3 +732,5 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
     }
 }
+
+private const val LABEL_PREFIX = "label:"
