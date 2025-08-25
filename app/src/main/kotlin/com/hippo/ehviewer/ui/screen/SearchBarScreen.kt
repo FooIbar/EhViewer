@@ -94,7 +94,7 @@ import kotlinx.coroutines.launch
 import moe.tarsin.navigate
 
 fun interface SuggestionProvider {
-    fun providerSuggestions(text: String): Suggestion?
+    suspend fun providerSuggestions(text: String): List<Suggestion>
 }
 
 abstract class Suggestion {
@@ -164,7 +164,7 @@ fun SearchBarScreen(
     fun mergedSuggestionFlow(): Flow<Suggestion> = with(context) {
         flow {
             val query = searchFieldState.text.toString()
-            suggestionProvider?.run { providerSuggestions(query)?.let { emit(it) } }
+            suggestionProvider?.run { providerSuggestions(query).forEach { emit(it) } }
             mSearchDatabase.suggestions(query, 128).forEach { emit(KeywordSuggestion(it)) }
             val index = if (localSearch) query.lastIndexOf(' ') else query.lastIndexOfAny(TagTerminators)
             val keyword = query.substring(index + 1).trimStart()
