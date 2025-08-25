@@ -1,18 +1,17 @@
 package com.hippo.ehviewer.ui.tools
 
-import android.view.ActionMode
-import android.view.Menu
-import android.view.MenuItem
+import android.content.Context
+import androidx.annotation.StringRes
+import androidx.compose.foundation.text.contextmenu.builder.item
+import androidx.compose.foundation.text.contextmenu.data.TextContextMenuKeys
+import androidx.compose.foundation.text.contextmenu.modifier.appendTextContextMenuComponents
+import androidx.compose.foundation.text.contextmenu.modifier.filterTextContextMenuComponents
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.TextToolbar
-import androidx.compose.ui.platform.TextToolbarStatus
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
@@ -25,8 +24,7 @@ import androidx.compose.ui.text.input.getTextAfterSelection
 import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import com.hippo.ehviewer.R
-import com.hippo.ehviewer.ui.MainActivity
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.util.toRangeSet
 import io.github.petertrr.diffutils.diffInline
 import io.github.petertrr.diffutils.patch.ChangeDelta
@@ -36,8 +34,7 @@ import io.github.petertrr.diffutils.patch.InsertDelta
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
-
-typealias PlatformRect = android.graphics.Rect
+import moe.tarsin.string
 
 fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
     val oriSpan = origin.annotatedString.spanStyles
@@ -141,118 +138,81 @@ fun AnnotatedString.toBBCode() = buildString {
 }
 
 @Composable
-context(activity: MainActivity)
-fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): TextToolbar {
+context(_: Context)
+fun Modifier.addBBCodeTextContextMenuItems(textFieldValue: MutableState<TextFieldValue>): Modifier {
     var tfv by textFieldValue
-    val view = LocalView.current
     val coroutineScope = rememberCoroutineScope()
-    val toolbar = remember {
-        object : TextToolbar {
-            private var actionMode: ActionMode? = null
-            private val callback = object : TextActionModeCallback() {
-                override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-                    super.onCreateActionMode(mode, menu)
-                    activity.menuInflater.inflate(R.menu.context_comment, menu)
-                    return true
-                }
-
-                override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-                    super.onPrepareActionMode(mode, menu)
-                    if (tfv.selection.collapsed) {
-                        menu.removeGroup(R.id.bbcode_group)
+    return appendTextContextMenuComponents {
+        if (tfv.selection.collapsed) return@appendTextContextMenuComponents
+        BBCodeFormat.entries.forEach { item ->
+            item(key = item, label = string(item.id)) {
+                val capturedTfv = tfv
+                val start = capturedTfv.selection.min
+                val end = capturedTfv.selection.max
+                val annotatedString = buildAnnotatedString {
+                    val len = capturedTfv.text.length
+                    fun addStyle(style: SpanStyle) {
+                        append(capturedTfv.annotatedString)
+                        addStyle(style, start, end)
                     }
-                    return true
-                }
-
-                override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                    val handled = super.onActionItemClicked(mode, item)
-                    if (handled) {
-                        return true
-                    }
-                    val capturedTfv = tfv
-                    val start = capturedTfv.selection.min
-                    val end = capturedTfv.selection.max
-                    val annotatedString = buildAnnotatedString {
-                        val len = capturedTfv.text.length
-                        fun addStyle(style: SpanStyle) {
-                            append(capturedTfv.annotatedString)
-                            addStyle(style, start, end)
+                    fun addTextDecoration(decoration: TextDecoration) {
+                        append(capturedTfv.getTextBeforeSelection(len))
+                        val ans = capturedTfv.getSelectedText()
+                        val spans = ans.spanStyles.filter {
+                            it.item.textDecoration == null || it.item.textDecoration == decoration
                         }
-                        fun addTextDecoration(decoration: TextDecoration) {
+                        withStyle(SpanStyle(textDecoration = decoration)) {
+                            append(AnnotatedString(ans.text, spans))
+                        }
+                        append(capturedTfv.getTextAfterSelection(len))
+                    }
+                    when (item) {
+                        BBCodeFormat.Bold -> addStyle(SpanStyle(fontWeight = FontWeight.Bold))
+                        BBCodeFormat.Italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                        BBCodeFormat.Underline -> addTextDecoration(TextDecoration.Underline)
+                        BBCodeFormat.Strikethrough -> addTextDecoration(TextDecoration.LineThrough)
+                        BBCodeFormat.Url -> append(capturedTfv.annotatedString)
+                        BBCodeFormat.Clear -> {
                             append(capturedTfv.getTextBeforeSelection(len))
-                            val ans = capturedTfv.getSelectedText()
-                            val spans = ans.spanStyles.filter {
-                                it.item.textDecoration == null || it.item.textDecoration == decoration
-                            }
-                            withStyle(SpanStyle(textDecoration = decoration)) {
-                                append(AnnotatedString(ans.text, spans))
-                            }
+                            append(capturedTfv.getSelectedText().text)
                             append(capturedTfv.getTextAfterSelection(len))
                         }
-                        when (item.itemId) {
-                            R.id.action_bold -> addStyle(SpanStyle(fontWeight = FontWeight.Bold))
-                            R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
-                            R.id.action_underline -> addTextDecoration(TextDecoration.Underline)
-                            R.id.action_strikethrough -> addTextDecoration(TextDecoration.LineThrough)
-                            R.id.action_url -> append(capturedTfv.annotatedString)
-                            R.id.action_clear -> {
-                                append(capturedTfv.getTextBeforeSelection(len))
-                                append(capturedTfv.getSelectedText().text)
-                                append(capturedTfv.getTextAfterSelection(len))
-                            }
-                        }
                     }
-                    tfv = TextFieldValue(
-                        annotatedString = buildAnnotatedString {
-                            append(annotatedString)
-                            // Hacky: Trigger recomposition to hide text toolbar
-                            append(Char.MIN_VALUE)
-                        },
-                        selection = TextRange(end),
-                    )
-                    coroutineScope.launch {
-                        // Hacky: Let TextField recompose first
-                        delay(100)
-                        tfv = tfv.copy(annotatedString = annotatedString)
-                    }
-
-                    mode.finish()
-                    return true
                 }
-
-                override fun onDestroyActionMode(mode: ActionMode) {
-                    actionMode = null
+                tfv = TextFieldValue(
+                    annotatedString = buildAnnotatedString {
+                        append(annotatedString)
+                        // Hacky: Trigger recomposition to hide text toolbar
+                        append(Char.MIN_VALUE)
+                    },
+                    selection = TextRange(end),
+                )
+                coroutineScope.launch {
+                    // Hacky: Let TextField recompose first
+                    delay(100)
+                    tfv = tfv.copy(annotatedString = annotatedString)
                 }
-            }
-
-            override var status = TextToolbarStatus.Hidden
-
-            override fun hide() {
-                status = TextToolbarStatus.Hidden
-                actionMode?.finish()
-                actionMode = null
-            }
-
-            override fun showMenu(
-                rect: Rect,
-                onCopyRequested: (() -> Unit)?,
-                onPasteRequested: (() -> Unit)?,
-                onCutRequested: (() -> Unit)?,
-                onSelectAllRequested: (() -> Unit)?,
-            ) {
-                callback.rect = rect
-                callback.onCopyRequested = onCopyRequested
-                callback.onCutRequested = onCutRequested
-                callback.onPasteRequested = onPasteRequested
-                callback.onSelectAllRequested = onSelectAllRequested
-                if (actionMode == null) {
-                    status = TextToolbarStatus.Shown
-                    actionMode = view.startActionMode(callback, ActionMode.TYPE_FLOATING)
-                } else {
-                    actionMode?.invalidate()
-                }
+                close()
             }
         }
+    }.filterTextContextMenuComponents {
+        when (it.key) {
+            TextContextMenuKeys.CutKey,
+            TextContextMenuKeys.CopyKey,
+            TextContextMenuKeys.PasteKey,
+            TextContextMenuKeys.SelectAllKey,
+            is BBCodeFormat,
+            -> true
+            else -> false
+        }
     }
-    return toolbar
+}
+
+private enum class BBCodeFormat(@StringRes val id: Int) {
+    Bold(R.string.format_bold),
+    Italic(R.string.format_italic),
+    Underline(R.string.format_underline),
+    Strikethrough(R.string.format_strikethrough),
+    Url(R.string.format_url),
+    Clear(R.string.format_plain),
 }
