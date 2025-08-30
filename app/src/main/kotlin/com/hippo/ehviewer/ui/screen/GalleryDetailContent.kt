@@ -784,7 +784,7 @@ private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt())
     else -> R.string.rating_none
 }
 
-private fun List<GalleryTagGroup>.artistTag() = find { (ns, _) -> ns == TagNamespace.Artist || ns == TagNamespace.Cosplayer }?.let { (ns, tags) -> "$ns:${tags[0].text}" }
+private fun List<GalleryTagGroup>.artistTag() = find { (ns, _) -> ns == TagNamespace.Artist || ns == TagNamespace.Cosplayer }?.let { (ns, tags) -> "${ns.value}:${tags[0].text}" }
 
 @Composable
 context(_: Context)
