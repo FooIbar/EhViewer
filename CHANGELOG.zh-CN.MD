@@ -9,6 +9,7 @@
 ### Bug 修复
 
 * [阅读器] 关闭滤镜设置时崩溃 [#2573](https://github.com/FooIbar/EhViewer/issues/2573)
+* 编辑评论时上下文菜单缺少格式化选项
 * 某些情况下搜索相似画廊时出错
 
 
