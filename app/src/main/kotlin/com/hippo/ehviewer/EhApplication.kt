@@ -133,6 +133,7 @@ class EhApplication :
                 if (DownloadManager.labelList.isNotEmpty() && Settings.downloadFilterMode !in Settings.snapshot()) {
                     Settings.downloadFilterMode.value = DownloadsFilterMode.CUSTOM.flag
                 }
+                initialized = true
                 DownloadManager.readMetadataFromLocal()
             }
             launch {
@@ -214,6 +215,10 @@ class EhApplication :
     }
 
     companion object {
+        @Volatile
+        var initialized = false
+            private set
+
         val ktorClient by lazy {
             if (isAtLeastSExtension7 && Settings.enableCronet.value) {
                 HttpClient(Cronet) {
