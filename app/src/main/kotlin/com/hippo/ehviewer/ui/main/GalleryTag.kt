@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -103,7 +104,7 @@ private fun BaseRoundText(
         Text(
             text = text,
             modifier = modifier.padding(horizontal = 12.dp, vertical = 4.dp).width(IntrinsicSize.Max),
-            color = MaterialTheme.colorScheme.onSurface.let { if (weak) it.copy(0.5F) else it },
+            color = LocalContentColor.current.let { if (weak) it.copy(0.5F) else it },
             style = MaterialTheme.typography.labelLarge.includeFontPadding,
         )
     }
