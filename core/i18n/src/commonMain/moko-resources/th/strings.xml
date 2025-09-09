@@ -277,6 +277,8 @@
     <string name="settings_eh_tag_translations_source">Placeholder</string>
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
 
+    <string name="settings_read_volume_page">ใช้ปุ่มปรับเสียงเพื่อเปลี่ยนหน้า</string>
+
     <string name="settings_download">การดาวน์โหลด</string>
     <string name="settings_download_download_location">ตำแหน่งแหล่งดาวน์โหลด</string>
     <string name="settings_download_cant_get_download_location">ไม่สามารถเข้าถึงแหล่งดาวน์โหลดได้</string>

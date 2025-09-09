@@ -311,7 +311,8 @@
     <string name="settings_eh_tag_translations_source_url">https://github.com/EhTagTranslation/Editor/wiki</string>
     <string name="settings_eh_filter">屏蔽列表</string>
     <string name="settings_eh_filter_summary">根据标题、上传者、标签、评论者屏蔽画廊或评论</string>
-    <string name="settings_read_reverse_controls">反转物理按键控制</string>
+    <string name="settings_read_volume_page">使用音量键翻页</string>
+    <string name="settings_read_reverse_volume">反转音量键</string>
     <string name="settings_block_extraneous_ads">[实验性] 屏蔽外部广告</string>
     <string name="settings_ads_placeholder">[可选] 选择替换外部广告的图片</string>
     <string name="settings_download">下载</string>

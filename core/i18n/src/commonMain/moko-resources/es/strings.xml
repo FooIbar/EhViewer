@@ -254,6 +254,8 @@
     <string name="settings_eh_filter">Filtrado de galerías</string>
     <string name="settings_eh_filter_summary">Filtrado de galerías por título, uploader y etiquetas. Para más detalles presiona el ícono (i) en la parte superior del menú</string>
 
+    <string name="settings_read_volume_page">Pasar páginas con botón del volumen</string>
+
     <string name="settings_download">Descargas</string>
     <string name="settings_download_download_location">Ruta de descargas</string>
     <string name="settings_download_cant_get_download_location">No se puede obtener ruta de descargas</string>

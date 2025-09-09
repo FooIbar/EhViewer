@@ -286,6 +286,8 @@
     <string name="settings_eh_filter">Bloqueur des galeries</string>
     <string name="settings_eh_filter_summary">Filtrer les galerie par les titres, les uploaders ou les tags</string>
 
+    <string name="settings_read_volume_page">Tourner la page avec les Volumes</string>
+
     <!-- My Tags Activity -->
     <string name="my_tags">Tags suivis</string>
 
