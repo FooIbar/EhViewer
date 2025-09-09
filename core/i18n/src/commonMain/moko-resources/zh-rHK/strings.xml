@@ -312,6 +312,8 @@
     <string name="settings_eh_filter">屏蔽畫廊</string>
     <string name="settings_eh_filter_summary">根據標題、上傳者、標籤屏蔽畫廊</string>
 
+    <string name="settings_read_volume_page">使用音量鍵翻頁</string>
+
     <string name="settings_download">下載</string>
     <string name="settings_download_download_location">下載路徑</string>
     <string name="settings_download_cant_get_download_location">無法獲取下載路徑</string>

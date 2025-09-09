@@ -232,6 +232,7 @@
     <string name="settings_eh_show_jpn_title">Japanische Titel anzeigen</string>
     <string name="settings_eh_filter">Galerie-Blocker</string>
     <string name="settings_eh_filter_summary">Nach Titel, Uploader order Etiketten die unerwünschten Galerien verstecken</string>
+    <string name="settings_read_volume_page">Seiten mit Lautstärketaste umblättern</string>
     <string name="settings_download">Download</string>
     <string name="settings_download_download_location">Downloadziel</string>
     <string name="settings_download_cant_get_download_location">Downloadziel konnte nicht geladen werden</string>

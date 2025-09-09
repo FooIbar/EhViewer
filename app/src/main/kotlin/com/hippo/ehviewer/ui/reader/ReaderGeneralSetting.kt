@@ -63,8 +63,15 @@ fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberS
         title = stringResource(id = R.string.pref_page_transitions),
         field = Settings.pageTransitions.asMutableState(),
     )
+    val volume = Settings.readWithVolumeKeys.asMutableState()
     SwitchChoice(
-        title = stringResource(id = R.string.settings_read_reverse_controls),
-        field = Settings.readerReverseControls.asMutableState(),
+        title = stringResource(id = R.string.settings_read_volume_page),
+        field = volume,
     )
+    AnimatedVisibility(visible = volume.value) {
+        SwitchChoice(
+            title = stringResource(id = R.string.settings_read_reverse_volume),
+            field = Settings.readWithVolumeKeysInverted.asMutableState(),
+        )
+    }
 }

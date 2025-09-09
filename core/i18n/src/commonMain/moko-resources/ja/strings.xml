@@ -314,7 +314,8 @@
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
     <string name="settings_eh_filter">ギャラリーをブロック</string>
     <string name="settings_eh_filter_summary">タイトル、アップローダー、タグ、コメントの投稿者またはギャラリーをブロックします</string>
-    <string name="settings_read_reverse_controls">物理ボタンのコントロールを反転</string>
+    <string name="settings_read_volume_page">音量ボタンでページをめくる</string>
+    <string name="settings_read_reverse_volume">音量ボタンを入れ替える</string>
     <string name="settings_block_extraneous_ads">[試験的] 関係のない広告をブロック</string>
     <string name="settings_ads_placeholder">[任意] 広告を置換するプレースホルダーを選択</string>
     <string name="settings_download">ダウンロード</string>

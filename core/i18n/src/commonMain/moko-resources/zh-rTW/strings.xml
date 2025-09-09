@@ -309,6 +309,8 @@
     <string name="settings_eh_tag_translations_source_url">https://github.com/EhTagTranslation/Editor/wiki</string>
     <string name="settings_eh_filter">隱藏圖庫</string>
     <string name="settings_eh_filter_summary">根據標題、上傳者、標籤、評論者隱藏圖庫或評論</string>
+    <string name="settings_read_volume_page">使用音量鍵翻頁</string>
+    <string name="settings_read_reverse_volume">反轉音量鍵</string>
     <string name="settings_download">下載</string>
     <string name="settings_download_download_location">下載路徑</string>
     <string name="settings_download_cant_get_download_location">無法取得下載路徑</string>

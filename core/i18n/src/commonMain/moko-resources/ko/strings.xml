@@ -262,6 +262,8 @@
     <string name="settings_eh_tag_translations_source">Placeholder</string>
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
 
+    <string name="settings_read_volume_page">볼륨 키로 페이지 넘기기</string>
+
     <string name="settings_download">다운로드</string>
     <string name="settings_download_download_location">다운로드 위치</string>
     <string name="settings_download_cant_get_download_location">다운로드 위치를 가져올 수 없습니다.</string>

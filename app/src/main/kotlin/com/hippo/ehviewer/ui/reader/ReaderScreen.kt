@@ -200,7 +200,8 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
     val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
-    val reverseControls by Settings.readerReverseControls.collectAsState()
+    val volumeKeysEnabled by Settings.readWithVolumeKeys.collectAsState()
+    val volumeKeysInverted by Settings.readWithVolumeKeysInverted.collectAsState()
     val fullscreen by Settings.fullscreen.collectAsState()
     val cutoutShort by Settings.cutoutShort.collectAsState()
     val keepScreenOn by Settings.keepScreenOn.collectAsState()
@@ -220,8 +221,8 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
     val focusRequester = remember { FocusRequester() }
     Box(
         Modifier.keyEventHandler(
-            enabled = { !appbarVisible },
-            reverse = { reverseControls },
+            volumeKeysEnabled = { volumeKeysEnabled && !appbarVisible },
+            volumeKeysInverted = { volumeKeysInverted },
             movePrevious = { launch { if (isWebtoon) lazyListState.scrollUp() else pagerState.moveToPrevious() } },
             moveNext = { launch { if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext() } },
         ).focusRequester(focusRequester).focusable().thenIf(keepScreenOn) { keepScreenOn() },
