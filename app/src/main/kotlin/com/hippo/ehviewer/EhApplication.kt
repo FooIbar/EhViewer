@@ -22,6 +22,7 @@ import android.os.StrictMode
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.runtime.Composer
+import androidx.compose.runtime.tooling.ComposeStackTraceMode
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.coroutineScope
 import coil3.EventListener
@@ -147,7 +148,7 @@ class EhApplication :
         }
         if (BuildConfig.DEBUG) {
             StrictMode.enableDefaults()
-            Composer.setDiagnosticStackTraceEnabled(true)
+            Composer.setDiagnosticStackTraceMode(ComposeStackTraceMode.SourceInformation)
         }
     }
 
