@@ -41,6 +41,7 @@ import com.hippo.ehviewer.client.parser.FavoritesParser
 import com.hippo.ehviewer.client.parser.GalleryApiParser
 import com.hippo.ehviewer.client.parser.GalleryDetailParser
 import com.hippo.ehviewer.client.parser.GalleryListParser
+import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.client.parser.GalleryPageParser
 import com.hippo.ehviewer.client.parser.GalleryTokenApiParser
 import com.hippo.ehviewer.client.parser.HomeParser
@@ -62,6 +63,8 @@ import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.request
+import io.ktor.http.Url
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import io.ktor.utils.io.readAvailable
@@ -86,7 +89,9 @@ private const val MAX_REQUEST_SIZE = 25
 private const val MAX_SEQUENTIAL_REQUESTS = 5
 private const val REQUEST_INTERVAL = 5000L
 
-fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
+private val Url.isLogin get() = segments.firstOrNull() == "bounce_login.php"
+
+private fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
     val dir = AppConfig.externalParseErrorDir ?: return
     val file = File(dir, ReadableTime.getFilenamableTime() + ".txt")
     file.sink().buffer().use { sink ->
@@ -98,7 +103,7 @@ fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
     }
 }
 
-fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuffer>, e: Throwable): Nothing {
+private fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuffer>, e: Throwable): Nothing {
     // Don't translate coroutine cancellation
     if (e is CancellationException) throw e
 
@@ -148,9 +153,10 @@ fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuffer>, e: 
     throw e
 }
 
-val httpContentPool = DirectByteBufferPool(8, 0x80000)
+private val httpContentPool = DirectByteBufferPool(8, 0x80000)
 
-suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend String.() -> T) = executeSafely { response ->
+private suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend String.() -> T) = executeSafely { response ->
+    if (response.request.url.isLogin) throw NotLoggedInException()
     val body = response.bodyAsUtf8Text()
     runSuspendCatching {
         block(body)
@@ -159,7 +165,8 @@ suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend
     }.getOrThrow()
 }
 
-suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: suspend ByteBuffer.() -> T) = executeSafely { response ->
+private suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: suspend ByteBuffer.() -> T) = executeSafely { response ->
+    if (response.request.url.isLogin) throw NotLoggedInException()
     httpContentPool.useInstance { buffer ->
         with(response.bodyAsChannel()) { while (!isClosedForRead) readAvailable(buffer) }
         buffer.flip()
@@ -175,8 +182,11 @@ suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: s
 object EhEngine {
     suspend fun getOriginalImageUrl(url: String, referer: String?) = noRedirectEhRequest(url, referer).executeSafely { response ->
         val location = response.headers["Location"] ?: throw InsufficientFundsException()
-        location.takeIf { "bounce_login" !in it } ?: throw NotLoggedInException()
+        location.takeUnless { Url(it).isLogin } ?: throw NotLoggedInException()
     }
+
+    suspend fun getPTokenListFromMpv(gid: Long, token: String) = ehRequest(EhUrl.getGalleryMultiPageViewerUrl(gid, token), EhUrl.referer)
+        .fetchUsingAsText(GalleryMultiPageViewerPTokenParser::parse)
 
     suspend fun getTorrentList(gid: Long, token: String): TorrentResult {
         val url = EhUrl.getTorrentUrl(gid, token)

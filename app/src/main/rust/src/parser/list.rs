@@ -194,47 +194,46 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
     })
 }
 
-pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<GalleryListResult> {
-    if str.contains("<p>You do not have any watched tags") {
-        bail!(EhError::NoWatched)
-    }
-    if str.contains("No hits found</p>") || str.contains("No unfiltered results") {
-        let e = get_vdom_first_element_by_class_name(dom, "searchwarn")
-            .map_or(EhError::NoHits, |n| {
-                EhError::Error(n.inner_text(parser).to_string())
-            });
+pub fn parse_info_list(dom: &VDom, parser: &Parser) -> Result<GalleryListResult> {
+    if let Some(n) = get_vdom_first_element_by_class_name(dom, "searchwarn") {
+        let text = n.inner_text(parser);
+        let e = if text.contains("You do not have any watched tags") {
+            EhError::NoWatched
+        } else {
+            EhError::Error(text.to_string())
+        };
         bail!(e)
     }
-    let f = || {
-        let itg = get_vdom_first_element_by_class_name(dom, "itg")?;
-        let children = itg.children()?;
-        let iter = children.top().iter();
-        let info: Vec<BaseGalleryInfo> = iter
-            .filter_map(|x| parse_gallery_info(x.get(parser)?, parser))
-            .collect();
-        let prev = dom.get_element_by_id("uprev").and_then(|e| {
-            let str = get_node_handle_attr(&e, parser, "href")?;
-            Some(
-                regex!("prev=(\\d+(-\\d+)?)")
-                    .captures(str)?
-                    .index(1)
-                    .to_string(),
-            )
-        });
-        let next = dom.get_element_by_id("unext").and_then(|e| {
-            let str = get_node_handle_attr(&e, parser, "href")?;
-            Some(
-                regex!("next=(\\d+(-\\d+)?)")
-                    .captures(str)?
-                    .index(1)
-                    .to_string(),
-            )
-        });
-        (!info.is_empty()).then_some(GalleryListResult {
-            prev,
-            next,
-            galleryInfoList: info,
+    let info = get_vdom_first_element_by_class_name(dom, "itg")
+        .map(|itg| {
+            let children = itg.children().unwrap();
+            let iter = children.top().iter();
+            iter.filter_map(|x| parse_gallery_info(x.get(parser)?, parser))
+                .collect::<Vec<_>>()
         })
-    };
-    f().context("No content")
+        .filter(|v| !v.is_empty())
+        .context(EhError::NoHits)?;
+    let prev = dom.get_element_by_id("uprev").and_then(|e| {
+        let str = get_node_handle_attr(&e, parser, "href")?;
+        Some(
+            regex!("prev=(\\d+(-\\d+)?)")
+                .captures(str)?
+                .index(1)
+                .to_string(),
+        )
+    });
+    let next = dom.get_element_by_id("unext").and_then(|e| {
+        let str = get_node_handle_attr(&e, parser, "href")?;
+        Some(
+            regex!("next=(\\d+(-\\d+)?)")
+                .captures(str)?
+                .index(1)
+                .to_string(),
+        )
+    });
+    Ok(GalleryListResult {
+        prev,
+        next,
+        galleryInfoList: info,
+    })
 }

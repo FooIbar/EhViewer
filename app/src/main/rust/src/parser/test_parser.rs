@@ -14,7 +14,7 @@ mod tests {
         let resp = get("https://e-hentai.org/").await.expect("Failed to get!");
         let body = resp.text().await.expect("Failed to receive!");
         let dom = tl::parse(&body, ParserOptions::default()).expect("Failed to parse html");
-        let result = parse_info_list(&dom, dom.parser(), &body).expect("Failed to parse info list");
+        let result = parse_info_list(&dom, dom.parser()).expect("Failed to parse info list");
         dbg!(result);
     }
 

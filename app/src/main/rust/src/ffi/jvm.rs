@@ -29,8 +29,8 @@ use tl::{ParserOptions, VDom};
 
 #[jni_fn("com.hippo.ehviewer.client.parser.FavoritesParserKt")]
 pub fn parseFav(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&mut env, input, limit, |dom, html| {
-        parse_fav(dom, dom.parser(), html)
+    parse_marshal_inplace(&mut env, input, limit, |dom, _| {
+        parse_fav(dom, dom.parser())
     })
 }
 
@@ -43,8 +43,8 @@ pub fn parseLimit(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: ji
 
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
 pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&mut env, buffer, limit, |dom, str| {
-        parse_info_list(dom, dom.parser(), str)
+    parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
+        parse_info_list(dom, dom.parser())
     })
 }
 
