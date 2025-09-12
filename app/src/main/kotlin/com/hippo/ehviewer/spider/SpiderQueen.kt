@@ -25,15 +25,11 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUrl.getGalleryDetailUrl
-import com.hippo.ehviewer.client.EhUrl.getGalleryMultiPageViewerUrl
 import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
-import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.exception.QuotaExceededException
-import com.hippo.ehviewer.client.fetchUsingAsText
-import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.util.displayString
 import com.hippo.files.find
 import eu.kanade.tachiyomi.util.system.logcat
@@ -342,17 +338,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     suspend fun getPTokenFromMultiPageViewer(index: Int): String? {
         if (!isMpvAvailable) return null
-        val url = getGalleryMultiPageViewerUrl(
-            galleryInfo.gid,
-            galleryInfo.token,
-        )
         return runSuspendCatching {
-            ehRequest(url, referer).fetchUsingAsText {
-                GalleryMultiPageViewerPTokenParser.parse(this).forEachIndexed { index, s ->
-                    spiderInfo.pTokenMap[index] = s
-                }
-                spiderInfo.pTokenMap[index]
+            EhEngine.getPTokenListFromMpv(galleryInfo.gid, galleryInfo.token).forEachIndexed { index, s ->
+                spiderInfo.pTokenMap[index] = s
             }
+            spiderInfo.pTokenMap[index]
         }.getOrElse {
             logcat(it)
             null
