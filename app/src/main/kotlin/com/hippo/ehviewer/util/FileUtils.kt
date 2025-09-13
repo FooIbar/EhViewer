@@ -23,9 +23,9 @@ import java.io.File
 import okio.Path
 
 object FileUtils {
-    // Even though vfat allows 255 UCS-2 chars, we might eventually write to
-    // ext4 through a FUSE layer, so use that limit.
-    private const val MAX_FILENAME_BYTES = 255
+    // Workaround for filename length limit on some devices
+    // https://github.com/FooIbar/EhViewer/issues/2607
+    private const val MAX_FILENAME_BYTES = 200
 
     fun ensureDirectory(file: File?) = file?.let { if (it.exists()) it.isDirectory else it.mkdirs() } == true
 
