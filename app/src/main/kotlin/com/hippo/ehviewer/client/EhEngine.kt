@@ -30,6 +30,8 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
+import com.hippo.ehviewer.client.exception.InsufficientGpException
+import com.hippo.ehviewer.client.exception.IpBannedException
 import com.hippo.ehviewer.client.exception.NoHathClientException
 import com.hippo.ehviewer.client.exception.NoHitsFoundException
 import com.hippo.ehviewer.client.exception.NotLoggedInException
@@ -115,11 +117,12 @@ private fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuff
         { !it.hasRemaining() },
     )
     if (empty) {
-        if (EhUtils.isExHentai) {
-            throw EhException("Sad Panda\n(without panda)")
+        val message = if (EhUtils.isExHentai) {
+            "Sad Panda\n(without panda)"
         } else {
-            throw EhException("IP banned")
+            appCtx.getString(R.string.error_ip_banned)
         }
+        throw IpBannedException(message)
     }
 
     // Check Gallery Not Available
@@ -136,7 +139,7 @@ private fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuff
             "2" -> throw NotLoggedInException()
             "3" -> throw NoHathClientException()
             "4" -> throw InsufficientFundsException()
-            is String if message.startsWith('5') -> throw EhException(message.drop(1))
+            is String if message.startsWith('5') -> throw IpBannedException(message.drop(1))
         }
     }
 
@@ -144,7 +147,7 @@ private fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuff
     response.status.ensureSuccess()
 
     if (e is ParseException || e is SerializationException) {
-        body.onLeft { if ("<" !in it) throw EhException(it) }
+        body.onLeft { if ("<" !in it) throw IpBannedException(it) }
         if (Settings.saveParseErrorBody.value) body.saveParseError(e)
         throw EhException(appCtx.getString(R.string.error_parse_error), e)
     }
@@ -181,8 +184,7 @@ private suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline 
 
 object EhEngine {
     suspend fun getOriginalImageUrl(url: String, referer: String?) = noRedirectEhRequest(url, referer).executeSafely { response ->
-        val location = response.headers["Location"] ?: throw InsufficientFundsException()
-        location.takeUnless { Url(it).isLogin } ?: throw NotLoggedInException()
+        response.headers["Location"]?.takeUnless { Url(it).isLogin } ?: throw InsufficientGpException()
     }
 
     suspend fun getPTokenListFromMpv(gid: Long, token: String) = ehRequest(EhUrl.getGalleryMultiPageViewerUrl(gid, token), EhUrl.referer)

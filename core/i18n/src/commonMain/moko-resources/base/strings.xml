@@ -58,7 +58,8 @@
     <string name="error_reading_failed">Reading Failed</string>
     <string name="error_out_of_range">Out of range</string>
     <string name="error_parse_error">Parse error</string>
-    <string name="error_509">509</string>
+    <string name="error_509">Image quota exhausted</string>
+    <string name="error_ip_banned">IP banned</string>
     <string name="error_invalid_url">Invalid URL</string>
     <string name="error_get_ptoken_error">Get pToken error</string>
     <string name="error_cant_save_image">Can\'t save image</string>
@@ -439,6 +440,7 @@
     <string name="download_archive_failure_no_hath">Need H@H client for archive download</string>
     <string name="current_funds">Current Funds:</string>
     <string name="insufficient_funds">Insufficient Funds</string>
+    <string name="insufficient_gp">Insufficient GP to download original images</string>
     <string name="image_limits">Image Limits</string>
     <string name="image_limits_summary">Used: </string>
     <string name="image_limits_normal">No restrictions</string>
