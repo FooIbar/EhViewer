@@ -31,6 +31,7 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.exception.FatalException
 import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
@@ -598,9 +599,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         }
     }
 
-    override fun onGet509(index: Int) {
+    override fun onFatal(error: FatalException) {
         launch {
-            mDownloadListener?.onGet509()
+            mDownloadListener?.onFatal(error)
             stopAllDownload()
         }
     }
@@ -677,9 +678,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
     interface DownloadListener {
         /**
-         * Get 509 error
+         * Fatal error
          */
-        fun onGet509()
+        fun onFatal(error: FatalException)
 
         /**
          * Start download

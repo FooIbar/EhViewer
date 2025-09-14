@@ -29,6 +29,7 @@ import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
+import com.hippo.ehviewer.client.exception.FatalException
 import com.hippo.ehviewer.client.exception.QuotaExceededException
 import com.hippo.ehviewer.util.displayString
 import com.hippo.files.find
@@ -87,9 +88,9 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    fun notifyGet509(index: Int) {
+    fun notifyFatal(error: FatalException) {
         synchronized(mSpiderListeners) {
-            mSpiderListeners.forEach { it.onGet509(index) }
+            mSpiderListeners.forEach { it.onFatal(error) }
         }
     }
 
@@ -418,7 +419,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     annotation class State
     interface OnSpiderListener {
         fun onGetPages(pages: Int) {}
-        fun onGet509(index: Int) {}
+        fun onFatal(error: FatalException) {}
         fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {}
         fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {}
         fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) {}
@@ -545,7 +546,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 if (!force && index in spiderDen) {
                     return updatePageState(index, STATE_FINISHED)
                 }
-                pToken = getPToken(index) ?: return updatePageState(index, STATE_FAILED, PTOKEN_FAILED_MESSAGE)
+                pToken = getPToken(index) ?: return updatePageState(index, STATE_FAILED, pTokenFailedMessage)
                 previousPToken = getPToken(index - 1)
 
                 // The lock for delay should be acquired before anything else to maintain FIFO order
@@ -640,10 +641,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     }
                 }
             }.onFailure {
-                when (it) {
-                    is QuotaExceededException -> notifyGet509(index)
-                    // TODO: Check IP ban
-                }
+                if (it is FatalException) notifyFatal(it)
                 error = it.displayString()
                 if (error == "Invalid page.") {
                     pTokenLock.withLock {
@@ -654,13 +652,13 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             updatePageState(index, STATE_FAILED, error)
         }
     }
+    private val pTokenFailedMessage = appCtx.getString(R.string.error_get_ptoken_error)
 }
 
-private val PTOKEN_FAILED_MESSAGE = appCtx.getString(R.string.error_get_ptoken_error)
-private val URL_509_PATTERN = Regex("\\.org/.+/509s?\\.gif")
+private val Url509Regex = Regex("https://(?:ehgt\\.org/|exhentai\\.org/im)g/509s?\\.gif")
 private const val FORCE_RETRY = "Force retry"
 private const val WORKER_DEBUG_TAG = "SpiderQueenWorker"
 
 private fun check509(url: String) {
-    if (URL_509_PATTERN in url) throw QuotaExceededException()
+    if (Url509Regex.matches(url)) throw QuotaExceededException()
 }

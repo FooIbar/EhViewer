@@ -44,7 +44,8 @@
     <string name="error_reading_failed">读取失败</string>
     <string name="error_out_of_range">越界</string>
     <string name="error_parse_error">解析失败</string>
-    <string name="error_509">509</string>
+    <string name="error_509">图片配额耗尽</string>
+    <string name="error_ip_banned">IP 被封禁</string>
     <string name="error_invalid_url">无效链接</string>
     <string name="error_get_ptoken_error">获取 pToken 错误</string>
     <string name="error_cant_save_image">无法保存图片</string>
@@ -418,6 +419,7 @@
     <string name="download_archive_failure_no_hath">下载压缩包需要 H@H 客户端</string>
     <string name="current_funds">当前资金：</string>
     <string name="insufficient_funds">余额不足</string>
+    <string name="insufficient_gp">没有足够的 GP 来下载原图</string>
     <string name="image_limits">图片配额</string>
     <string name="image_limits_summary">已用：</string>
     <string name="image_limits_normal">未受限制</string>
