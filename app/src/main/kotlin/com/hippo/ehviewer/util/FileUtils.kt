@@ -20,34 +20,30 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
 import io.ktor.utils.io.rethrowCloseCauseIfNeeded
 import java.io.File
-import java.util.Locale
-import kotlin.math.ln
-import kotlin.math.pow
 import okio.Path
 
 object FileUtils {
-    // Even though vfat allows 255 UCS-2 chars, we might eventually write to
-    // ext4 through a FUSE layer, so use that limit.
-    private const val MAX_FILENAME_BYTES = 255
+    // Workaround for filename length limit on some devices
+    // https://github.com/FooIbar/EhViewer/issues/2607
+    private const val MAX_FILENAME_BYTES = 200
 
     fun ensureDirectory(file: File?) = file?.let { if (it.exists()) it.isDirectory else it.mkdirs() } == true
 
     /**
-     * Convert byte to human readable string.<br></br>
-     * http://stackoverflow.com/questions/3758606/
+     * Convert byte to human readable string.
      *
      * @param bytes the bytes to convert
-     * @param si    si units
      * @return the human readable string
      */
     fun humanReadableByteCount(bytes: Long): String {
-        if (bytes < 1024) return "$bytes B"
-        val exp = (ln(bytes.toDouble()) / ln(1024f)).toInt()
-        return "%.1f %sB".format(
-            Locale.US,
-            bytes / 1024.toDouble().pow(exp.toDouble()),
-            ("KMGTPE")[exp - 1].toString() + "i",
-        )
+        val units = "KMGTPE"
+        var exp = -1
+        var result = bytes.toDouble()
+        while (result >= 1024.0 && exp < units.length - 1) {
+            exp++
+            result /= 1024.0
+        }
+        return if (exp == -1) "$bytes B" else "%.1f %siB".format(result, units[exp])
     }
 
     fun cleanupDirectory(dir: File?, maxFiles: Int = 10) {
@@ -75,13 +71,13 @@ object FileUtils {
         else -> true
     }
 
-    // From https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/FileUtils.java;l=1142;drc=7b647e4ea0e92f33c19b315eaed364ee067ba0aa
     /**
      * Mutate the given filename to make it valid for a FAT filesystem,
      * replacing any invalid characters with "_".
      *
      * @param name the original filename
      */
+    // From https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/FileUtils.java;l=1142;drc=7b647e4ea0e92f33c19b315eaed364ee067ba0aa
     fun sanitizeFilename(name: String): String {
         if (name.isEmpty() || "." == name || ".." == name) {
             return "(invalid)"

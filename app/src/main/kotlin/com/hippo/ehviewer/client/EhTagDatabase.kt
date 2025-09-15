@@ -23,7 +23,6 @@ import arrow.core.Either
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.TagNamespace
-import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.bodyAsUtf8Text
 import com.hippo.ehviewer.util.ensureSuccess
@@ -33,15 +32,15 @@ import com.hippo.files.read
 import com.hippo.files.write
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.request.prepareGet
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.io.Source
 import kotlinx.io.writeString
 import kotlinx.serialization.json.io.encodeToSink
@@ -66,48 +65,84 @@ object EhTagDatabase : CoroutineScope {
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
-    context(Context)
-    fun suggestion(rawKeyword: String, expectTranslate: Boolean): Sequence<Pair<String, String?>> {
-        if (!initialized) return emptySequence()
-        val translate = expectTranslate && isTranslatable(implicit<Context>())
+    // Copied from https://github.com/EhTagTranslation/EhSyringe/blob/c0cf88da04081072492829673aca34380b14dae6/src/plugin/suggest.ts#L37
+    // TODO: Optimize
+    private val nsScore = mapOf(
+        TagNamespace.Location.prefix to 10f,
+        TagNamespace.Other.prefix to 10f,
+        TagNamespace.Female.prefix to 9f,
+        TagNamespace.Male.prefix to 8.5f,
+        TagNamespace.Mixed.prefix to 8f,
+        TagNamespace.Parody.prefix to 3.3f,
+        TagNamespace.Character.prefix to 2.8f,
+        TagNamespace.Artist.prefix to 2.5f,
+        TagNamespace.Cosplayer.prefix to 2.4f,
+        TagNamespace.Group.prefix to 2.2f,
+        TagNamespace.Language.prefix to 2f,
+    )
+
+    data class Tag(val tag: String, val hint: String?, val score: Float)
+
+    context(_: Context)
+    fun suggestion(rawKeyword: String, expectTranslate: Boolean): List<Tag> {
         val keyword = PREFIXES.fold(rawKeyword) { kwd, pfx -> kwd.removePrefix(pfx) }
+        if (!initialized || keyword.isEmpty()) return emptyList()
+        val translate = expectTranslate && translatable
         val prefix = rawKeyword.dropLast(keyword.length)
         val ns = keyword.substringBefore(':')
         val tag = keyword.drop(ns.length + 1)
         val nsPrefix = TagNamespace.from(ns)?.prefix ?: ns
         val tags = tagGroups[nsPrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
-        fun suggestOnce(exactly: Boolean) = let {
-            fun lookup(tags: Map<String, String>, keyword: String) = when {
-                exactly -> tags[keyword]?.let { t -> sequenceOf(keyword to t.takeIf { translate }) } ?: emptySequence()
-                translate -> tags.asSequence().filter { (tag, hint) ->
-                    tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))
-                }.map { (tag, hint) -> tag to hint }
-                else -> tags.keys.asSequence().filter { tag ->
-                    tag != keyword && tag.containsIgnoreSpace(keyword)
-                }.map { tag -> tag to null }
+        return if (tags != null) {
+            lookup(tags, tag, translate).map { it.copy(tag = "$prefix$nsPrefix:${it.tag}") }
+        } else {
+            tagGroups.asSequence().flatMap { (nsPrefix, tags) ->
+                if (nsPrefix != NAMESPACE_PREFIX) {
+                    lookup(tags, keyword, translate).map { it.copy(tag = "$prefix$nsPrefix:${it.tag}", score = it.score / (nsScore[nsPrefix] ?: 1f)) }
+                } else {
+                    lookup(tags, keyword, translate).map { it.copy(tag = "$prefix${it.tag}:", score = 0f) }
+                }
             }
-            if (tags != null) {
-                lookup(tags, tag).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
+        }.toMutableList().apply { sortBy { it.score } }
+    }
+
+    private fun lookup(tags: Map<String, String>, keyword: String, translate: Boolean) = if (translate) {
+        tags.asSequence().mapNotNull { (tag, hint) ->
+            val score = if (tag.startsWith(keyword, ignoreCase = true)) {
+                tag.length
             } else {
-                tagGroups.asSequence().flatMap { (nsPrefix, tags) ->
-                    if (nsPrefix != NAMESPACE_PREFIX) {
-                        lookup(tags, keyword).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
-                    } else {
-                        lookup(tags, keyword).map { (ns, hint) -> "$prefix$ns:" to hint }
+                if (tag.indexOf(" $keyword", ignoreCase = true) != -1) {
+                    tag.length * 2
+                } else {
+                    when (hint.indexOf(keyword, ignoreCase = true)) {
+                        -1 -> 0
+                        0 -> hint.length
+                        else -> hint.length * 2
                     }
                 }
             }
+            if (score != 0) Tag(tag, hint, score.toFloat()) else null
         }
-        return suggestOnce(true) + suggestOnce(false)
+    } else {
+        tags.keys.asSequence().mapNotNull { tag ->
+            val score = if (tag.startsWith(keyword, ignoreCase = true)) {
+                tag.length
+            } else {
+                if (tag.indexOf(" $keyword", ignoreCase = true) != -1) {
+                    tag.length * 2
+                } else {
+                    0
+                }
+            }
+            if (score != 0) Tag(tag, null, score.toFloat()) else null
+        }
     }
-
-    private fun String.removeSpace(): String = replace(" ", "")
-
-    private fun String.containsIgnoreSpace(other: String, ignoreCase: Boolean = true): Boolean = removeSpace().contains(other.removeSpace(), ignoreCase)
 
     private fun metadata(context: Context): Array<String> = context.resources.getStringArray(R.array.tag_translation_metadata)
 
-    fun isTranslatable(context: Context): Boolean = context.resources.getBoolean(R.bool.tag_translatable)
+    context(ctx: Context)
+    val translatable
+        get() = ctx.resources.getBoolean(R.bool.tag_translatable)
 
     private suspend fun fetch(url: String) = ktorClient.prepareGet(url).executeSafely {
         it.status.ensureSuccess()
@@ -143,9 +178,11 @@ object EhTagDatabase : CoroutineScope {
             }
         }
 
-        val currentSha1 = Either.catch {
-            sha1File.utf8()
-        }.getOrNull()
+        val currentSha1 = if (initialized) {
+            Either.catch { sha1File.utf8() }.getOrNull()
+        } else {
+            null
+        }
         val newSha1 = fetch(sha1Url)
         if (newSha1 == currentSha1) return
 

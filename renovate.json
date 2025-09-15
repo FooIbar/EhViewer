@@ -1,7 +1,7 @@
 {
   "automerge": true,
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "ignorePaths": [
     "app/build.gradle.kts"
@@ -9,8 +9,8 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "(^|/)CMakeLists\\.txt$"
+      "managerFilePatterns": [
+        "/(^|/)CMakeLists\\.txt$/"
       ],
       "matchStrings": [
         "(?<depName>\\S*)\\s*GIT_REPOSITORY https://(?<datasource>.*?)\\.com/(?<packageName>.*?)\\.git\\s*GIT_TAG (?<currentValue>\\S*)"
@@ -19,8 +19,8 @@
     },
     {
       "customType": "regex",
-      "fileMatch": [
-        "^chrome.version$"
+      "managerFilePatterns": [
+        "chrome.version"
       ],
       "matchStrings": [
         "(?<currentValue>\\S+)"
@@ -28,12 +28,45 @@
       "depNameTemplate": "chrome",
       "datasourceTemplate": "custom.chrome",
       "extractVersionTemplate": "^(?<version>\\d+)"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "rust-toolchain.toml"
+      ],
+      "matchStrings": [
+        "channel = \"nightly-(?<currentValue>[^\"]+)\""
+      ],
+      "versioningTemplate": "regex:^(?<major>\\d{4})-(?<minor>\\d{2})-(?<patch>\\d{2})$",
+      "datasourceTemplate": "custom.rust-nightly",
+      "depNameTemplate": "rust-nightly"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "settings.gradle.kts"
+      ],
+      "matchStrings": [
+        "ndkVersion = \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "NDK",
+      "datasourceTemplate": "custom.ndk"
     }
   ],
   "customDatasources": {
     "chrome": {
       "defaultRegistryUrlTemplate": "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE",
       "format": "plain"
+    },
+    "rust-nightly": {
+      "defaultRegistryUrlTemplate": "https://rust-lang.github.io/rustup-components-history/aarch64-linux-android/rust-std",
+      "format": "plain"
+    },
+    "ndk": {
+      "defaultRegistryUrlTemplate": "https://api.github.com/repos/android/ndk/releases/latest",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":$match(body,/ndkVersion \"([^\"]+)\"/).groups[0]}],\"changelogUrl\":html_url}"
+      ]
     }
   },
   "packageRules": [
@@ -54,22 +87,34 @@
       "allowedVersions": "/^[\\d.]+(-alpha\\d+)?$/"
     },
     {
-      "groupName": "Kotlin & KSP",
-      "matchSourceUrls": [
-        "https://github.com/JetBrains/kotlin",
-        "https://github.com/google/ksp"
+      "matchDepNames": [
+        "org.jetbrains.kotlinx:kotlinx-datetime"
       ],
-      "recreateWhen": "never"
+      "allowedVersions": "!/compat$/"
     },
     {
       "matchDepNames": [
         "nettle"
       ],
       "versioning": "regex:^nettle_(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?(?<prerelease>rc\\d+)?"
+    },
+    {
+      "matchDepNames": [
+        "rust-nightly"
+      ],
+      // Rustup components history updates at 2:00 UTC
+      // https://github.com/rust-lang/rustup-components-history/blob/7f196546c6b982e937b41f5d782bdbfcf06eb019/.github/workflows/rust.yml#L10
+      "schedule": [
+        "* 4-23 1 */3 *",
+        "* 4-23 15 2-11/3 *"
+      ]
     }
   ],
   "lockFileMaintenance": {
-    "enabled": true
+    "enabled": true,
+    "schedule": [
+      "* 0-3 1,15 * *"
+    ]
   },
   "rangeStrategy": "replace"
 }

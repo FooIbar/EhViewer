@@ -1,30 +1,42 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
-        gradlePluginPortal()
-        google()
+        google {
+            content {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
+        google {
+            content {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
         mavenCentral()
-        maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     }
 }
 
 plugins {
-    id("com.android.settings") version "8.8.1"
+    id("com.android.settings") version "8.13.0"
 }
 
 android {
-    compileSdk = 35
-    minSdk = 26
-    targetSdk = 35
-    ndkVersion = "28.0.13004108"
-    buildToolsVersion = "35.0.1"
+    compileSdk = 36
+    minSdk = 23
+    targetSdk = 36
+    ndkVersion = "28.2.13676358"
+    buildToolsVersion = "36.0.0"
 }
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
@@ -32,3 +44,7 @@ enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 rootProject.name = "EhViewer"
 include(":app")
 include(":benchmark")
+include(":core:common")
+include(":core:data")
+include(":core:i18n")
+include(":core:ui")

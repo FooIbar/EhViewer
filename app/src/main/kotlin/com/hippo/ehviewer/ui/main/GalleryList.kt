@@ -21,7 +21,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShapeDefaults
@@ -51,23 +51,23 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.FastScrollLazyVerticalGrid
+import com.ehviewer.core.ui.component.FastScrollLazyVerticalStaggeredGrid
+import com.ehviewer.core.ui.icons.EhIcons
+import com.ehviewer.core.ui.icons.big.SadAndroid
+import com.ehviewer.core.util.launch
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.exception.NoHitsFoundException
 import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 @Stable
 operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
@@ -78,13 +78,13 @@ operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
     override fun calculateTopPadding() = l.calculateTopPadding() + r.calculateTopPadding()
 }
 
-context(CoroutineScope, Context)
 @Composable
+context(_: CoroutineScope, _: Context)
 fun GalleryList(
     modifier: Modifier = Modifier,
     data: LazyPagingItems<BaseGalleryInfo>,
     contentModifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues.Zero,
     listMode: Int,
     detailListState: LazyGridState = rememberLazyGridState(),
     detailItemContent: @Composable (LazyGridItemScope.(BaseGalleryInfo) -> Unit),
@@ -95,13 +95,13 @@ fun GalleryList(
     onRefresh: () -> Unit,
     onLoading: () -> Unit,
 ) {
-    val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
-    val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
+    val marginH = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h)
+    val marginV = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_v)
 
     var isRefreshing by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
     Box(
-        modifier = modifier.fillMaxSize().pullToRefresh(
+        modifier = modifier.pullToRefresh(
             isRefreshing = isRefreshing,
             state = refreshState,
             enabled = data.loadState.refresh is LoadState.NotLoading,
@@ -129,11 +129,11 @@ fun GalleryList(
             val columnWidth by collectDetailSizeAsState()
             FastScrollLazyVerticalGrid(
                 columns = GridCells.Adaptive(columnWidth),
-                modifier = contentModifier,
+                modifier = contentModifier.fillMaxSize(),
                 state = detailListState,
                 contentPadding = contentPadding + PaddingValues(marginH, marginV),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(com.hippo.ehviewer.R.dimen.gallery_list_interval)),
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(com.hippo.ehviewer.R.dimen.gallery_list_interval)),
             ) {
                 items(
                     count = data.itemCount,
@@ -143,7 +143,7 @@ fun GalleryList(
                     val info = data[index]
                     if (info != null) {
                         detailItemContent(info)
-                        PrefetchAround(data, index, 5, ::imageRequest)
+                        PrefetchAround(data, index, 5) { imageRequest(it) }
                     }
                 }
                 if (showLoadStateIndicator) {
@@ -155,11 +155,11 @@ fun GalleryList(
                 }
             }
         } else {
-            val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
+            val gridInterval = dimensionResource(com.hippo.ehviewer.R.dimen.gallery_grid_interval)
             val thumbColumns by Settings.thumbColumns.collectAsState()
             FastScrollLazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(thumbColumns),
-                modifier = contentModifier,
+                modifier = contentModifier.fillMaxSize(),
                 state = thumbListState,
                 contentPadding = contentPadding + PaddingValues(marginH, marginV),
                 verticalItemSpacing = gridInterval,
@@ -173,7 +173,7 @@ fun GalleryList(
                     val info = data[index]
                     if (info != null) {
                         thumbItemContent(info)
-                        PrefetchAround(data, index, 10, ::imageRequest)
+                        PrefetchAround(data, index, 10) { imageRequest(it) }
                     }
                 }
                 if (showLoadStateIndicator) {
@@ -203,7 +203,7 @@ fun GalleryList(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center,
                     ) {
-                        CircularProgressIndicator()
+                        CircularWavyProgressIndicator()
                     }
                 }
             }
@@ -223,7 +223,7 @@ fun GalleryList(
             }
         }
 
-        PullToRefreshDefaults.Indicator(
+        PullToRefreshDefaults.LoadingIndicator(
             state = refreshState,
             isRefreshing = isRefreshing,
             modifier = Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding())

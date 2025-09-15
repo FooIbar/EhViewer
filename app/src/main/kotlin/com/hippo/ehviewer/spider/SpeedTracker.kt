@@ -2,7 +2,6 @@ package com.hippo.ehviewer.spider
 
 import androidx.collection.MutableObjectIntMap
 import androidx.collection.mutableObjectIntMapOf
-import arrow.atomic.Atomic
 import arrow.fx.coroutines.fixedRate
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.executeSafely
@@ -15,19 +14,20 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
+import kotlin.concurrent.atomics.AtomicReference
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.io.IOException
 
 class SpeedTracker(val window: Duration = 1.seconds) {
@@ -47,7 +47,7 @@ class SpeedTracker(val window: Duration = 1.seconds) {
         }
     }
 
-    fun speedFlow(sample: Duration = 1.seconds) = fixedRate(sample).map {
+    fun speedFlow(sample: Duration = 1.seconds) = fixedRate(sample).mapNotNull {
         mutex.withLock {
             start?.let { start ->
                 val now = Clock.System.now()
@@ -55,8 +55,8 @@ class SpeedTracker(val window: Duration = 1.seconds) {
                 val window = passed.coerceIn(10.milliseconds, window)
                 val cutoff = now - window
                 received.removeIf { time, _ -> time < cutoff }
-                received.fold(0) { total, _, v -> total + v } / (window / 1.seconds)
-            } ?: 0.0
+                (received.fold(0) { total, _, v -> total + v } / (window / 1.seconds)).toLong()
+            }
         }
     }
 }
@@ -70,18 +70,23 @@ suspend inline fun <R> timeoutBySpeed(
     crossinline f: suspend (HttpResponse) -> R,
     noinline t: OnTimeout = { throw it },
 ) = coroutineScope {
-    val onTimeout = Atomic<OnTimeout?>(t).let { { e: IOException -> it.getAndSet(null)?.invoke(e) } }
+    val onTimeout = AtomicReference<OnTimeout?>(t).let { { e: IOException -> it.exchange(null)?.invoke(e) } }
     val watchdog = launch {
-        delay(Settings.connTimeout.seconds)
-        onTimeout(ConnectTimeoutException(url, Settings.connTimeout * 1000L))
+        val timeout = 10.seconds
+        delay(timeout)
+        onTimeout(ConnectTimeoutException(url, timeout.inWholeMilliseconds))
     }
     val tracker = SpeedTracker(2.seconds)
     request {
         var prev = 0L
         onDownload { done, total ->
             val bytesRead = (done - prev).toInt()
-            tracker.track(bytesRead)
-            l(total!!, done, bytesRead)
+            if (done == total!!) {
+                tracker.reset()
+            } else {
+                tracker.track(bytesRead)
+            }
+            l(total, done, bytesRead)
             prev = done
         }
         timeout { reset() }
@@ -89,10 +94,10 @@ suspend inline fun <R> timeoutBySpeed(
         watchdog.cancel()
         resp.status.ensureSuccess()
         val speedWatchdog = launch {
-            val timeoutSpeed = speedLevelToSpeed(Settings.timeoutSpeed) * 1024.0
-            tracker.speedFlow(1.seconds).collect { speed ->
-                if (timeoutSpeed != 0.0 && speed < timeoutSpeed) {
-                    onTimeout(LowSpeedException(url, speed.toLong()))
+            val timeoutSpeed = speedLevelToSpeed(Settings.timeoutSpeed.value) * 1024L
+            tracker.speedFlow().collect { speed ->
+                if (speed < timeoutSpeed) {
+                    onTimeout(LowSpeedException(url, speed))
                 }
             }
         }
@@ -104,7 +109,9 @@ suspend inline fun <R> timeoutBySpeed(
     }
 }
 
-fun speedLevelToSpeed(level: Int) = 2f.pow(level).roundToInt()
+const val MIN_SPEED_LEVEL = 3
+
+fun speedLevelToSpeed(level: Int) = if (level == MIN_SPEED_LEVEL) 0 else 2f.pow(level).roundToInt()
 
 inline fun <T, R> MutableObjectIntMap<T>.fold(initial: R, operation: (acc: R, T, Int) -> R): R {
     var accumulator = initial

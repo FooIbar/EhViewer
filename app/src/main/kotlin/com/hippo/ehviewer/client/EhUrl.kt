@@ -80,12 +80,11 @@ object EhUrl {
             else -> ORIGIN_E
         }
 
-    val uConfigUrl: String
-        get() = when (Settings.gallerySite.value) {
-            SITE_E -> URL_UCONFIG_E
-            SITE_EX -> URL_UCONFIG_EX
-            else -> URL_UCONFIG_E
-        }
+    fun getUConfigUrl(gallerySite: Int = Settings.gallerySite.value) = when (gallerySite) {
+        SITE_E -> URL_UCONFIG_E
+        SITE_EX -> URL_UCONFIG_EX
+        else -> URL_UCONFIG_E
+    }
 
     val myTagsUrl: String
         get() = when (Settings.gallerySite.value) {
@@ -125,9 +124,14 @@ object EhUrl {
         addQueryParameter("act", "addfav")
     }.buildString()
 
-    fun getDownloadArchive(gid: Long, token: String) = ehUrl("archiver.php") {
+    fun getArchiveUrl(gid: Long, token: String) = ehUrl("archiver.php") {
         addQueryParameter("gid", "$gid")
         addQueryParameter("token", token)
+    }.buildString()
+
+    fun getTorrentUrl(gid: Long, token: String) = ehUrl("gallerytorrents.php") {
+        addQueryParameter("gid", "$gid")
+        addQueryParameter("t", token)
     }.buildString()
 
     fun getTagDefinitionUrl(tag: String) = "https://ehwiki.org/wiki/" + tag.replace(' ', '_')

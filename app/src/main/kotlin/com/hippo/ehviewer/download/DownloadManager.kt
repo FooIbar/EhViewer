@@ -24,11 +24,14 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.core.util.size
 import arrow.fx.coroutines.parMapNotNull
+import com.ehviewer.core.preferences.edit
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.exception.FatalException
 import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
@@ -63,7 +66,6 @@ import logcat.LogPriority
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
-import splitties.preferences.edit
 
 object DownloadManager : OnSpiderListener, CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
@@ -302,16 +304,6 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
     suspend fun stopDownload(gid: Long) {
         val info = stopDownloadInternal(gid)
-        if (info != null) {
-            // Update listener
-            mutableNotifyFlow.emit(info)
-            // Ensure download
-            ensureDownload()
-        }
-    }
-
-    suspend fun stopCurrentDownload() {
-        val info = stopCurrentDownloadInternal()
         if (info != null) {
             // Update listener
             mutableNotifyFlow.emit(info)
@@ -607,9 +599,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         }
     }
 
-    override fun onGet509(index: Int) {
+    override fun onFatal(error: FatalException) {
         launch {
-            mDownloadListener?.onGet509()
+            mDownloadListener?.onFatal(error)
             stopAllDownload()
         }
     }
@@ -686,9 +678,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
     interface DownloadListener {
         /**
-         * Get 509 error
+         * Fatal error
          */
-        fun onGet509()
+        fun onFatal(error: FatalException)
 
         /**
          * Start download
@@ -720,9 +712,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         fun start() {
             if (currentJob == null) {
                 currentJob = launch {
-                    tracker.speedFlow().collect { speed ->
-                        updateSpeed(speed.toLong())
-                    }
+                    tracker.speedFlow().collect(::updateSpeed)
                 }
             }
         }
@@ -773,7 +763,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                     var downloadingContentLengthSum = 0L
                     var totalSize = 0L
                     mutex.withLock {
-                        for (i in 0..<contentLengthMap.size()) {
+                        for (i in 0..<contentLengthMap.size) {
                             val contentLength = contentLengthMap.valueAt(i)
                             val receivedSize = receivedSizeMap.valueAt(i)
                             downloadingCount++

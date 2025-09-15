@@ -15,7 +15,15 @@
   -->
 
 <data-extraction-rules>
-    <cloud-backup>
-
+    <cloud-backup disableIfNoEncryptionCapabilities="true">
+        <include
+            domain="database"
+            path="." />
+        <include
+            domain="file"
+            path="datastore" />
+        <include
+            domain="root"
+            path="app_webview/Default/Cookies" />
     </cloud-backup>
 </data-extraction-rules>

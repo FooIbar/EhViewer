@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.login
 
-import android.webkit.WebView
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -9,6 +8,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
@@ -26,10 +26,15 @@ fun AnimatedVisibilityScope.WebViewSignInScreen(navigator: DestinationsNavigator
     val state = rememberWebViewState(url = EhUrl.URL_SIGN_IN)
     LaunchedEffect(state) {
         snapshotFlow { !state.isLoading }.collect { hasFinished ->
-            if (hasFinished && EhCookieStore.hasSignedIn()) {
-                postLogin()
-                state.webView?.destroy()
-                bgWork { awaitCancellation() }
+            if (hasFinished) {
+                if (EhCookieStore.isCloudflareBypassed()) {
+                    Settings.desktopSite.value = false
+                }
+                if (EhCookieStore.hasSignedIn()) {
+                    postLogin()
+                    state.webView?.destroy()
+                    bgWork { awaitCancellation() }
+                }
             }
         }
     }

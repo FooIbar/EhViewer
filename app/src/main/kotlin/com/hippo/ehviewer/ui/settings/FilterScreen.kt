@@ -17,13 +17,13 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -32,6 +32,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -52,7 +53,11 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.util.Await
+import com.ehviewer.core.ui.util.thenIf
+import com.ehviewer.core.util.async
+import com.ehviewer.core.util.launch
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhFilter
 import com.hippo.ehviewer.client.EhFilter.forget
@@ -62,14 +67,13 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.ui.Screen
-import com.hippo.ehviewer.ui.tools.Await
-import com.hippo.ehviewer.ui.tools.thenIf
+import com.hippo.ehviewer.ui.main.NavigationIcon
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.dialog
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.coroutines.resume
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.groupByToObserved
 
 @Destination<RootGraph>
@@ -84,7 +88,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
     fun addFilter() {
         launch {
             dialog { cont ->
-                val types = stringArrayResource(id = R.array.filter_entries)
+                val types = stringArrayResource(id = com.hippo.ehviewer.R.array.filter_entries)
                 val type = rememberTextFieldState(types[0])
                 val state = rememberTextFieldState()
                 var error by remember { mutableStateOf<String?>(null) }
@@ -108,12 +112,12 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                 AlertDialog(
                     onDismissRequest = { cont.cancel() },
                     confirmButton = {
-                        TextButton(onClick = ::invalidateAndSave) {
+                        TextButton(onClick = ::invalidateAndSave, shapes = ButtonDefaults.shapes()) {
                             Text(text = stringResource(id = R.string.add))
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { cont.cancel() }) {
+                        TextButton(onClick = { cont.cancel() }, shapes = ButtonDefaults.shapes()) {
                             Text(text = stringResource(id = android.R.string.cancel))
                         }
                     },
@@ -184,22 +188,21 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.filter)) },
-                navigationIcon = {
-                    IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
-                    }
-                },
+                navigationIcon = { NavigationIcon() },
                 actions = {
-                    IconButton(onClick = {
-                        launch {
-                            awaitConfirmationOrCancel(
-                                title = R.string.filter,
-                                showCancelButton = false,
-                            ) {
-                                Text(text = stringResource(id = R.string.filter_tip))
+                    IconButton(
+                        onClick = {
+                            launch {
+                                awaitConfirmationOrCancel(
+                                    title = R.string.filter,
+                                    showCancelButton = false,
+                                ) {
+                                    Text(text = stringResource(id = R.string.filter_tip))
+                                }
                             }
-                        }
-                    }) {
+                        },
+                        shapes = IconButtonDefaults.shapes(),
+                    ) {
                         Icon(imageVector = Icons.AutoMirrored.Default.Help, contentDescription = null)
                     }
                 },
@@ -258,6 +261,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                                             }
                                         }
                                     },
+                                    shapes = IconButtonDefaults.shapes(),
                                 ) {
                                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                                 }

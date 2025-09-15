@@ -17,23 +17,26 @@ import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import arrow.atomic.AtomicInt
-import com.hippo.ehviewer.R
-import eu.kanade.tachiyomi.util.lang.withUIContext
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.withUIContext
 import java.io.File
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.fetchAndIncrement
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 // Fuck off the silly Android launcher and callback :)
 
-private val atomicInteger = AtomicInt()
+private val atomicInteger = AtomicInt(0)
 
-private val Context.lifecycle: Lifecycle
+context(ctx: Context)
+private val lifecycle: Lifecycle
     get() {
-        var context: Context? = this
+        var context: Context? = ctx
         while (true) {
             when (context) {
                 is LifecycleOwner -> return context.lifecycle
@@ -43,8 +46,9 @@ private val Context.lifecycle: Lifecycle
         }
     }
 
-suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<I, O>, input: I): O {
-    val key = "activity_rq#${atomicInteger.getAndIncrement()}"
+context(_: Context)
+suspend fun <I, O> awaitActivityResult(contract: ActivityResultContract<I, O>, input: I): O {
+    val key = "activity_rq#${atomicInteger.fetchAndIncrement()}"
     var launcher: ActivityResultLauncher<I>? = null
     var observer: LifecycleEventObserver? = null
     observer = LifecycleEventObserver { _, event ->
@@ -69,15 +73,18 @@ suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<
     }
 }
 
-suspend fun Context.requestPermission(key: String): Boolean {
-    if (ContextCompat.checkSelfPermission(this, key) == PackageManager.PERMISSION_GRANTED) return true
+context(ctx: Context)
+suspend fun requestPermission(key: String): Boolean {
+    if (ContextCompat.checkSelfPermission(ctx, key) == PackageManager.PERMISSION_GRANTED) return true
     return awaitActivityResult(ActivityResultContracts.RequestPermission(), key)
 }
 
-suspend fun Context.pickVisualMedia(type: VisualMediaType): Uri? = awaitActivityResult(ActivityResultContracts.PickVisualMedia(), PickVisualMediaRequest(mediaType = type))
+context(_: Context)
+suspend fun pickVisualMedia(type: VisualMediaType): Uri? = awaitActivityResult(ActivityResultContracts.PickVisualMedia(), PickVisualMediaRequest(mediaType = type))
 
 @RequiresApi(Build.VERSION_CODES.O)
-suspend fun Context.requestInstallPermission(): Boolean {
+context(ctx: Context)
+suspend fun requestInstallPermission(): Boolean = with(ctx) {
     if (packageManager.canRequestPackageInstalls()) return true
     val granted = requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
     if (!granted) {
@@ -85,7 +92,7 @@ suspend fun Context.requestInstallPermission(): Boolean {
             ActivityResultContracts.StartActivityForResult(),
             Intent(
                 Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                Uri.parse("package:$packageName"),
+                "package:$packageName".toUri(),
             ),
         )
         requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
@@ -93,7 +100,8 @@ suspend fun Context.requestInstallPermission(): Boolean {
     return packageManager.canRequestPackageInstalls()
 }
 
-suspend fun Context.installPackage(file: File) {
+context(ctx: Context)
+suspend fun installPackage(file: File) = with(ctx) {
     val canInstall = !isAtLeastO || requestInstallPermission()
     check(canInstall) { getString(R.string.permission_denied) }
     val contentUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)

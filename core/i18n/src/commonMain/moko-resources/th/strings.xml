@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright 2019 Hippo Seven
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+
+    <!-- Theme -->
+
+    <string name="homepage">หน้าหลัก</string>
+    <string name="whats_hot">เรื่องที่กำลังมาแรงมากๆ</string>
+    <string name="favourite">รายการโปรด</string>
+    <string name="history">ประวัติเข้าชม</string>
+    <string name="downloads">ดาวน์โหลด</string>
+    <string name="settings">การตั้งค่า</string>
+
+    <string name="username">ชื่อผู้ใช้</string>
+    <string name="password">รหัสผ่าน</string>
+
+    <string name="sign_in">ลงชื่อเข้าใช้</string>
+    <string name="register">ลงทะเบียน</string>
+    <string name="sign_in_via_webview">ลงชื่อเข้าใช้ผ่านมุมมองเว็บไซต์</string>
+    <string name="sign_in_first">โปรดลงชื่อเข้าใช้ก่อนเป็นอันดับแรก</string>
+
+    <string name="text_is_empty">ข้อความห้ามเว้นว่างไว้</string>
+    <string name="waring">คำเตือน</string>
+
+    <string name="invalid_download_location">ดูเหมือนที่อยู่ในการดาวน์โหลดนั้นไม่พร้อมใช้งาน โปรดตั้งค่าในเมนูการตั้งค่า</string>
+
+    <string name="clipboard_gallery_url_snack_message">มีลิงค์ของเว็บแกลเลอรี่อยู่ในคลิปบอร์ด</string>
+    <string name="clipboard_gallery_url_snack_action">ดู</string>
+
+    <string name="error_timeout">หมดเวลา</string>
+    <string name="error_unknown_host">ไม่รู้จักโฮสต์</string>
+    <string name="error_redirection">มีการเปลี่ยนทางเยอะเกินไป</string>
+    <string name="error_socket">เน็ตเวิร์คเกิดข้อผิดพลาด</string>
+    <string name="error_unknown">มันแปลกๆนะ</string>
+    <string name="error_cant_find_activity">หาแอปพลิเคชั่นไม่เจอ</string>
+    <string name="error_cannot_parse_the_url">ไม่สามารถวิเคราะห์ URL </string>
+    <string name="error_decoding_failed">การถอดรหัสล้มเหลว</string>
+    <string name="error_reading_failed">การอ่านล้มเหลว</string>
+    <string name="error_out_of_range">ไม่อยู่ในขอบเขต</string>
+    <string name="error_parse_error">การวิเคราะห์ผิดพลาด</string>
+    <string name="error_509">509</string>
+    <string name="error_invalid_url">URL ไม่ถูกต้อง</string>
+    <string name="error_get_ptoken_error">การรับ pToken มีปัญหา</string>
+    <string name="error_cant_save_image">ไม่สามารถบันทึกรูปภาพได้</string>
+    <string name="error_invalid_number">จำนวนไม่ถูกต้อง</string>
+
+    <string name="app_waring">เนื้อหาภายในแอปพลิเคชั่นนี้มาจากอินเทอร์เน็ตทั้งหมด อาจมีเนื้อหาบางอย่างที่มีผลต่อร่างกายหรือจิตใจของคุณ คุณจะต้องยอมรับความเสี่ยงที่ดังกล่าว และดำเนินการต่อไป</string>
+    <string name="error_username_cannot_empty">ชื่อผู้ใช้ห้ามเว้นว่างไว้</string>
+    <string name="error_password_cannot_empty">รหัสผ่านห้ามเว้นว่างไว้</string>
+    <string name="guest_mode">ดำเนินการต่อโดยไม่ต้องลงชื่อเข้าระบบ</string>
+    <string name="sign_in_failed">การลงชื่อเข้าใช้ล้มเหลว</string>
+    <string name="get_it">เข้าใจแล้ว ไม่ต้องแสดงอีก</string>
+
+    <!-- Gallery List -->
+    <string name="gallery_list_search_bar_hint_exhentai">ค้นหาใน ExHentai</string>
+    <string name="gallery_list_search_bar_hint_e_hentai">ค้นหาใน E-Hentai</string>
+    <string name="gallery_list_search_bar_open_gallery">เปิดแกลเลอรี่</string>
+    <string name="gallery_list_empty_hit">โลกนั้นนะมันกว้างงงงงใหญ่ไพรศาล และแพนด้านั่งโดดเดี่ยวเดียวดายในโลกกลมๆ</string>
+
+    <string name="keyword_search">คีย์เวิร์ดในการค้นหา</string>
+    <string name="image_search">ค้นหาด้วยรูป</string>
+
+    <string name="search_image">ค้นหาด้วยรูปภาพ</string>
+
+    <string name="search_sh">แสดงแกลเลอรี่ที่ถูกลบออก</string>
+    <string name="search_sto">แสดงผลเฉพาะแกลเลอรี่ที่มีไฟล์ Torrents</string>
+    <string name="search_sr">เรตติ้งขั้นต่ำ</string>
+
+    <string name="select_image">เลือกรูปภาพ</string>
+    <string name="select_image_first">โปรดเลือกรูปภาพก่อน</string>
+
+    <string name="add_to_favourites">เพิ่มเข้าในรายการโปรด</string>
+
+    <string name="quick_search">ค้นหาอย่างด่วน</string>
+    <string name="quick_search_tip">แตะ \"+\" เพื่อเพิ่มการค้นหาอย่างด่วน</string>
+    <string name="add_quick_search_dialog_title">เพิ่มค้นหาอย่างด่วน</string>
+    <string name="name_is_empty">ชื่อห้ามเว้นว่างไว้</string>
+    <string name="delete">ลบ</string>
+    <string name="add_quick_search_tip">รายการของแกลเลอรี่ต่างๆจะถูกบันทึกเป็นการค้นหาอย่างด่วน ต้องทำการค้นหาก่อนเพื่อบันทึกลงในรายการของแผงการค้นหา</string>
+    <string name="readme">อ่านก่อนสักนิด</string>
+    <string name="image_search_not_quick_search">ไม่สามารถเพิ่มรูปในการค้นหาให้เป็นการค้นหาอย่างด่วนได้</string>
+    <string name="duplicate_quick_search">มีตัวค้นหาอย่างด่วนอยู่แล้วในชื่อ \"%s\".</string>
+    <string name="duplicate_name">ชื่อนี้มีการใช้งานอยู่แล้ว</string>
+
+    <string name="go_to_hint">หน้า %1$d, มีทั้งหมด %2$d หน้า</string>
+
+    <!-- search_min_rating -->
+    <string name="star_2">2 ดาว</string>
+    <string name="star_3">3 ดาว</string>
+    <string name="star_4">4 ดาว</string>
+    <string name="star_5">5 ดาว</string>
+
+    <!-- Gallery detail -->
+    <string name="download">ดาวน์โหลด</string>
+    <string name="read">อ่าน</string>
+    <string name="favored_times">\u2665 %d</string>
+    <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
+    <string name="torrent_count">Torrent (%d)</string>
+    <string name="share">แชร์</string>
+    <string name="rate">คะแนน</string>
+    <string name="similar_gallery">เหมือน</string>
+    <string name="search_cover">ค้นหาปก</string>
+    <string name="no_tags">ไม่มีแท็ก</string>
+    <string name="no_comments">ไม่มีความคิดเห็น</string>
+    <string name="no_more_comments">ไม่มีความเห็นเพิ่มเติมแล้ว</string>
+    <string name="more_comment">ความคิดเห็นเพิ่มเติม</string>
+    <string name="refresh">รีเฟรช</string>
+    <string name="open_in_other_app">เปิดด้วยแอปอื่น</string>
+    <string name="rate_successfully">ให้คะแนนเรียบร้อยแล้ว</string>
+    <string name="rate_failed">การให้คะแนนล้มเหลว</string>
+    <string name="no_torrents">ไม่มีไฟล์ torrents</string>
+    <string name="torrents">Torrents</string>
+    <string name="not_favorited">ยังไม่เพิ่มรายการโปรด</string>
+    <string name="add_favorites_dialog_title">เพิ่มเข้ารายการโปรด</string>
+    <string name="add_to_favorite_success">เพิ่มเข้าในรายการโปรดแล้ว</string>
+    <string name="remove_from_favorite_success">ลบออกจากรายการโปรดแล้ว</string>
+    <string name="add_to_favorite_failure">เกิดความล้มเหลวในการเพิ่มเข้าในรายการโปรด</string>
+    <string name="remove_from_favorite_failure">เกิดข้อล้มเหลวในการลบออกจากรายการโปรด</string>
+
+    <!-- Rating -->
+    <string name="rating10">นี้มันผลงานมาสเตอร์พีคชัดๆ!</string>
+    <string name="rating9">อะเมซิ่งมากๆ!</string>
+    <string name="rating8">เยี่ยม!</string>
+    <string name="rating7">ดี!</string>
+    <string name="rating6">ก็โอเคนะ</string>
+    <string name="rating5">ก็ไม่แย่นะ</string>
+    <string name="rating4">แย่</string>
+    <string name="rating3">แย่มาก/กลัวแล้ว</string>
+    <string name="rating2">โอ๊ยยย~</string>
+    <string name="rating1">ไม่ไหวแล้วนะ!</string>
+    <string name="rating0">พังพินาศสุดๆไปเลย!</string>
+
+    <!-- Gallery Info -->
+    <string name="gallery_info">ข้อมูลแกลเลอรี่</string>
+    <string name="copied_to_clipboard">คัดลอกลงคลิปบอร์ดแล้ว</string>
+    <string name="key_gid">Gid</string>
+    <string name="key_token">โทเคน</string>
+    <string name="key_url">URL</string>
+    <string name="key_title">ชื่อเรื่อง</string>
+    <string name="key_title_jpn">ชื่อเรื่องญี่ปุ่น</string>
+    <string name="key_thumb">ภาพตัวอย่าง</string>
+    <string name="key_category">หมวดหมู่</string>
+    <string name="key_uploader">ผู้อัพโหลด</string>
+    <string name="key_posted">โพสต์เมื่อ</string>
+    <string name="key_parent">Parent</string>
+    <string name="key_visible">แสดง</string>
+    <string name="key_language">ภาษา</string>
+    <string name="key_pages">หน้า</string>
+    <string name="key_size">ขนาดไฟล์</string>
+    <string name="key_favorite_count">จำนวนรายการโปรด</string>
+    <string name="key_favorited">เพิ่มรายการโปรด</string>
+    <string name="key_rating_count">คนให้คะแนน</string>
+    <string name="key_rating">คะแนน</string>
+    <string name="key_torrents">ไฟล์ Torrents</string>
+    <string name="key_torrent_url">Torrent URL</string>
+
+    <!-- Gallery Comments -->
+    <string name="gallery_comments">การแสดงความคิดเห็นในแกลเลอรี่</string>
+    <string name="comment_successfully">แสดงความคิดเห็นเสร็จเรียบร้อยแล้ว</string>
+    <string name="comment_failed">การแสดงความคิดเห็นล้มเหลว</string>
+    <string name="copy_comment_text">คัดลอกข้อความของความคิดเห็น</string>
+    <string name="vote_up">ถูกใจ</string>
+    <string name="cancel_vote_up">ยกเลิกโหวตถูกใจ</string>
+    <string name="vote_down">ไม่ถูกใจ</string>
+    <string name="cancel_vote_down">ยกเลิกโหวตไม่ถูกใจ</string>
+    <string name="vote_up_successfully">โหวดถูกใจแล้ว</string>
+    <string name="cancel_vote_up_successfully">ยกเลิกโหวตถูกใจแล้ว</string>
+    <string name="vote_down_successfully">โหวดไม่ถูกใจเสร็จแล้ว</string>
+    <string name="cancel_vote_down_successfully">ยกเลิกโหวดไม่ถูกใจแล้ว</string>
+    <string name="vote_failed">การโหวตล้มเหลว</string>
+    <string name="check_vote_status">ดูรายละเอียดการโหวต</string>
+
+    <!-- Gallery Previews -->
+    <string name="go_to">ไปที่</string>
+
+    <!-- Download -->
+    <string name="scene_download_title">ดาวน์โหลด - %s</string>
+    <string name="no_download_info">รายการดาวน์โหลดจะอยู่ตรงนี้</string>
+    <string name="download_state_none">Idle</string>
+    <string name="download_state_wait">กำลังรอ</string>
+    <string name="download_state_downloading">กำลังดาวน์โหลด</string>
+    <string name="download_state_downloaded">ดาวน์โหลดแล้ว</string>
+    <string name="download_state_failed">ล้มเหลว</string>
+    <string name="download_state_failed_2">%d ที่ไม่เสร็จ</string>
+    <string name="download_state_finish">เสร็จ</string>
+    <string name="stat_509_alert_title">คำเตือน 509</string>
+    <string name="stat_509_alert_text">การลิมิตของรูปภาพต่อวันถึงลิมิตแล้ว กรุณาหยุดโหลดและพักผ่อนบ้างนะ</string>
+    <string name="stat_download_done_title">ดาวน์โหลดเสร็จสิ้น</string>
+    <string name="stat_download_done_text_succeeded">%d ที่เสร็จ</string>
+    <string name="stat_download_done_text_failed">%d ที่ล้มเหลว</string>
+    <string name="stat_download_done_text_mix">%1$d ที่เสร็จ, %2$d ที่ล้มเหลว</string>
+    <string name="stat_download_done_line_succeeded">เสร็จแล้ว: %s</string>
+    <string name="stat_download_done_line_failed">ล้มเหลว: %s</string>
+    <string name="download_remove_dialog_title">ลบรายการดาวน์โหลด</string>
+    <string name="download_remove_dialog_message">ต้องการลบ %s ออกจากรายการดาวน์โหลดไหม?</string>
+    <string name="download_remove_dialog_message_2">ต้องการลบ %d รายการจากรายการดาวน์โหลดไหม?</string>
+    <string name="download_remove_dialog_check_text">ลบไฟล์ภาพด้วย</string>
+    <string name="stat_download_action_stop_all">หยุดทั้งหมด</string>
+    <string name="default_download_label_name">ค่าเริ่มต้น</string>
+    <string name="download_move_dialog_title">ย้าย</string>
+    <string name="download_labels">ป้ายชื่อดาวน์โหลด</string>
+    <string name="download_start_all">เริ่มทั้งหมด</string>
+    <string name="download_stop_all">หยุดทั้งหมด</string>
+    <string name="download_reset_reading_progress">รีเซ็ตตำแหน่งที่อ่าน</string>
+    <string name="reset_reading_progress_message">รีเซ็ตตำแหน่งที่อ่านค้างไว้ทั้งหมดในแกลเลอรี่ที่โหลดไว้ทั้งหมดหรือไม่?</string>
+    <string name="download_service_label">บริการดาวน์โหลดของ EhViewer</string>
+    <string name="download_speed_text">%s</string>
+    <string name="download_speed_text_2">%1$s, %2$s left</string>
+    <string name="remember_download_label">จดจำป้ายชื่อดาวน์โหลด</string>
+    <string name="default_download_label">ป้ายชื่อดาวน์โหลดเริ่มต้น</string>
+    <string name="added_to_download_list">เพิ่มเข้าในรายการดาวน์โหลดแล้ว</string>
+
+    <!-- Download label -->
+    <string name="add">เพิ่ม</string>
+    <string name="new_label_title">ป้ายชื่ออันใหม่</string>
+    <string name="label_text_is_empty">ข้อความป้ายชื่อว่างอยู่</string>
+    <string name="label_text_is_invalid">ชื่อ \"ค่าเริ่มต้น\" นั้นไม่ถูกต้อง</string>
+    <string name="label_text_exist">มีป้ายชื่อนี้อยู่แล้ว</string>
+    <string name="rename_label_title">เปลี่ยนชื่อ</string>
+
+    <!-- History -->
+    <string name="no_history">ประวัติการเข้าชมแกลเลอรี่จะอยู่ตรงนี้</string>
+    <string name="clear_all">ลบทั้งหมด</string>
+    <string name="clear_all_history">จะลบประวัติทั้งหมดเลยหรือไม่?</string>
+
+    <!-- Filter -->
+    <string name="filter_title">ชื่อเรื่อง</string>
+    <string name="filter_uploader">ผู้อัพโหลด</string>
+    <string name="filter_tag">แท็ก</string>
+    <string name="filter_tag_namespace">ชื่อของแท็ก</string>
+    <string name="show_definition">แสดงความหมาย</string>
+
+    <!-- Set Security -->
+
+    <!-- UConfig Activity -->
+    <string name="u_config">การตั้งค่า EHentai</string>
+    <string name="apply_tip">แตะเครื่องหมายถูกเพื่อบันทึกการตั้งค่าแล้ว</string>
+
+    <!-- Hosts Activity -->
+
+    <!-- Gallery Activity -->
+    <string name="share_image">แชร์รูปภาพ</string>
+    <string name="image_saved">ภาพถูกบันทึกไปที่ %s</string>
+
+    <string name="settings_eh">EH</string>
+    <string name="settings_eh_sign_out">ออกจากระบบ</string>
+    <string name="settings_eh_identity_cookies_signed">คุกกี๊ยืนยันตัวตนสามารถใช้ลงชื่อเข้าสู่ระบบสำหรับบัญชีนี้เท่านั้น&lt;br&gt;&lt;b&gt;เก็บ รักษา ให้ ปลอดภัย&lt;/b&gt;</string>
+    <string name="settings_eh_identity_cookies_guest">ยังไม่ลงชื่อเข้าสู่ระบบ</string>
+    <string name="settings_u_config">การตั้งค่า EHentai</string>
+    <string name="settings_u_config_summary">การตั้งค่าบนเว็บไซต์ EHentai</string>
+    <string name="settings_eh_gallery_site">เว็บไซต์หลักของแกลเลอรี่</string>
+    <string name="settings_eh_list_mode">มุมองแบบรายการ</string>
+    <string name="settings_eh_list_mode_detail">แสดงรายละเอียด</string>
+    <string name="settings_eh_list_mode_thumb">ภาพตัวอย่าง</string>
+    <string name="settings_eh_detail_size">ขนาดของรายละเอียด</string>
+    <string name="settings_eh_detail_size_long">อย่างยาว</string>
+    <string name="settings_eh_detail_size_short">อย่างสั้น</string>
+    <string name="settings_eh_show_jpn_title">แสดงชื่อเรื่องญี่ปุ่น</string>
+    <string name="settings_eh_show_gallery_pages">แสดงจำนวนหน้าของแกลเลอรี่</string>
+    <string name="settings_eh_show_gallery_pages_summary">แสดงจำนวนหน้าที่มีอยู่ในแต่ละแกลเลอรี่</string>
+    <string name="settings_eh_show_tag_translations">แสดงแท็กการแปลภาษา</string>
+    <string name="settings_eh_show_tag_translations_summary">แสดงแท็กการแปลภาษาแทนที่ข้อความต้นฉบับ (อาจใช้เวลามากขึ้นเพื่อดาวน์โหลดไฟล์ข้อมูล)</string>
+    <string name="settings_eh_tag_translations_source">Placeholder</string>
+    <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
+
+    <string name="settings_read_volume_page">ใช้ปุ่มปรับเสียงเพื่อเปลี่ยนหน้า</string>
+
+    <string name="settings_download">การดาวน์โหลด</string>
+    <string name="settings_download_download_location">ตำแหน่งแหล่งดาวน์โหลด</string>
+    <string name="settings_download_cant_get_download_location">ไม่สามารถเข้าถึงแหล่งดาวน์โหลดได้</string>
+    <string name="settings_download_media_scan">การอนุญาตให้สแกนสื่อ</string>
+    <string name="settings_download_media_scan_summary_on">โปรดซ่อนแอปแกลเลอรี่หรือแอปดูรูปในเครื่องของคุณจากคนอื่นด้วย</string>
+    <string name="settings_download_media_scan_summary_off">แอปแกลเลอรี่ส่วนใหญ่จะข้ามการสแกนรูปภาพในแหล่งดาวน์โหลด</string>
+    <string name="settings_download_concurrency">ดาวน์โหลดแบบหลายเธด</string>
+    <string name="settings_download_concurrency_summary">โหลดถึง %s ภาพ</string>
+    <string name="settings_download_preload_image">โหลดภาพล่วงหน้า</string>
+    <string name="settings_download_preload_image_summary">โหลดภาพล่วงหน้าไป %s ภาพ</string>
+    <string name="settings_download_download_origin_image">ดาวน์โหลดรูปภาพต้นฉบับ</string>
+    <string name="settings_download_download_origin_image_summary">อันตรายนะ! คุณอาจจะเจอรหัสข้อผิดพลาด 509 ได้</string>
+    <string name="settings_download_restore_download_items">คืนรายการดาวน์โหลด</string>
+    <string name="settings_download_restore_download_items_summary">คืนรายการดาวน์โหลดทั้งหมดในแหล่งดาวน์โหลด</string>
+    <string name="settings_download_restore_not_found">ไม่พบรายการดาวน์โหลดที่จะคืนค่า</string>
+    <string name="settings_download_restore_failed">การคืนค่าล้มเหลว</string>
+    <string name="settings_download_restore_successfully">การคืนค่า %d รายการสำเร็จแล้ว</string>
+    <string name="settings_download_clean_redundancy">ลบการดาวน์โหลดที่ไม่จำเป็น</string>
+    <string name="settings_download_clean_redundancy_summary">ลบรูปภาพแกลเลอรี่ที่ไม่ได้อยู่ในรายการดาวน์โหลด แต่อยู่ในแหล่งดาวน์โหลด</string>
+    <string name="settings_download_clean_redundancy_no_redundancy">ไม่มีสิ่งที่ไม่จำเป็น</string>
+    <string name="settings_download_clean_redundancy_done">การลบสิ่งที่ไม่จำเป็นเสร็จสิ้น ลบไปแล้วทั้งหมด %d ชิ้น</string>
+
+    <string name="settings_advanced">ขั้นสูง</string>
+    <string name="settings_advanced_save_parse_error_body">บันทึกเนื้อหาลง HTML เมื่อการวิเคราะห์ผิดพลาด</string>
+    <string name="settings_advanced_save_parse_error_body_summary">เนื้อหาแบบ HTML อาจจะเป็นข้อมูลความเป็นส่วนตัวที่มีความอ่อนไหวได้</string>
+    <string name="settings_advanced_save_crash_log">บันทึกข้อผิดพลาดเมื่อเกิด crash</string>
+    <string name="settings_advanced_save_crash_log_summary">การบันทึกข้อผิดพลาดจาก crash จะช่วยให้ผู้พัฒนาหาและแก้ไขบัคต่างๆได้ง่าย</string>
+    <string name="settings_advanced_dump_logcat">สร้าง Logcat</string>
+    <string name="settings_advanced_dump_logcat_summary">บันทึก Logcat ไปที่พื้นที่จัดเก็บภายนอก</string>
+    <string name="settings_advanced_dump_logcat_failed">การสร้าง Logcat เกิดข้อผิดพลาด</string>
+    <string name="settings_advanced_dump_logcat_to">Logcat ถูกสร้างอยู่ที่ %s</string>
+    <string name="settings_advanced_read_cache_size">ขนาดในการเก็บไฟล์ชั่วคราวเพื่ออ่าน</string>
+    <string name="settings_advanced_app_language_title">ภาษาของแอป</string>
+    <string name="settings_advanced_export_data">สำเนาข้อมูล</string>
+    <string name="settings_advanced_export_data_summary">บันทึกข้อมูลต่างๆเช่นรายการดาวน์โหลด และค้นหาอย่างด่วนลงพื้นที่จัดเก็บภายนอก</string>
+    <string name="settings_advanced_export_data_to">ได้สำเนาข้อมูลแล้วจัดเก็บที่ %s</string>
+    <string name="settings_advanced_export_data_failed">การสำเนาข้อมูลล้มเหลว</string>
+    <string name="settings_advanced_import_data">นำเข้าข้อมูล</string>
+    <string name="settings_advanced_import_data_summary">ดึงข้อมูลต่างๆจากไฟล์สำเนาที่ทำมาก่อนหน้านี้</string>
+    <string name="settings_advanced_import_data_successfully">การนำเข้าข้อมูลสำเร็จ</string>
+
+    <string name="settings_about">เกี่ยวกับ</string>
+    <string name="settings_about_declaration_summary">EhViewer ไม่มีความแตกต่างจากตัวเว็บ E-Hentai.org แต่อย่างใด</string>
+    <string name="settings_about_author">นักพัฒนา</string>
+    <string name="settings_about_source">ซอร์สโค้ด</string>
+    <string name="settings_about_version">เวอร์ชั่นแอป</string>
+    <string name="settings_about_check_for_updates">ตรวจสอบการอัพเดต</string>
+
+    <string name="cant_read_the_file">ไม่สามารถอ่านไฟล์ได้</string>
+
+    <string name="app_language_system">ภาษาของระบบ (ค่าเริ่มต้น)</string>
+
+    <!-- ExcludedLanguagesScene -->
+
+    <string name="please_wait">รอสักครู่</string>
+
+    <!-- License -->
+
+    <!-- Dir Picker-->
+
+    <!-- Favorites -->
+    <string name="cloud_favorites">รายการโปรดบนเว็บ</string>
+    <string name="local_favorites">รายการโปรดบนเครื่อง</string>
+    <string name="search_bar_hint">ค้นหา %s</string>
+    <string name="favorites_title">%s</string>
+    <string name="favorites_title_2">%1$s - %2$s</string>
+    <string name="delete_favorites_dialog_title">ลบออกจากรายการโปรด</string>
+    <string name="delete_favorites_dialog_message">ต้องการลบ %d รายการออกจากรายการโปรดหรือไม่?</string>
+    <string name="move_favorites_dialog_title">ย้ายรายการโปรด</string>
+    <string name="default_favorites_collection">ค่าเริ่มต้นของที่เก็บรายการโปรด</string>
+    <string name="let_me_select">ขอให้ฉันเลือกนะ</string>
+    <string name="collections">คอลเลคชั่น</string>
+
+    <!-- Progress Scene -->
+    <string name="error_something_wrong_happened">มีสิ่งผิดปกติบางอย่างเกิดขึ้น</string>
+
+    <!-- Guide -->
+
+    <!-- Readable Time -->
+    <string name="from_the_future">จากอนาคต</string>
+    <string name="just_now">เดี๋ยวนี้</string>
+    <string name="yesterday">เมื่อวาน</string>
+    <string name="some_days_ago">%d วันที่ผ่านมา</string>
+    <string name="archive">การบีบอัด</string>
+    <string name="no_archives">ยังไม่มีไฟล์บีบอัด</string>
+    <string name="download_archive_started">เริ่มการดาวน์โหลดบีบอัด</string>
+    <string name="download_archive_failure">การดาวน์โหลดไฟล์บีบอัดล้มเหลว</string>
+    <string name="download_archive_failure_no_hath">ต้องการ H@H client เพื่อโหลดไฟล์บีบอัด</string>
+    <string name="settings_privacy">ความเป็นส่วนตัว</string>
+    <string name="settings_privacy_secure">ป้องกันการบันทึกภาพหน้าจอ</string>
+    <string name="settings_privacy_secure_summary">ป้องกันเนื้อหาต่างๆของตัวแอปจากการถูกบันทึกหน้าจอ หรือถูกแสดงในหน้ารายการ \"แอพล่าสุด\" ตอนสลับหรือระหว่างสลับไปแอปอื่น.</string>
+
+    <string name="download_service">บริการดาวน์โหลด</string>
+    <string name="favorite_name">รายการโปรด</string>
+</resources>

@@ -12,11 +12,11 @@ import com.hippo.ehviewer.client.data.TagNamespace.Character
 import com.hippo.ehviewer.client.data.TagNamespace.Cosplayer
 import com.hippo.ehviewer.client.data.TagNamespace.Female
 import com.hippo.ehviewer.client.data.TagNamespace.Group
+import com.hippo.ehviewer.client.data.TagNamespace.Location
 import com.hippo.ehviewer.client.data.TagNamespace.Male
 import com.hippo.ehviewer.client.data.TagNamespace.Mixed
 import com.hippo.ehviewer.client.data.TagNamespace.Other
 import com.hippo.ehviewer.client.data.TagNamespace.Parody
-import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.files.read
 import com.hippo.files.write
 import kotlinx.serialization.KSerializer
@@ -55,13 +55,13 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
     with(TagNamespace) {
         when (this@getComicInfo) {
             is GalleryDetail -> tagGroups.forEach { group ->
-                val list = group.tags.filterNot { (text, power, _) -> text == TAG_ORIGINAL || power == PowerStatus.WEAK }.map(GalleryTag::text)
-                when (val ns = group.nameSpace) {
+                val list = group.tags.filterNot { (text, power, _) -> text == TAG_ORIGINAL || power == PowerStatus.Weak }.map(GalleryTag::text)
+                when (val ns = group.namespace) {
                     Artist, Cosplayer -> artists.addAll(list)
                     Group -> groups.addAll(list)
                     Character -> characters.addAll(list)
                     Parody -> parodies.addAll(list)
-                    Other -> otherTags.addAll(list)
+                    Location, Other -> otherTags.addAll(list)
                     Female, Male, Mixed -> ns.prefix.let { prefix ->
                         list.forEach { tag -> otherTags.add("$prefix:$tag") }
                     }
@@ -77,7 +77,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
                     Group -> groups.add(tag)
                     Character -> characters.add(tag)
                     Parody -> if (tag != TAG_ORIGINAL) parodies.add(tag)
-                    Other -> otherTags.add(tag)
+                    Location, Other -> otherTags.add(tag)
                     Female, Male, Mixed -> ns.prefix.let { otherTags.add("$it:$tag") }
                     else -> Unit
                 }
@@ -107,11 +107,7 @@ fun ComicInfo.toSimpleTags() = listOfNotNull(
     teams,
 ).flatten().ifEmpty { null }
 
-fun ComicInfo.write(file: Path) {
-    file.write {
-        xml.encodeToSink(this, implicit<ComicInfo>())
-    }
-}
+fun writeComicInfo(info: ComicInfo, file: Path) = file.write { xml.encodeToSink(this, info) }
 
 fun readComicInfo(file: Path): ComicInfo? = runCatching {
     file.read {

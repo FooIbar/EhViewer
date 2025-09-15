@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.reader
 
+import android.graphics.drawable.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,6 +27,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,8 +37,9 @@ import coil3.DrawableImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.util.thenIf
 import com.google.accompanist.drawablepainter.DrawablePainter
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.Page
@@ -59,11 +64,16 @@ fun PagerItem(
 ) {
     LaunchedEffect(Unit) {
         pageLoader.request(page.index)
-        // In case pageloader restart
+        // In case page loader restart
         page.statusFlow.drop(1).collect {
             if (page.statusFlow.value == PageStatus.Queued) {
                 pageLoader.request(page.index)
             }
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            pageLoader.cancelRequest(page.index)
         }
     }
     val defaultError = stringResource(id = R.string.decode_image_error)
@@ -92,13 +102,18 @@ fun PagerItem(
                 }
             }
             painter?.let { painter ->
+                val drawable = (painter as? DrawablePainter)?.drawable
                 val grayScale by Settings.grayScale.collectAsState()
                 val invert by Settings.invertedColors.collectAsState()
                 Image(
                     // DrawablePainter <: RememberObserver
                     painter = remember(painter) { painter },
                     contentDescription = null,
-                    modifier = contentModifier.fillMaxSize(),
+                    modifier = contentModifier.fillMaxSize().thenIf(drawable is Animatable) {
+                        onVisibilityChanged(minDurationMs = 33, minFractionVisible = 0.5f) {
+                            drawable!!.setVisible(it, false)
+                        }
+                    },
                     contentScale = contentScale,
                     colorFilter = when {
                         grayScale && invert -> grayScaleAndInvertFilter
@@ -127,7 +142,11 @@ fun PagerItem(
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                    Button(onClick = { pageLoader.retryPage(page.index) }, modifier = Modifier.padding(8.dp)) {
+                    Button(
+                        onClick = { pageLoader.retryPage(page.index) },
+                        shapes = ButtonDefaults.shapes(),
+                        modifier = Modifier.padding(8.dp),
+                    ) {
                         Text(text = stringResource(id = R.string.action_retry))
                     }
                 }

@@ -51,6 +51,8 @@ object EhCookieStore : CookiesStorage {
         )
     }
 
+    fun isCloudflareBypassed() = getCookies(EhUrl.HOST_E)?.containsKey("cf_clearance") == true
+
     fun flush() = manager.flush()
 
     // See https://github.com/Ehviewer-Overhauled/Ehviewer/issues/873

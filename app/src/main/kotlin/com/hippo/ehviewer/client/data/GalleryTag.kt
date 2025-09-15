@@ -1,23 +1,22 @@
 package com.hippo.ehviewer.client.data
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 enum class VoteStatus(val display: String) {
-    NONE(""),
-    UP("+1"),
-    DOWN("-1"),
+    None(""),
+    Up("+1"),
+    Down("-1"),
 }
 
 enum class PowerStatus {
-    SOLID,
-    ACTIVE,
-    WEAK,
+    Solid,
+    Active,
+    Weak,
 }
 
-@Parcelize
+@Serializable
 data class GalleryTag(
     val text: String,
     val power: PowerStatus,
     val vote: VoteStatus,
-) : Parcelable
+)

@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
+import android.content.Context
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,14 +32,14 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.includeFontPadding
 
 @Composable
+context(_: Context)
 fun GalleryTags(
     tagGroups: List<GalleryTagGroup>,
     onTagClick: (String) -> Unit,
     onTagLongClick: (String, String, VoteStatus) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(context) && EhTagDatabase.initialized
+    val canTranslate = Settings.showTagTranslations.value && EhTagDatabase.translatable && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun TagNamespace.translate() = ehTags?.getTranslation(tag = value) ?: value
     fun String.translate(ns: TagNamespace) = ehTags?.getTranslation(prefix = ns.prefix, tag = this) ?: this
@@ -58,7 +59,7 @@ fun GalleryTags(
                         Box {
                             BaseRoundText(
                                 text = translation,
-                                weak = power == PowerStatus.WEAK,
+                                weak = power == PowerStatus.Weak,
                                 modifier = Modifier.combinedClickable(
                                     onClick = { onTagClick(tag) },
                                     onLongClick = {
@@ -67,7 +68,7 @@ fun GalleryTags(
                                     },
                                 ),
                             )
-                            if (vote != VoteStatus.NONE && showVote) {
+                            if (vote != VoteStatus.None && showVote) {
                                 Text(
                                     text = vote.display,
                                     modifier = Modifier.align(Alignment.TopEnd).padding(horizontal = 2.dp),
@@ -103,7 +104,7 @@ private fun BaseRoundText(
         Text(
             text = text,
             modifier = modifier.padding(horizontal = 12.dp, vertical = 4.dp).width(IntrinsicSize.Max),
-            color = MaterialTheme.colorScheme.onSurface.let { if (weak) it.copy(0.5F) else it },
+            color = LocalContentColor.current.let { if (weak) it.copy(0.5F) else it },
             style = MaterialTheme.typography.labelLarge.includeFontPadding,
         )
     }

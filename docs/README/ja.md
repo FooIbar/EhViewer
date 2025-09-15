@@ -70,10 +70,10 @@
 
 # ダウンロード
 
-| フレーバー      | 最小の Android バージョン | 注意事項                                     |
-|-------------|-------------------------|-------------------------------------------|
-| Default     | 8.0                     | アニメーション WebP のサポートは Android 9 以降が必要です |
-| Marshmallow | 6.0*                     | サポートは限定的、保証はできません            |
+| フレーバー       | 最小の Android バージョン | 注意事項              |
+|-------------|-------------------|-------------------|
+| Default     | 8.0               | 完全なサポート           |
+| Marshmallow | 6.0*              | サポートは限定的、保証はできません |
 
 *Android 6 のデバイスは [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) 証明書のインストールが必要です
 
@@ -98,7 +98,6 @@
 - [Coil](https://coil-kt.github.io/coil/)
 - [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
 - [libarchive](https://www.libarchive.org/)
-- [jsoup](https://jsoup.org/)
 
 # ライセンス
 

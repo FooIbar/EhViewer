@@ -15,11 +15,10 @@
  */
 package com.hippo.ehviewer.client.data
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
+@Serializable
 data class GalleryTagGroup(
-    val nameSpace: TagNamespace,
+    val namespace: TagNamespace,
     val tags: List<GalleryTag>,
-) : Parcelable
+)

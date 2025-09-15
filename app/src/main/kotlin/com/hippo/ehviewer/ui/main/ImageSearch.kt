@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
@@ -16,7 +17,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 
 @Composable
 fun ImageSearch(
@@ -28,7 +29,7 @@ fun ImageSearch(
 ) {
     AnimatedVisibility(visible = image != null, modifier = Modifier.align(Alignment.CenterHorizontally)) {
         Card {
-            val maxSize = dimensionResource(id = R.dimen.image_search_max_size)
+            val maxSize = dimensionResource(id = com.hippo.ehviewer.R.dimen.image_search_max_size)
             AsyncImage(
                 model = image,
                 contentDescription = null,
@@ -38,6 +39,7 @@ fun ImageSearch(
     }
     FilledTonalButton(
         onClick = onSelectImage,
+        shapes = ButtonDefaults.shapes(),
         modifier = Modifier.fillMaxWidth().padding(8.dp),
     ) {
         Text(text = stringResource(id = R.string.select_image))

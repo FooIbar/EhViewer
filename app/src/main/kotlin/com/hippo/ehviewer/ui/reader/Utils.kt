@@ -1,14 +1,11 @@
 package com.hippo.ehviewer.ui.reader
 
 import android.app.Activity
-import android.view.Window
 import android.view.WindowManager
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
@@ -17,24 +14,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import com.hippo.ehviewer.Settings
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
-import kotlinx.coroutines.flow.onCompletion
-
-fun Window.updateKeepScreenOn(enabled: Boolean) {
-    if (enabled) {
-        addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    } else {
-        clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    }
-}
-
-@Composable
-fun Activity.ConfigureKeepScreenOn() {
-    LaunchedEffect(Unit) {
-        Settings.keepScreenOn.valueFlow()
-            .onCompletion { window.updateKeepScreenOn(false) }
-            .collect { window.updateKeepScreenOn(it) }
-    }
-}
 
 /**
  * Forces the user preferred [orientation] on the activity.
@@ -123,4 +102,6 @@ suspend fun LazyListState.scrollDown() {
 }
 
 private val LazyListState.scrollDistance
-    get() = layoutInfo.viewportSize.height * 0.75f
+    get() = layoutInfo.viewportSize.height * SCROLL_FRACTION
+
+const val SCROLL_FRACTION = 0.75f

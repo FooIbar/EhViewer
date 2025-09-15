@@ -1,9 +1,10 @@
 package com.hippo.ehviewer.gallery
 
 import androidx.collection.SieveCache
-import arrow.atomic.value
+import androidx.collection.mutableIntObjectMapOf
 import arrow.fx.coroutines.ExitCase
 import arrow.fx.coroutines.bracketCase
+import com.ehviewer.core.util.withNonCancellableContext
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
@@ -13,12 +14,14 @@ import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.detectAds
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastO
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,10 +35,10 @@ private val progressScope = CoroutineScope(Dispatchers.IO)
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 256 * 1024 * 1024
 
-context(CoroutineScope)
-abstract class PageLoader(val gid: Long, startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
+abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
     var startPage = startPage.coerceIn(0, size - 1)
 
+    private val jobs = mutableIntObjectMapOf<Job>()
     private val mutex = NamedMutex<Int>()
     private val semaphore = Semaphore(4)
 
@@ -49,38 +52,30 @@ abstract class PageLoader(val gid: Long, startPage: Int, val size: Int, val hasA
         onEntryRemoved = { k, o, n, _ -> if (o.unpin()) n ?: notifyPageWait(k) },
     )
 
-    fun decodePreloadRange(index: Int) = index - 3..index + 3
-
-    fun needDecode(index: Int) = index in decodePreloadRange(prevIndex) &&
-        lock.read { index !in cache } &&
-        pages[index].status !is PageStatus.Ready &&
-        pages[index].status !is PageStatus.Blocked
-
-    suspend fun atomicallyDecodeAndUpdate(index: Int) {
-        if (!needDecode(index)) return
-        try {
-            bracketCase(
-                { openSource(index) },
-                { src -> notifyPageSucceed(index, Image.decode(src, hasAds && detectAds(index, size))) },
-                { src, case -> if (case !is ExitCase.Completed) src.close() },
-            )
-        } catch (e: Throwable) {
-            notifyPageFailed(index, e.displayString())
-        }
+    private suspend fun atomicallyDecodeAndUpdate(index: Int) {
+        bracketCase(
+            { openSource(index) },
+            { src ->
+                withNonCancellableContext {
+                    notifyPageSucceed(index, Image.decode(src, hasAds && detectAds(index, size)))
+                }
+            },
+            { src, case -> if (case !is ExitCase.Completed) src.close() },
+        )
     }
 
     private val lock = ReentrantReadWriteLock()
 
     val pages = (0 until size).map { Page(it) }
 
-    private val prefetchPageCount = Settings.preloadImage
+    private val prefetchPageCount = Settings.preloadImage.value
 
     fun restart() {
         lock.write { cache.evictAll() }
         pages.forEach(Page::reset)
     }
 
-    private var prevIndex by AtomicInteger(-1)::value
+    private val prevIndex = AtomicInt(-1)
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
         notifyPageWait(index)
@@ -132,12 +127,12 @@ abstract class PageLoader(val gid: Long, startPage: Int, val size: Int, val hasA
     }
 
     fun request(index: Int) {
-        val prefetchRange = if (index >= prevIndex) {
+        val prefetchRange = if (index >= prevIndex.load()) {
             index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
         } else {
             index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
         }
-        prevIndex = index
+        prevIndex.store(index)
         val image = lock.read { cache[index] }
         if (image != null) {
             notifyPageSucceed(index, image, false)
@@ -158,14 +153,27 @@ abstract class PageLoader(val gid: Long, startPage: Int, val size: Int, val hasA
         prefetchPages(pagesAbsent, start - 5..end + 5)
     }
 
+    fun cancelRequest(index: Int) {
+        jobs[index]?.cancel()
+    }
+
     abstract fun save(index: Int, file: Path): Boolean
 
-    fun notifySourceReady(index: Int) {
-        if (needDecode(index)) {
-            launch {
-                mutex.withLock(index) {
-                    semaphore.withPermit {
-                        atomicallyDecodeAndUpdate(index)
+    fun notifySourceReady(index: Int) = synchronized(jobs) {
+        if (jobs[index]?.isActive != true) {
+            jobs[index] = scope.launch {
+                try {
+                    mutex.withLock(index) {
+                        semaphore.withPermit {
+                            atomicallyDecodeAndUpdate(index)
+                        }
+                    }
+                } catch (e: Throwable) {
+                    if (e is CancellationException) {
+                        notifyPageFailed(index, null)
+                        throw e
+                    } else {
+                        notifyPageFailed(index, e.displayString())
                     }
                 }
             }

@@ -15,10 +15,9 @@
  */
 package com.hippo.ehviewer.client.data
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-@Parcelize
+@Serializable
 data class GalleryComment(
     val id: Long,
     val score: Int,
@@ -33,4 +32,4 @@ data class GalleryComment(
     val user: String?,
     val comment: String,
     val lastEdited: Long,
-) : Parcelable
+)

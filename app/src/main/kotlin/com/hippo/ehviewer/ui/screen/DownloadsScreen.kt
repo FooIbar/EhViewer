@@ -1,8 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.view.ViewConfiguration
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
@@ -25,6 +23,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -42,12 +42,15 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -65,10 +68,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -77,10 +81,26 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import arrow.core.partially1
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.FAB_ANIMATE_TIME
+import com.ehviewer.core.ui.component.FabLayout
+import com.ehviewer.core.ui.component.FastScrollLazyColumn
+import com.ehviewer.core.ui.component.FastScrollLazyVerticalStaggeredGrid
+import com.ehviewer.core.ui.component.LocalSideSheetState
+import com.ehviewer.core.ui.component.ProvideSideSheetContent
+import com.ehviewer.core.ui.icons.EhIcons
+import com.ehviewer.core.ui.icons.big.Download
+import com.ehviewer.core.ui.util.Await
+import com.ehviewer.core.ui.util.asyncState
+import com.ehviewer.core.ui.util.rememberInVM
+import com.ehviewer.core.ui.util.thenIf
+import com.ehviewer.core.util.launch
+import com.ehviewer.core.util.launchIO
+import com.ehviewer.core.util.onEachLatest
+import com.ehviewer.core.util.withNonCancellableContext
+import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
@@ -92,41 +112,31 @@ import com.hippo.ehviewer.download.DownloadManager.downloadInfoList
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
-import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.big.Download
 import com.hippo.ehviewer.ui.DrawerHandle
-import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.main.DownloadCard
-import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
-import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.showMoveDownloadLabelList
-import com.hippo.ehviewer.ui.tools.Await
-import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
-import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
+import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
-import com.hippo.ehviewer.ui.tools.asyncState
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitInputText
+import com.hippo.ehviewer.ui.tools.awaitSelectAction
+import com.hippo.ehviewer.ui.tools.awaitSelectItemWithCheckBox
+import com.hippo.ehviewer.ui.tools.awaitSingleChoice
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
-import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.takeAndClear
 import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import moe.tarsin.coroutines.onEachLatest
+import moe.tarsin.navigate
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -136,7 +146,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
     val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
-    var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(filterMode, Settings.recentDownloadLabel.value)) }
+    var filterState by rememberSerializable { mutableStateOf(DownloadsFilterState(filterMode, Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
@@ -149,11 +159,12 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     DrawerHandle(!selectMode && !searchBarExpanded)
 
     val density = LocalDensity.current
-    val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
+    val canTranslate = Settings.showTagTranslations.value && EhTagDatabase.translatable && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun getTranslation(tag: String) = ehTags?.run {
         getTranslation(TagNamespace.Artist.prefix, tag) ?: getTranslation(TagNamespace.Cosplayer.prefix, tag)
     } ?: tag
+    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
     val unknownName = stringResource(R.string.unknown_artists)
@@ -217,7 +228,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         fun closeSheet() = launch { drawerState.close() }
         TopAppBar(
             title = { Text(text = labelsStr) },
-            windowInsets = EmptyWindowInsets,
+            windowInsets = WindowInsets(),
             colors = topBarOnDrawerColor(),
             actions = {
                 if (DownloadsFilterMode.CUSTOM == filterMode) {
@@ -234,6 +245,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                 DownloadManager.addLabel(text)
                             }
                         },
+                        shapes = IconButtonDefaults.shapes(),
                     ) {
                         Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
                     }
@@ -263,6 +275,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                 }()
                             }
                         },
+                        shapes = IconButtonDefaults.shapes(),
                     ) {
                         Icon(imageVector = Icons.Default.Download, contentDescription = null)
                     }
@@ -283,12 +296,14 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             }()
                         }
                     },
+                    shapes = IconButtonDefaults.shapes(),
                 ) {
                     Icon(imageVector = Icons.Default.Settings, contentDescription = null)
                 }
             },
         )
 
+        val dialogState by rememberUpdatedState(contextOf<DialogState>())
         val labelsListState = rememberLazyListState()
         val editEnable = DownloadsFilterMode.CUSTOM == filterMode
         val hapticFeedback = rememberHapticFeedback()
@@ -300,48 +315,56 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
         var fromIndex by remember { mutableIntStateOf(-1) }
         FastScrollLazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp),
             state = labelsListState,
             contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
         ) {
             item {
                 ListItem(
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.clip(CardDefaults.shape).clickable {
                         switchLabel("")
                         closeSheet()
                     },
-                    tonalElevation = 1.dp,
                     shadowElevation = 1.dp,
                     headlineContent = {
                         Text("$allName [$totalCount]")
                     },
-                    colors = listItemOnDrawerColor(),
+                    colors = listItemOnDrawerColor(filterState.label == ""),
                 )
             }
             item {
                 ListItem(
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.clip(CardDefaults.shape).clickable {
                         switchLabel(null)
                         closeSheet()
                     },
-                    tonalElevation = 1.dp,
                     shadowElevation = 1.dp,
                     headlineContent = {
                         Text("$emptyLabelName [${downloadsCount.getOrDefault(null, 0)}]")
                     },
-                    colors = listItemOnDrawerColor(),
+                    colors = listItemOnDrawerColor(filterState.label == null),
                 )
             }
 
             itemsIndexed(groupList, key = { _, (id) -> id }) { itemIndex, (id, label) ->
                 val index by rememberUpdatedState(itemIndex)
                 val item by rememberUpdatedState(label)
-                // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
-                LaunchedEffect(dismissState) {
-                    snapshotFlow { dismissState.currentValue }.collect {
-                        if (it == SwipeToDismissBoxValue.EndToStart) {
-                            runCatching {
+                ReorderableItem(
+                    reorderableLabelState,
+                    id,
+                    enabled = editEnable,
+                    animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
+                ) { isDragging ->
+                    // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
+                    // SQLite may reuse ROWIDs from previously deleted rows so they'll have the same key
+                    val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, positionalThreshold) }
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        backgroundContent = {},
+                        enableDismissFromStartToEnd = false,
+                        gesturesEnabled = editEnable,
+                        onDismiss = {
+                            dialogState.runCatching {
                                 awaitConfirmationOrCancel(confirmText = R.string.delete) {
                                     Text(text = stringResource(R.string.delete_label, item))
                                 }
@@ -354,20 +377,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             }.onFailure {
                                 dismissState.reset()
                             }
-                        }
-                    }
-                }
-                ReorderableItem(
-                    reorderableLabelState,
-                    id,
-                    enabled = editEnable,
-                    animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
-                ) { isDragging ->
-                    SwipeToDismissBox(
-                        state = dismissState,
-                        backgroundContent = {},
-                        enableDismissFromStartToEnd = false,
-                        gesturesEnabled = editEnable,
+                        },
                     ) {
                         val elevation by animateDpAsState(
                             if (isDragging) {
@@ -378,11 +388,10 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             label = "elevation",
                         )
                         ListItem(
-                            modifier = Modifier.clickable {
+                            modifier = Modifier.clip(CardDefaults.shape).clickable {
                                 switchLabel(item)
                                 closeSheet()
                             },
-                            tonalElevation = 1.dp,
                             shadowElevation = elevation,
                             headlineContent = {
                                 val name = if (filterMode == DownloadsFilterMode.ARTIST) getTranslation(label) else label
@@ -406,11 +415,13 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                                 }
                                             }
                                         },
+                                        shapes = IconButtonDefaults.shapes(),
                                     ) {
                                         Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                     }
                                     IconButton(
                                         onClick = {},
+                                        shapes = IconButtonDefaults.shapes(),
                                         modifier = Modifier.draggableHandle(
                                             onDragStarted = {
                                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.START)
@@ -434,7 +445,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                     }
                                 }
                             },
-                            colors = listItemOnDrawerColor(),
+                            colors = listItemOnDrawerColor(filterState.label == item),
                         )
                     }
                 }
@@ -442,6 +453,15 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
     }
 
+    val searchFieldState = rememberTextFieldState()
+    class DownloadLabelSuggestion(private val label: String) : Suggestion() {
+        override val keyword = LABEL_PREFIX + label
+        override fun onClick() {
+            searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
+            searchBarExpanded = false
+            switchLabel(label)
+        }
+    }
     SearchBarScreen(
         onApplySearch = { filterState = filterState.copy(keyword = it) },
         expanded = searchBarExpanded,
@@ -452,15 +472,24 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         },
         title = title,
         searchFieldHint = hint,
+        searchFieldState = searchFieldState,
+        suggestionProvider = { query ->
+            val label = query.substringAfter(LABEL_PREFIX, "")
+            if (label.isEmpty()) {
+                emptyList()
+            } else {
+                EhDB.searchDownloadLabel(label, 10).map(::DownloadLabelSuggestion)
+            }
+        },
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }
             val sideSheetState = LocalSideSheetState.current
-            IconButton(onClick = { gridView = !gridView }) {
+            IconButton(onClick = { gridView = !gridView }, shapes = IconButtonDefaults.shapes()) {
                 val icon = if (gridView) Icons.AutoMirrored.Default.ViewList else Icons.Default.GridView
                 Icon(imageVector = icon, contentDescription = null)
             }
-            IconButton(onClick = { expanded = !expanded }) {
+            IconButton(onClick = { expanded = !expanded }, shapes = IconButtonDefaults.shapes()) {
                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -475,9 +504,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     text = { Text(text = stringResource(id = R.string.download_start_all)) },
                     onClick = {
                         expanded = false
-                        val intent = Intent(implicit<Activity>(), DownloadService::class.java)
-                        intent.action = DownloadService.ACTION_START_ALL
-                        ContextCompat.startForegroundService(implicit<Activity>(), intent)
+                        DownloadService.startService(DownloadService.ACTION_START_ALL)
                     },
                 )
                 DropdownMenuItem(
@@ -509,19 +536,16 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     onClick = {
                         expanded = false
                         val gidList = list.filter { it.state != DownloadInfo.STATE_FINISH }.asReversed().mapToLongArray(DownloadInfo::gid)
-                        val intent = Intent(implicit<Activity>(), DownloadService::class.java)
-                        intent.action = DownloadService.ACTION_START_RANGE
-                        intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
-                        ContextCompat.startForegroundService(implicit<Activity>(), intent)
+                        DownloadService.startRangeDownload(gidList)
                     },
                 )
             }
         },
     ) { contentPadding ->
         val height by collectListThumbSizeAsState()
-        val realPadding = contentPadding + PaddingValues(dimensionResource(id = R.dimen.gallery_list_margin_h), dimensionResource(id = R.dimen.gallery_list_margin_v))
+        val realPadding = contentPadding + PaddingValues(dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h), dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_v))
         val searchBarConnection = remember {
-            val slop = ViewConfiguration.get(implicit<Context>()).scaledTouchSlop
+            val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
@@ -544,7 +568,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
 
         Crossfade(targetState = gridView, label = "Downloads") { showGridView ->
             if (showGridView) {
-                val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
+                val gridInterval = dimensionResource(com.hippo.ehviewer.R.dimen.gallery_grid_interval)
                 val thumbColumns by Settings.thumbColumns.collectAsState()
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Fixed(thumbColumns),
@@ -567,7 +591,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 FastScrollLazyColumn(
                     modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
                     contentPadding = realPadding,
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
+                    verticalArrangement = Arrangement.spacedBy(dimensionResource(com.hippo.ehviewer.R.dimen.gallery_list_interval)),
                 ) {
                     items(list, key = { it.gid }) { info ->
                         val checked = info.gid in checkedInfoMap
@@ -594,10 +618,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                     checkedInfoMap[info.gid] = info
                                 },
                                 onStart = {
-                                    val intent = Intent(implicit<Activity>(), DownloadService::class.java)
-                                    intent.action = DownloadService.ACTION_START
-                                    intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                    ContextCompat.startForegroundService(implicit<Activity>(), intent)
+                                    DownloadService.startDownload(info.galleryInfo)
                                 },
                                 onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
                                 info = info,
@@ -659,7 +680,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val oldMode = SortMode.from(sortMode)
-                val sortModes = resources.getStringArray(R.array.download_sort_modes).toList()
+                val sortModes = contextOf<Context>().resources.getStringArray(com.hippo.ehviewer.R.array.download_sort_modes).toList()
                 val (selected, checked) = awaitSelectItemWithCheckBox(
                     sortModes,
                     R.string.sort_by,
@@ -673,7 +694,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 invalidateKey = !invalidateKey
             }
             onClick(Icons.Default.FilterList) {
-                val downloadStates = resources.getStringArray(R.array.download_state).toList()
+                val downloadStates = contextOf<Context>().resources.getStringArray(com.hippo.ehviewer.R.array.download_state).toList()
                 val state = awaitSingleChoice(
                     downloadStates,
                     filterState.state + 1,
@@ -688,10 +709,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             }
             onClick(Icons.Default.PlayArrow) {
                 val gidList = checkedInfoMap.takeAndClear().mapToLongArray(DownloadInfo::gid)
-                val intent = Intent(implicit<Activity>(), DownloadService::class.java)
-                intent.action = DownloadService.ACTION_START_RANGE
-                intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
-                ContextCompat.startForegroundService(implicit<Context>(), intent)
+                DownloadService.startRangeDownload(gidList)
             }
             onClick(Icons.Default.Pause) {
                 val gidList = checkedInfoMap.takeAndClear().mapToLongArray(DownloadInfo::gid)
@@ -714,3 +732,5 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
     }
 }
+
+private const val LABEL_PREFIX = "label:"

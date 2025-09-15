@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,17 +21,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.icons.EhIcons
+import com.ehviewer.core.ui.icons.big.SadAndroid
+import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.client.EhEngine
-import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable
@@ -48,7 +49,7 @@ fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, 
                 }.onSuccess {
                     withUIContext {
                         navigator.popBackStack()
-                        navigator.navigate(gid asDstPageTo page with it)
+                        navigate(gid asDstPageTo page with it)
                     }
                 }.onFailure {
                     error = it.displayString()
@@ -78,7 +79,7 @@ fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, 
                 )
             }
         } else {
-            CircularProgressIndicator()
+            CircularWavyProgressIndicator()
         }
     }
 }

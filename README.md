@@ -70,10 +70,10 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 
 # Download
 
-| Flavor      | Minimum Android Version | Notes                                     |
-|-------------|-------------------------|-------------------------------------------|
-| Default     | 8.0                     | Animated WebP support requires Android 9+ |
-| Marshmallow | 6.0*                    | Limited support, no guarantees            |
+| Flavor      | Minimum Android Version | Notes                          |
+|-------------|-------------------------|--------------------------------|
+| Default     | 8.0                     | Full support                   |
+| Marshmallow | 6.0*                    | Limited support, no guarantees |
 
 *Devices running Android 6 need to have the [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) certificate installed
 
@@ -98,7 +98,6 @@ Here is the libraries
 - [Coil](https://coil-kt.github.io/coil/)
 - [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
 - [libarchive](https://www.libarchive.org/)
-- [jsoup](https://jsoup.org/)
 
 # License
 

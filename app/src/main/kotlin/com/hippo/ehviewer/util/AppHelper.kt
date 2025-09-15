@@ -20,7 +20,7 @@ import android.content.Intent
 import android.widget.Toast
 import arrow.core.Either
 import arrow.core.getOrElse
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 
 object AppHelper {
     fun share(from: Activity, text: String?): Boolean {

@@ -25,10 +25,12 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
@@ -56,8 +58,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowWidthSizeClass
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.util.LocalWindowSizeClass
+import com.ehviewer.core.ui.util.isExpanded
+import com.ehviewer.core.ui.util.thenIf
+import com.ehviewer.core.util.launchIO
+import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
@@ -65,16 +71,14 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
-import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
-import com.hippo.ehviewer.ui.tools.thenIf
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.util.displayString
 import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Job
+import moe.tarsin.navigate
 
 @Destination<RootGraph>(start = true)
 @Composable
@@ -138,7 +142,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
     fun UsernameAndPasswordTextField() {
         OutlinedTextField(
             state = username,
-            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width))
+            modifier = Modifier.width(dimensionResource(id = com.hippo.ehviewer.R.dimen.single_max_width))
                 .semantics { contentType = ContentType.Username }
                 .thenIf(!showUsernameError) { padding(bottom = 16.dp) },
             label = { Text(stringResource(R.string.username)) },
@@ -150,7 +154,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
         )
         OutlinedSecureTextField(
             state = password,
-            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width))
+            modifier = Modifier.width(dimensionResource(id = com.hippo.ehviewer.R.dimen.single_max_width))
                 .semantics { contentType = ContentType.Password }
                 .thenIf(!showPasswordError) { padding(bottom = 16.dp) },
             label = { Text(stringResource(R.string.password)) },
@@ -161,7 +165,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                 if (showPasswordError) {
                     Icon(imageVector = Icons.Filled.Info, contentDescription = null)
                 } else {
-                    IconButton(onClick = { passwordHidden = !passwordHidden }) {
+                    IconButton(onClick = { passwordHidden = !passwordHidden }, shapes = IconButtonDefaults.shapes()) {
                         val visibilityIcon = if (passwordHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         Icon(imageVector = visibilityIcon, contentDescription = null)
                     }
@@ -173,38 +177,40 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
     }
 
     Box(contentAlignment = Alignment.Center) {
-        when (windowSizeClass.windowWidthSizeClass) {
-            WindowWidthSizeClass.COMPACT, WindowWidthSizeClass.MEDIUM -> {
+        when {
+            !windowSizeClass.isExpanded -> {
                 Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = R.dimen.keyline_margin)),
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        painter = painterResource(id = com.hippo.ehviewer.R.drawable.ic_launcher_foreground),
                         contentDescription = null,
-                        modifier = Modifier.padding(dimensionResource(id = R.dimen.keyline_margin)),
+                        modifier = Modifier.padding(dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)),
                     )
                     UsernameAndPasswordTextField()
                     Text(
                         text = stringResource(id = R.string.app_waring),
-                        modifier = Modifier.widthIn(max = dimensionResource(id = R.dimen.single_max_width)).padding(top = 24.dp),
+                        modifier = Modifier.widthIn(max = dimensionResource(id = com.hippo.ehviewer.R.dimen.single_max_width)).padding(top = 24.dp),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
                         text = stringResource(id = R.string.app_waring_2),
-                        modifier = Modifier.widthIn(max = dimensionResource(id = R.dimen.single_max_width)).padding(top = 12.dp),
+                        modifier = Modifier.widthIn(max = dimensionResource(id = com.hippo.ehviewer.R.dimen.single_max_width)).padding(top = 12.dp),
                         style = MaterialTheme.typography.titleLarge,
                     )
-                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.keyline_margin)))
-                    Row(modifier = Modifier.padding(top = dimensionResource(R.dimen.keyline_margin))) {
+                    Spacer(modifier = Modifier.height(dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)))
+                    Row(modifier = Modifier.padding(top = dimensionResource(com.hippo.ehviewer.R.dimen.keyline_margin))) {
                         FilledTonalButton(
                             onClick = { openBrowser(EhUrl.URL_REGISTER) },
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
                         ) {
                             Text(text = stringResource(id = R.string.register))
                         }
                         Button(
                             onClick = ::signIn,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
                         ) {
                             Text(text = stringResource(id = R.string.sign_in))
@@ -212,7 +218,8 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                     }
                     Row(modifier = Modifier.padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(
-                            onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                            onClick = { navigate(WebViewSignInScreenDestination) },
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.weight(1f),
                         ) {
                             Text(
@@ -230,6 +237,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                                 Settings.gallerySite.value = EhUrl.SITE_E
                                 Settings.needSignIn.value = false
                             },
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.weight(1f),
                         ) {
                             Text(
@@ -245,20 +253,20 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                     }
                 }
             }
-            WindowWidthSizeClass.EXPANDED -> {
+            else -> {
                 Row(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = R.dimen.keyline_margin)),
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(
-                        modifier = Modifier.width(dimensionResource(id = R.dimen.signinscreen_landscape_caption_frame_width)).padding(dimensionResource(id = R.dimen.keyline_margin)),
+                        modifier = Modifier.width(dimensionResource(id = com.hippo.ehviewer.R.dimen.signinscreen_landscape_caption_frame_width)).padding(dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            painter = painterResource(id = com.hippo.ehviewer.R.drawable.ic_launcher_foreground),
                             contentDescription = null,
                             alignment = Alignment.Center,
-                            modifier = Modifier.padding(dimensionResource(id = R.dimen.keyline_margin)),
+                            modifier = Modifier.padding(dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)),
                         )
                         Text(
                             text = stringResource(id = R.string.app_waring),
@@ -280,12 +288,14 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                         Row(horizontalArrangement = Arrangement.Center) {
                             Button(
                                 onClick = ::signIn,
+                                shapes = ButtonDefaults.shapes(),
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(text = stringResource(id = R.string.sign_in))
                             }
                             FilledTonalButton(
                                 onClick = { openBrowser(EhUrl.URL_REGISTER) },
+                                shapes = ButtonDefaults.shapes(),
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(text = stringResource(id = R.string.register))
@@ -294,7 +304,8 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.Center) {
                             TextButton(
-                                onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                                onClick = { navigate(WebViewSignInScreenDestination) },
+                                shapes = ButtonDefaults.shapes(),
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(
@@ -312,6 +323,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                                     Settings.gallerySite.value = EhUrl.SITE_E
                                     Settings.needSignIn.value = false
                                 },
+                                shapes = ButtonDefaults.shapes(),
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(
@@ -330,7 +342,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
             }
         }
         if (isProgressIndicatorVisible) {
-            CircularProgressIndicator()
+            CircularWavyProgressIndicator()
         }
     }
 }

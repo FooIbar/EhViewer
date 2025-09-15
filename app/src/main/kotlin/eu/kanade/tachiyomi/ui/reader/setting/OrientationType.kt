@@ -2,13 +2,13 @@ package eu.kanade.tachiyomi.ui.reader.setting
 
 import android.content.pm.ActivityInfo
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.hippo.ehviewer.R
-import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.reader.Landscape
-import com.hippo.ehviewer.icons.reader.LandscapeLocked
-import com.hippo.ehviewer.icons.reader.Portrait
-import com.hippo.ehviewer.icons.reader.PortraitLocked
-import com.hippo.ehviewer.icons.reader.ScreenRotation
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.icons.EhIcons
+import com.ehviewer.core.ui.icons.reader.Landscape
+import com.ehviewer.core.ui.icons.reader.LandscapeLocked
+import com.ehviewer.core.ui.icons.reader.Portrait
+import com.ehviewer.core.ui.icons.reader.PortraitLocked
+import com.ehviewer.core.ui.icons.reader.ScreenRotation
 
 enum class OrientationType(
     override val prefValue: Int,

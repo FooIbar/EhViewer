@@ -24,7 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
@@ -58,12 +58,12 @@ private fun GalleryDetail.content() = arrayOf(
     R.string.key_rating_count to ratingCount.toString(),
     R.string.key_rating to rating.toString(),
     R.string.key_torrents to torrentCount.toString(),
-    R.string.key_torrent_url to torrentUrl,
+    R.string.key_torrent_url to EhUrl.getTorrentUrl(gid, token),
     R.string.favorite_name to favoriteName,
 )
 
-context(Context, DestinationsNavigator)
 @Composable
+context(_: Context, _: DestinationsNavigator)
 fun GalleryInfoBottomSheet(detail: GalleryDetail) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -76,7 +76,7 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail) {
             LazyColumn(contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues()) {
                 itemsIndexed(data) { index, (key, content) ->
                     Row(
-                        modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)).clickable {
+                        modifier = Modifier.padding(horizontal = dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)).clickable {
                             if (index == INDEX_PARENT) {
                                 if (content != null) {
                                     navWithUrl(content)

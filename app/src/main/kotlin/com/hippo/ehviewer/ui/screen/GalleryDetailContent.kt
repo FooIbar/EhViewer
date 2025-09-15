@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,7 +30,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FolderZip
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +53,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.LocalPinnableContainer
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
@@ -62,12 +65,27 @@ import androidx.paging.cachedIn
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
-import androidx.window.core.layout.WindowWidthSizeClass
 import arrow.core.partially1
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.CrystalCard
+import com.ehviewer.core.ui.component.FastScrollLazyVerticalGrid
+import com.ehviewer.core.ui.component.FilledTertiaryIconButton
+import com.ehviewer.core.ui.component.FilledTertiaryIconToggleButton
+import com.ehviewer.core.ui.icons.EhIcons
+import com.ehviewer.core.ui.icons.filled.Magnet
+import com.ehviewer.core.ui.util.LocalWindowSizeClass
+import com.ehviewer.core.ui.util.TransitionsVisibilityScope
+import com.ehviewer.core.ui.util.isExpanded
+import com.ehviewer.core.ui.util.rememberInVM
+import com.ehviewer.core.util.async
+import com.ehviewer.core.util.launch
+import com.ehviewer.core.util.launchIO
+import com.ehviewer.core.util.launchUI
+import com.ehviewer.core.util.withIOContext
+import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
@@ -86,7 +104,7 @@ import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
-import com.hippo.ehviewer.client.exception.NoHAtHClientException
+import com.hippo.ehviewer.client.exception.NoHathClientException
 import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
@@ -94,8 +112,6 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.filled.Magnet
 import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
@@ -115,31 +131,25 @@ import com.hippo.ehviewer.ui.modifyFavorites
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.startDownload
-import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.DialogState
-import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
-import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
-import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
 import com.hippo.ehviewer.ui.tools.GalleryRatingBar
-import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
-import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitResult
+import com.hippo.ehviewer.ui.tools.awaitSelectAction
+import com.hippo.ehviewer.ui.tools.awaitSelectItem
+import com.hippo.ehviewer.ui.tools.dialog
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.getClippedRefreshKey
 import com.hippo.ehviewer.ui.tools.getLimit
 import com.hippo.ehviewer.ui.tools.getOffset
-import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.showNoButton
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.flattenForEach
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.http.encodeURLParameter
 import kotlin.coroutines.resume
@@ -148,13 +158,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
+import moe.tarsin.navigate
+import moe.tarsin.snackbar
+import moe.tarsin.string
 
-context(CoroutineScope, DestinationsNavigator, DialogState, MainActivity, SnackbarHostState, SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
+context(_: CoroutineScope, _: DestinationsNavigator, _: DialogState, _: MainActivity, _: SnackbarHostState, _: SharedTransitionScope, _: TransitionsVisibilityScope)
 fun GalleryDetailContent(
     galleryInfo: GalleryInfo,
     contentPadding: PaddingValues,
@@ -163,7 +174,7 @@ fun GalleryDetailContent(
     voteTag: VoteTag,
     modifier: Modifier,
 ) {
-    val keylineMargin = dimensionResource(R.dimen.keyline_margin)
+    val keylineMargin = dimensionResource(com.hippo.ehviewer.R.dimen.keyline_margin)
     val galleryDetail = galleryInfo.asGalleryDetail()
     val windowSizeClass = LocalWindowSizeClass.current
     val thumbColumns by Settings.thumbColumns.collectAsState()
@@ -213,7 +224,7 @@ fun GalleryDetailContent(
             dialog { cont ->
                 ModalBottomSheet(
                     onDismissRequest = { cont.cancel() },
-                    contentWindowInsets = { EmptyWindowInsets },
+                    contentWindowInsets = { WindowInsets() },
                 ) {
                     GalleryInfoBottomSheet(galleryDetail)
                 }
@@ -233,26 +244,26 @@ fun GalleryDetailContent(
                 Text(text = stringResource(R.string.filter_the_uploader, uploader))
             }
             Filter(FilterMode.UPLOADER, uploader).remember()
-            showSnackbar(filterAdded)
+            snackbar(filterAdded)
         }
     }
     fun onDownloadButtonClick() {
         galleryDetail ?: return
         if (DownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
-            launchUI { startDownload(implicit<MainActivity>(), false, galleryDetail.galleryInfo) }
+            launchUI { startDownload(false, galleryDetail.galleryInfo) }
         } else {
             launch { confirmRemoveDownload(galleryDetail) }
         }
     }
 
     val previews = galleryDetail?.collectPreviewItems()
-    when (windowSizeClass.windowWidthSizeClass) {
-        WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.COMPACT -> FastScrollLazyVerticalGrid(
+    when {
+        !windowSizeClass.isExpanded -> FastScrollLazyVerticalGrid(
             columns = GridCells.Fixed(thumbColumns),
             contentPadding = contentPadding,
             modifier = modifier.padding(horizontal = keylineMargin),
-            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding_v)),
         ) {
             item(
                 key = "header",
@@ -278,15 +289,17 @@ fun GalleryDetailContent(
                     Row {
                         FilledTonalButton(
                             onClick = ::onDownloadButtonClick,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
                         ) {
-                            Text(text = downloadButtonText, maxLines = 1)
+                            Text(text = downloadButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
                         }
                         Button(
                             onClick = ::onReadButtonClick,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
                         ) {
-                            Text(text = readButtonText, maxLines = 1)
+                            Text(text = readButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
                         }
                     }
                     if (getDetailError.isNotBlank()) {
@@ -298,7 +311,7 @@ fun GalleryDetailContent(
                             modifier = Modifier.fillMaxSize().padding(keylineMargin),
                             contentAlignment = Alignment.Center,
                         ) {
-                            CircularProgressIndicator()
+                            CircularWavyProgressIndicator()
                         }
                     }
                 }
@@ -308,12 +321,12 @@ fun GalleryDetailContent(
             }
         }
 
-        WindowWidthSizeClass.EXPANDED -> FastScrollLazyVerticalGrid(
+        else -> FastScrollLazyVerticalGrid(
             columns = GridCells.Fixed(thumbColumns),
             contentPadding = contentPadding,
             modifier = modifier.padding(horizontal = keylineMargin),
-            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding_v)),
         ) {
             item(
                 key = "header",
@@ -327,7 +340,7 @@ fun GalleryDetailContent(
                         onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
                         onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
                         onCategoryChipClick = ::onCategoryChipClick,
-                        modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
+                        modifier = Modifier.width(dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
                     )
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -336,16 +349,18 @@ fun GalleryDetailContent(
                         Spacer(modifier = modifier.height(16.dp))
                         Button(
                             onClick = ::onReadButtonClick,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                         ) {
-                            Text(text = readButtonText, maxLines = 1)
+                            Text(text = readButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
                         }
                         Spacer(modifier = modifier.height(24.dp))
                         FilledTonalButton(
                             onClick = ::onDownloadButtonClick,
+                            shapes = ButtonDefaults.shapes(),
                             modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                         ) {
-                            Text(text = downloadButtonText, maxLines = 1)
+                            Text(text = downloadButtonText, overflow = TextOverflow.Ellipsis, maxLines = 1)
                         }
                     }
                 }
@@ -366,7 +381,7 @@ fun GalleryDetailContent(
                             modifier = Modifier.fillMaxSize().padding(keylineMargin),
                             contentAlignment = Alignment.Center,
                         ) {
-                            CircularProgressIndicator()
+                            CircularWavyProgressIndicator()
                         }
                     }
                 }
@@ -378,8 +393,8 @@ fun GalleryDetailContent(
     }
 }
 
-context(Context, CoroutineScope, DestinationsNavigator, DialogState, SnackbarHostState)
 @Composable
+context(ctx: Context, _: CoroutineScope, _: DestinationsNavigator, _: DialogState, _: SnackbarHostState)
 fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     @Composable
     fun EhIconButton(
@@ -428,7 +443,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = dimensionResource(id = R.dimen.strip_item_padding_v))
+                    .padding(bottom = dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding_v))
                     .clip(RoundedCornerShape(16.dp))
                     .clickable(onClick = ::navigateToCommentScreen),
                 contentAlignment = Alignment.Center,
@@ -439,7 +454,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     }
     suspend fun showNewerVersionDialog() {
         val items = galleryDetail.newerVersions.map {
-            getString(R.string.newer_version_title, it.title, it.posted)
+            string(R.string.newer_version_title, it.title, it.posted)
         }
         val selected = awaitSelectItem(items)
         val info = galleryDetail.newerVersions[selected]
@@ -448,7 +463,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             navigate(info.gid asDstWith info.token)
         }
     }
-    val keylineMargin = dimensionResource(R.dimen.keyline_margin)
+    val keylineMargin = dimensionResource(com.hippo.ehviewer.R.dimen.keyline_margin)
     Spacer(modifier = Modifier.size(keylineMargin))
     if (galleryDetail.newerVersions.isNotEmpty()) {
         Box(contentAlignment = Alignment.Center) {
@@ -486,13 +501,13 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                                 modifyFavorites(galleryDetail.galleryInfo)
                             }.onSuccess { add ->
                                 if (add) {
-                                    showSnackbar(addSucceed)
+                                    snackbar(addSucceed)
                                 } else {
-                                    showSnackbar(removeSucceed)
+                                    snackbar(removeSucceed)
                                 }
                             }.onFailure {
                                 // TODO: We don't know if it's add or remove
-                                showSnackbar(addFailed)
+                                snackbar(addFailed)
                             }
                         }
                     }
@@ -539,23 +554,22 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         val noArchive = stringResource(R.string.no_archives)
         val downloadStarted = stringResource(R.string.download_archive_started)
         val downloadFailed = stringResource(R.string.download_archive_failure)
-        val failureNoHath = stringResource(R.string.download_archive_failure_no_hath)
         val archiveResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                 with(galleryDetail) {
-                    EhEngine.getArchiveList(archiveUrl!!, gid, token)
+                    EhEngine.getArchiveList(gid, token)
                 }
             }
         }
         fun showArchiveDialog() {
             launchIO {
                 if (galleryDetail.apiUid < 0) {
-                    showSnackbar(signInFirst)
+                    snackbar(signInFirst)
                 } else {
                     runSuspendCatching {
                         val (archiveList, funds) = bgWork { archiveResult.await() }
                         if (archiveList.isEmpty()) {
-                            showSnackbar(noArchive)
+                            snackbar(noArchive)
                         } else {
                             val selected = showNoButton {
                                 ArchiveList(
@@ -565,15 +579,15 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                                 )
                             }
                             EhUtils.downloadArchive(galleryDetail, selected)
-                            showSnackbar(downloadStarted)
+                            snackbar(downloadStarted)
                         }
                     }.onFailure {
                         when (it) {
-                            is NoHAtHClientException -> showSnackbar(failureNoHath)
-                            is EhException -> showSnackbar(it.displayString())
+                            is NoHathClientException -> snackbar(it.message!!)
+                            is EhException -> snackbar(it.displayString())
                             else -> {
                                 logcat(it)
-                                showSnackbar(downloadFailed)
+                                snackbar(downloadFailed)
                             }
                         }
                     }
@@ -590,7 +604,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         val torrentResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                 parZip(
-                    { EhEngine.getTorrentList(galleryDetail.torrentUrl!!, galleryDetail.gid, galleryDetail.token) },
+                    { EhEngine.getTorrentList(galleryDetail.gid, galleryDetail.token) },
                     { EhEngine.getTorrentKey() },
                     { list, key -> list to key },
                 )
@@ -599,7 +613,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         suspend fun showTorrentDialog() {
             val (torrentList, key) = bgWork { torrentResult.await() }
             if (torrentList.isEmpty()) {
-                showSnackbar(noTorrents)
+                snackbar(noTorrents)
             } else {
                 val selected = showNoButton(false) {
                     TorrentList(
@@ -613,7 +627,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                 val link = "magnet:?xt=urn:btih:$hash&dn=$name&tr=$tracker"
                 val intent = Intent(Intent.ACTION_VIEW, link.toUri())
                 try {
-                    startActivity(intent)
+                    ctx.startActivity(intent)
                 } catch (_: ActivityNotFoundException) {
                     withUIContext { addTextToClipboard(link, true) }
                 }
@@ -625,7 +639,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             onClick = {
                 launchIO {
                     when {
-                        galleryDetail.torrentCount <= 0 -> showSnackbar(noTorrents)
+                        galleryDetail.torrentCount <= 0 -> snackbar(noTorrents)
                         else -> runSwallowingWithUI { showTorrentDialog() }
                     }
                 }
@@ -633,9 +647,9 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         )
     }
     Spacer(modifier = Modifier.size(keylineMargin))
-    fun getAllRatingText(rating: Float, ratingCount: Int): String = getString(
+    fun getAllRatingText(rating: Float, ratingCount: Int): String = string(
         R.string.rating_text,
-        getString(getRatingText(rating)),
+        string(getRatingText(rating)),
         rating,
         ratingCount,
     )
@@ -648,7 +662,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     fun showRateDialog() {
         launchIO {
             if (galleryDetail.apiUid < 0) {
-                showSnackbar(signInFirst)
+                snackbar(signInFirst)
                 return@launchIO
             }
             val pendingRating = awaitResult(galleryDetail.rating.coerceAtLeast(.5f), title = R.string.rate) {
@@ -673,10 +687,10 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                     ratingCount = result.ratingCount
                 }
                 ratingText = getAllRatingText(result.rating, result.ratingCount)
-                showSnackbar(rateSucceed)
+                snackbar(rateSucceed)
             }.onFailure {
                 logcat(it)
-                showSnackbar(rateFailed)
+                snackbar(rateFailed)
             }
         }
     }
@@ -731,16 +745,16 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                         onSelect(addFilter) {
                             awaitConfirmationOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
                             Filter(FilterMode.TAG, tag).remember()
-                            showSnackbar(filterAdded)
+                            snackbar(filterAdded)
                         }
                         if (galleryDetail.apiUid >= 0) {
                             when (vote) {
-                                VoteStatus.NONE -> {
+                                VoteStatus.None -> {
                                     onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
                                     onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
                                 }
-                                VoteStatus.UP -> onSelect(withDraw) { galleryDetail.voteTag(tag, -1) }
-                                VoteStatus.DOWN -> onSelect(withDraw) { galleryDetail.voteTag(tag, 1) }
+                                VoteStatus.Up -> onSelect(withDraw) { galleryDetail.voteTag(tag, -1) }
+                                VoteStatus.Down -> onSelect(withDraw) { galleryDetail.voteTag(tag, 1) }
                             }
                         }
                     }()
@@ -749,15 +763,14 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         )
     }
     Spacer(modifier = Modifier.size(keylineMargin))
-    if (Settings.showComments) {
+    if (Settings.showComments.value) {
         GalleryDetailComment(galleryDetail.comments.comments)
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.strip_item_padding_v)))
+        Spacer(modifier = Modifier.size(dimensionResource(id = com.hippo.ehviewer.R.dimen.strip_item_padding_v)))
     }
 }
 
 @StringRes
 private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt()) {
-    0 -> R.string.rating0
     1 -> R.string.rating1
     2 -> R.string.rating2
     3 -> R.string.rating3
@@ -771,10 +784,10 @@ private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt())
     else -> R.string.rating_none
 }
 
-private fun List<GalleryTagGroup>.artistTag() = find { (ns, _) -> ns == TagNamespace.Artist || ns == TagNamespace.Cosplayer }?.let { (ns, tags) -> "$ns:${tags[0].text}" }
+private fun List<GalleryTagGroup>.artistTag() = find { (ns, _) -> ns == TagNamespace.Artist || ns == TagNamespace.Cosplayer }?.let { (ns, tags) -> "${ns.value}:${tags[0].text}" }
 
-context(Context)
 @Composable
+context(_: Context)
 private fun GalleryDetail.collectPreviewItems() = rememberInVM(previewList) {
     val pageSize = previewList.size
     val pages = pages
@@ -795,12 +808,12 @@ private fun GalleryDetail.collectPreviewItems() = rememberInVM(previewList) {
                 val end = (up + getLimit(params, key) - 1).coerceAtMost(pages - 1)
                 runSuspendCatching {
                     (up..end).filterNot { it in previewPagesMap }.map { it / pageSize }.toSet()
-                        .parMap(concurrency = Settings.multiThreadDownload) { page ->
+                        .parMap(concurrency = Settings.multiThreadDownload.value) { page ->
                             val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
-                            EhEngine.getPreviewList(url).first
+                            EhEngine.getPreviewList(url).previews
                         }.flattenForEach {
                             previewPagesMap[it.position] = it
-                            if (Settings.preloadThumbAggressively) {
+                            if (Settings.preloadThumbAggressively.value) {
                                 imageRequest(it) { justDownload() }.executeIn(viewModelScope)
                             }
                         }
@@ -816,7 +829,7 @@ private fun GalleryDetail.collectPreviewItems() = rememberInVM(previewList) {
     }.flow.cachedIn(viewModelScope)
 }.collectAsLazyPagingItems()
 
-context(Context)
+context(_: Context)
 private fun LazyGridScope.galleryPreview(detail: GalleryDetail, data: LazyPagingItems<GalleryPreview>, onClick: (Int) -> Unit) {
     val isV2Thumb = detail.previewList.first() is V2GalleryPreview
     items(
@@ -826,6 +839,6 @@ private fun LazyGridScope.galleryPreview(detail: GalleryDetail, data: LazyPaging
     ) { index ->
         val item = data[index]
         EhPreviewItem(item, index) { onClick(index) }
-        PrefetchAround(data, index, if (isV2Thumb) 20 else 6, ::imageRequest)
+        PrefetchAround(data, index, if (isV2Thumb) 20 else 6) { imageRequest(it) }
     }
 }

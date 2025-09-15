@@ -15,7 +15,7 @@
  */
 package com.hippo.ehviewer.util
 
-import android.os.Looper
+import com.ehviewer.core.mainthread.checkNotMainThread
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
@@ -51,11 +51,4 @@ object OSUtils {
     }
 }
 
-val isMainThread: Boolean
-    get() = Looper.getMainLooper().thread === Thread.currentThread()
-
-fun assertNotMainThread() {
-    check(!isMainThread) { "Cannot access database on the main thread since" + " it may potentially lock the UI for a long period of time." }
-}
-
-fun <T> runAssertingNotMainThread(block: suspend CoroutineScope.() -> T) = assertNotMainThread().run { runBlocking(block = block) }
+fun <T> runAssertingNotMainThread(block: suspend CoroutineScope.() -> T) = checkNotMainThread().run { runBlocking(block = block) }

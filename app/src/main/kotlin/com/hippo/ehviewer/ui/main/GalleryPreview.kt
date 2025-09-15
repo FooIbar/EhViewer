@@ -23,18 +23,16 @@ import androidx.compose.ui.unit.IntSize
 import coil3.BitmapImage
 import coil3.compose.AsyncImagePainter.State
 import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
+import com.ehviewer.core.ui.component.CrystalCard
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.V2GalleryPreview
 import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.shouldCrop
 
 @Composable
 @NonRestartableComposable
-fun requestOf(model: GalleryPreview): ImageRequest {
-    val context = LocalContext.current
-    return remember(model) { context.imageRequest(model) }.withSizeResolver()
+fun requestOf(model: GalleryPreview) = with(LocalContext.current) {
+    remember(model) { imageRequest(model) }
 }
 
 @Composable
@@ -88,7 +86,7 @@ fun EhPreviewCard(
         Image(
             painter = painter,
             contentDescription = null,
-            modifier = Modifier.imageRequest(request).fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentScale = contentScale,
         )
     }

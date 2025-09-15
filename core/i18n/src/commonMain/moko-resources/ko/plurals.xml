@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="page_count">
+        <item quantity="other">%d 페이지</item>
+    </plurals>
+    <plurals name="some_minutes_ago">
+        <item quantity="other">%d분 전</item>
+    </plurals>
+    <plurals name="some_hours_ago">
+        <item quantity="other">%d시간 전</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="other">초</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="other">분</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="other">시간</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="other">일</item>
+    </plurals>
+    <plurals name="year">
+        <item quantity="other">년</item>
+    </plurals>
+</resources>

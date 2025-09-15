@@ -1,6 +1,5 @@
-use crate::parser::list::{parse_info_list, GalleryListResult};
-use crate::EhError;
-use anyhow::{bail, Result};
+use crate::parser::list::{GalleryListResult, parse_info_list};
+use anyhow::{Result, bail};
 use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::Parser;
@@ -14,11 +13,7 @@ pub struct FavResult {
     galleryListResult: GalleryListResult,
 }
 
-#[allow(dead_code)]
-pub fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
-    if html.contains("This page requires you to log on.</p>") {
-        bail!(EhError::NeedLogin)
-    }
+pub fn parse_fav(dom: &VDom, parser: &Parser) -> Result<FavResult> {
     let vec: Vec<(String, i32)> = dom
         .get_elements_by_class_name("fp")
         .enumerate()
@@ -39,7 +34,7 @@ pub fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
         })
         .collect();
     if vec.len() == 10 {
-        let list = parse_info_list(dom, parser, html)?;
+        let list = parse_info_list(dom, parser)?;
         let cat = vec.iter().cloned().unzip();
         Ok(FavResult {
             catArray: cat.0,

@@ -37,15 +37,14 @@ import okio.Path
 
 typealias PasswdInvalidator = (String) -> Boolean
 typealias PasswdProvider = suspend (PasswdInvalidator) -> String
-val emptyPasswdProvider: PasswdProvider = { error("Managed Archive have password???") }
 
-suspend fun <T> useArchivePageLoader(
+suspend inline fun <T> useArchivePageLoader(
     file: Path,
     gid: Long = 0,
     startPage: Int = 0,
     hasAds: Boolean = false,
-    passwdProvider: PasswdProvider = emptyPasswdProvider,
-    block: suspend (PageLoader) -> T,
+    crossinline passwdProvider: PasswdProvider,
+    crossinline block: suspend (PageLoader) -> T,
 ) = autoCloseScope {
     coroutineScope {
         val pfd = install(file.openFileDescriptor("r"))
@@ -54,11 +53,11 @@ suspend fun <T> useArchivePageLoader(
             { _, _ -> closeArchive() },
         )
         check(size > 0) { "Archive have no content!" }
-        if (needPassword() && archivePasswds.filterNotNull().none(::providePassword)) {
+        if (needPassword() && archivePasswds.none(::providePassword)) {
             archivePasswds += passwdProvider(::providePassword)
         }
         val loader = install(
-            object : PageLoader(gid, startPage, size, hasAds) {
+            object : PageLoader(this, gid, startPage, size, hasAds) {
                 override val title by lazy { FileUtils.getNameFromFilename(file.displayName)!! }
 
                 override fun getImageExtension(index: Int) = getExtension(index)
@@ -79,7 +78,7 @@ suspend fun <T> useArchivePageLoader(
                     return byteBufferSource(buffer) { releaseByteBuffer(buffer) }
                 }
 
-                override fun prefetchPages(pages: List<Int>, bounds: IntRange) = pages.forEach(::notifySourceReady)
+                override fun prefetchPages(pages: List<Int>, bounds: IntRange) = Unit
 
                 override fun onRequest(index: Int, force: Boolean, orgImg: Boolean) = notifySourceReady(index)
             },

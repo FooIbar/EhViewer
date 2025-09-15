@@ -1,38 +1,40 @@
 [versions]
-aboutlibraries = "11.2.3"
-accompanist = "0.37.0"
-agp = "8.8.1"
-androidx-activity = "1.10.0"
-androidx-appcompat = "1.7.0"
-androidx-biometric = "1.4.0-alpha02"
-androidx-browser = "1.8.0"
-androidx-constraintlayout-compose = "1.1.0"
-androidx-core = "1.15.0"
-androidx-core-splashscreen = "1.2.0-alpha02"
-androidx-datastore = "1.1.2"
-androidx-graphics-path = "1.0.1"
-androidx-lifecycle = "2.9.0-alpha10"
+aboutlibraries = "12.2.4"
+accompanist = "0.37.3"
+agp = "8.13.0"
+androidx-activity = "1.12.0-alpha08"
+androidx-appcompat = "1.7.1"
+androidx-biometric = "1.4.0-alpha04"
+androidx-browser = "1.9.0"
+androidx-core = "1.17.0"
+androidx-core-splashscreen = "1.2.0-rc01"
+androidx-datastore = "1.1.7"
+androidx-lifecycle = "2.10.0-alpha03"
 androidx-paging = "3.3.6"
-androidx-room = "2.7.0-beta01"
-androidx-work = "2.10.0"
-arrow = "2.0.1"
-coil = "3.1.0"
-compose-bom = "2025.02.00"
-compose-destinations = "2.1.0-beta16"
-kotlin = "2.1.10"
-kotlinx-coroutines = "1.10.1"
-kotlinx-datetime = "0.6.2"
-kotlinx-serialization = "1.8.0"
-ksp = "2.1.10-1.0.30"
-ktor = "3.1.0"
-okhttp = "5.0.0-alpha.14"
-okio = "3.10.2"
+androidx-room = "2.8.0"
+androidx-work = "2.10.4"
+arrow = "2.1.2"
+coil = "3.3.0"
+compose-bom = "2025.09.00"
+compose-multiplatform = "1.8.2"
+compose-destinations = "2.2.0"
+compose-preference = "2.1.0"
+kotlin = "2.2.20"
+kotlinx-coroutines = "1.10.2"
+kotlinx-datetime = "0.7.1"
+kotlinx-serialization = "1.9.0"
+ksp = "2.2.20-2.0.3"
+ktor = "3.3.0"
+moko-resources = "0.25.0"
+okhttp = "5.1.0"
+okio = "3.16.0"
 splitties = "3.0.0"
-telephoto = "0.15.0"
-xmlutil = "0.90.4-SNAPSHOT"
-junit = "1.2.1"
-uiautomator = "2.4.0-alpha01"
-benchmark = "1.4.0-alpha08"
+spotless = "7.2.1"
+telephoto = "0.17.0"
+xmlutil = "0.91.2"
+junit = "1.3.0"
+uiautomator = "2.4.0-alpha06"
+benchmark = "1.4.1"
 profileinstaller = "1.4.1"
 
 [libraries]
@@ -42,15 +44,14 @@ accompanist-drawable-painter = { module = "com.google.accompanist:accompanist-dr
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
-androidx-biometric = { module = "androidx.biometric:biometric-ktx", version.ref = "androidx-biometric" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "androidx-biometric" }
 androidx-browser = { module = "androidx.browser:browser", version.ref = "androidx-browser" }
-androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "androidx-constraintlayout-compose" }
 androidx-core = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
-androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidx-datastore" }
-androidx-graphics-path = { module = "androidx.graphics:graphics-path", version.ref = "androidx-graphics-path" }
+androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging" }
 
@@ -73,7 +74,7 @@ compose-bom = { module = "androidx.compose:compose-bom-alpha", version.ref = "co
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
-compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
+compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version = "1.1.2" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 compose-ui-util = { module = "androidx.compose.ui:ui-util" }
@@ -81,28 +82,31 @@ compose-ui-util = { module = "androidx.compose.ui:ui-util" }
 compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "compose-destinations" }
 compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose-destinations" }
 
+compose-preference = { module = "me.zhanghai.compose.preference:preference", version.ref = "compose-preference" }
+
 material-motion-core = "io.github.fornewid:material-motion-compose-core:2.0.1"
-material-kolor = "com.materialkolor:material-kolor:2.0.2"
+material-kolor = "com.materialkolor:material-kolor:3.0.1"
 
-desugar = "com.android.tools:desugar_jdk_libs:2.1.4"
+desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
 
-diff = "io.github.petertrr:kotlin-multiplatform-diff:0.7.0"
-jsoup = "org.jsoup:jsoup:1.18.3"
+diff = "io.github.petertrr:kotlin-multiplatform-diff:1.1.0"
 
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
-ktlint = "com.pinterest:ktlint:1.4.0"
+ktlint = "com.pinterest.ktlint:ktlint-cli:1.7.1"
 
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
-okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
-logcat = "com.squareup.logcat:logcat:0.1"
+logcat = "com.squareup.logcat:logcat:0.4"
 
-okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
+moko-resources = { module = "dev.icerock.moko:resources", version.ref = "moko-resources" }
 
-reorderable = "sh.calvin.reorderable:reorderable:2.4.3"
+okio-bom = { module = "com.squareup.okio:okio-bom", version.ref = "okio" }
+
+reorderable = "sh.calvin.reorderable:reorderable:3.0.0"
 
 serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
@@ -113,7 +117,6 @@ serialization-xml-io = { module = "io.github.pdvrieze.xmlutil:serialization-io",
 
 splitties-appctx = { module = "com.louiscad.splitties:splitties-appctx", version.ref = "splitties" }
 splitties-arch-room = { module = "com.louiscad.splitties:splitties-arch-room", version.ref = "splitties" }
-splitties-preferences = { module = "com.louiscad.splitties:splitties-preferences", version.ref = "splitties" }
 splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemservices", version.ref = "splitties" }
 
 telephoto-zoomable = { module = "me.saket.telephoto:zoomable", version.ref = "telephoto" }
@@ -123,22 +126,35 @@ androidx-uiautomator = { module = "androidx.test.uiautomator:uiautomator", versi
 androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark" }
 androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
 
+android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
+
 [bundles]
 arrow = ["arrow-fx-coroutines", "arrow-functions", "arrow-resilience"]
 coil = ["coil-compose", "coil-gif", "coil-network"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-adaptive", "compose-ui-util"]
 kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-io", "serialization-xml", "serialization-xml-io"]
-splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
+splitties = ["splitties-appctx", "splitties-arch-room", "splitties-systemservices"]
 
 [plugins]
 aboutlibrariesPlugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
 android-application = { id = "com.android.application", version.ref = "agp" }
-composeCompilerReportGenerator = { id = "dev.shreyaspatil.compose-compiler-report-generator", version = "1.4.1" }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+android-lint = { id = "com.android.lint", version.ref = "agp" }
+composeCompilerReportGenerator = { id = "dev.shreyaspatil.compose-compiler-report-generator", version = "1.4.2" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-spotless = { id = "com.diffplug.spotless", version = "7.0.2" }
+moko-resources = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko-resources" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 android-test = { id = "com.android.test", version.ref = "agp" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }
+
+ehviewer-android-application = { id = "ehviewer.android.application" }
+ehviewer-multiplatform-library = { id = "ehviewer.multiplatform.library" }
+ehviewer-multiplatform-library-compose = { id = "ehviewer.multiplatform.library.compose" }

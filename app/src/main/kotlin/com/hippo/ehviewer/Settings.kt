@@ -9,6 +9,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import com.ehviewer.core.preferences.DataStorePreferences
+import com.ehviewer.core.preferences.PrefDelegate
+import com.ehviewer.core.preferences.edit
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.download.DownloadsFilterMode
@@ -25,47 +28,12 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
-import splitties.preferences.BoolPref
-import splitties.preferences.DataStorePreferences
-import splitties.preferences.FloatPref
-import splitties.preferences.IntPref
-import splitties.preferences.LongPref
-import splitties.preferences.PrefDelegate
-import splitties.preferences.StringOrNullPref
-import splitties.preferences.StringPref
-import splitties.preferences.StringSetOrNullPref
-import splitties.preferences.StringSetPref
-import splitties.preferences.edit
-
-@Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
-fun <T> PrefDelegate<T>.getValue(): T = when (this) {
-    is BoolPref -> value
-    is IntPref -> value
-    is FloatPref -> value
-    is LongPref -> value
-    is StringPref -> value
-    is StringOrNullPref -> value
-    is StringSetPref -> value
-    is StringSetOrNullPref -> value
-} as T
-
-@Suppress("UNCHECKED_CAST")
-fun <T> PrefDelegate<T>.setValue(newValue: T) = when (this) {
-    is BoolPref -> value = newValue as Boolean
-    is IntPref -> value = newValue as Int
-    is FloatPref -> value = newValue as Float
-    is LongPref -> value = newValue as Long
-    is StringPref -> value = newValue as String
-    is StringOrNullPref -> value = newValue as? String
-    is StringSetPref -> value = newValue as Set<String?>
-    is StringSetOrNullPref -> value = newValue as? Set<String?>
-}
 
 @Stable
 @Composable
 inline fun <R, T> PrefDelegate<T>.collectAsState(crossinline transform: @DisallowComposableCalls (T) -> R): State<R> {
     val flow = remember { valueFlow().map { transform(it) } }
-    val init = getValue()
+    val init = value
     return flow.collectAsState(transform(init))
 }
 
@@ -73,32 +41,28 @@ inline fun <R, T> PrefDelegate<T>.collectAsState(crossinline transform: @Disallo
 @Composable
 fun <T> PrefDelegate<T>.collectAsState(): State<T> {
     val flow = remember { valueFlow() }
-    val init = getValue()
+    val init = value
     return flow.collectAsState(init)
 }
 
 @Stable
 @Composable
 fun <T> PrefDelegate<T>.asMutableState(): MutableState<T> {
-    val flow = remember { valueFlow() }
-    val init = getValue()
-    val readOnly = flow.collectAsState(init)
+    val readOnly = collectAsState()
     return remember {
         object : MutableState<T> {
             override var value: T
                 get() = readOnly.value
                 set(value) {
-                    setValue(value)
+                    this@asMutableState.value = value
                 }
-            override fun component1() = TODO()
-            override fun component2() = TODO()
+            override fun component1() = readOnly.value
+            override fun component2() = this@asMutableState::value::set
         }
     }
 }
 
 object Settings : DataStorePreferences(null) {
-    private const val KEY_SHOW_TAG_TRANSLATIONS = "show_tag_translations"
-
     @Suppress("ktlint:standard:backing-property-naming")
     private val _favFlow = MutableSharedFlow<Unit>()
     val favChangesFlow = _favFlow.debounce(1000)
@@ -106,76 +70,85 @@ object Settings : DataStorePreferences(null) {
     var favCount by intArrayPref("fav_count", 10).emitTo(_favFlow)
     var favCloudCount by intPref("fav_cloud", 0).emitTo(_favFlow)
 
-    val gallerySite = intPref("gallery_site_2", 0).observed { updateWhenGallerySiteChanges() }
+    // Eh
+    val gallerySite = intPref("gallery_site_2", 0).observed(::updateWhenGallerySiteChanges)
+    val defaultFavSlot = intPref("default_favorite_slot", -2)
+    val theme = intPref("theme_2", -1).observed(::updateWhenThemeChanges)
+    val blackDarkTheme = boolPref("black_dark_theme", false)
+    val harmonizeCategoryColor = boolPref("harmonize_category_color", true)
+    val launchPage = intPref("launch_page_2", 0)
     val listMode = intPref("list_mode_2", 0)
+    val listThumbSize = intPref("list_tile_size", 40)
     val detailSize = intPref("detail_size_2", 0)
     val thumbColumns = intPref("thumb_columns", 3)
-    val listThumbSize = intPref("list_tile_size", 40)
+    val showGalleryPages = boolPref("show_gallery_pages", true)
+    val showVoteStatus = boolPref("show_vote_status", false)
+    val showComments = boolPref("show_gallery_comments", true)
+    val commentThreshold = intPref("comment_threshold", -100)
+    val showTagTranslations = boolPref("show_tag_translations", false).observed(::updateWhenTagTranslationChanges)
+    val meteredNetworkWarning = boolPref("cellular_network_warning", false)
+    val showJpnTitle = boolPref("show_jpn_title", false)
+    val requestNews = boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
+    val hideHvEvents = boolPref("hide_hv_events", false)
+
+    // Download
+    val mediaScan = boolPref("media_scan", false).observed(::updateWhenKeepMediaStatusChanges)
+    val multiThreadDownload = intPref("download_thread_2", 3)
+    val downloadDelay = intPref("download_delay_3", 1000)
+    val timeoutSpeed = intPref("timeout_speed_level", 6)
+    val preloadImage = intPref("preload_image_2", 5)
+    val downloadOriginImage = boolPref("download_origin_image", false)
+    val saveAsCbz = boolPref("save_as_cbz", false)
+    val archiveMetadata = boolPref("archive_metadata", true)
+
+    // Privacy
+    val security = boolPref("require_unlock", false)
+    val securityDelay = intPref("require_unlock_delay", 0)
+    val enabledSecurity = boolPref("enable_secure", false)
+
+    // Advanced
+    val saveParseErrorBody = boolPref("save_parse_error_body", true)
+    val saveCrashLog = boolPref("save_crash_log", true)
+    val readCacheSize = intPref("read_cache_size_2", 640)
+    val enableCronet = boolPref("enable_cronet", true)
+    val enableQuic = boolPref("enable_quic", true)
+    val hardwareBitmapThreshold = intPref("hardware_bitmap_threshold", 16384)
+    val preloadThumbAggressively = boolPref("preload_thumb_aggressively", false)
+    val animateItems = boolPref("animate_items", true)
+    val desktopSite = boolPref("desktop_site", true)
+
+    // About
+    val backupBeforeUpdate = boolPref("backup_before_update", true)
+    val useCIUpdateChannel = boolPref("ci_update_channel", AppConfig.isSnapshot)
+    val updateIntervalDays = intPref("update_interval_days", 7)
+
+    // Misc
     val languageFilter = intPref("language_filter", -1)
     val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
     val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
-
-    // Enabled by default as some ExHentai thumbnail servers do not support HTTP/2
-    val forceEhThumb = boolPref("force_eh_thumb", true)
     val hasSignedIn = boolPref("has_signed_in", EhCookieStore.hasSignedIn())
     val needSignIn = boolPref("need_sign_in", true)
-    val meteredNetworkWarning = boolPref("cellular_network_warning", false)
-    val blackDarkTheme = boolPref("black_dark_theme", false)
     val gridView = boolPref("grid_view", false)
-    val showGalleryPages = boolPref("show_gallery_pages", true)
     val qSSaveProgress = boolPref("qs_save_progress", true)
-    val security = boolPref("require_unlock", false)
-    val animateItems = boolPref("animate_items", true)
-    val enableCronet = boolPref("enable_cronet", true)
-    val displayName = stringOrNullPref("display_name", null)
-    val avatar = stringOrNullPref("avatar", null)
-    val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
-    val showVoteStatus = boolPref("show_vote_status", false)
+    val displayName = stringOrNullPref("display_name")
+    val avatar = stringOrNullPref("avatar")
+    val recentDownloadLabel = stringOrNullPref("recent_download_label")
 
-    var downloadScheme by stringOrNullPref("image_scheme", null)
-    var downloadAuthority by stringOrNullPref("image_authority", null)
-    var downloadPath by stringOrNullPref("image_path", null)
-    var downloadQuery by stringOrNullPref("image_query", null)
-    var downloadFragment by stringOrNullPref("image_fragment", null)
+    var downloadScheme by stringOrNullPref("image_scheme")
+    var downloadAuthority by stringOrNullPref("image_authority")
+    var downloadPath by stringOrNullPref("image_path")
+    var downloadQuery by stringOrNullPref("image_query")
+    var downloadFragment by stringOrNullPref("image_fragment")
     var archivePasswds by stringSetPref("archive_passwds")
-    var downloadDelay by intPref("download_delay_3", 1000)
-    var multiThreadDownload by intPref("download_thread_2", 3)
-    var preloadImage by intPref("preload_image_2", 5)
-    var connTimeout by intPref("conn_timeout", 10)
-    var timeoutSpeed by intPref("timeout_speed_level", 6)
-    var theme by intPref("theme_2", -1).observed { updateWhenThemeChanges() }
-    var readCacheSize by intPref("read_cache_size_2", 640)
-    var launchPage by intPref("launch_page_2", 0)
-    var commentThreshold by intPref("comment_threshold", -100)
-    var hardwareBitmapThreshold by intPref("hardware_bitmap_threshold", 16384)
-    var showComments by boolPref("show_gallery_comments", true)
-    var requestNews by boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
-    var hideHvEvents by boolPref("hide_hv_events", false)
-    var showJpnTitle by boolPref("show_jpn_title", false)
-    var showTagTranslations by boolPref(KEY_SHOW_TAG_TRANSLATIONS, false).observed { updateWhenTagTranslationChanges() }
     var appLinkVerifyTip by boolPref("app_link_verify_tip", false)
-    var enabledSecurity by boolPref("enable_secure", false)
-    var backupBeforeUpdate by boolPref("backup_before_update", true)
-    var useCIUpdateChannel by boolPref("ci_update_channel", AppConfig.isSnapshot)
-    var mediaScan by boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
     var hasDefaultDownloadLabel by boolPref("has_default_download_label", false)
-    var saveParseErrorBody by boolPref("save_parse_error_body", true)
-    var saveCrashLog by boolPref("save_crash_log", true)
     var removeImageFiles by boolPref("include_pic", true)
-    var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
-    var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
-    var downloadOriginImage by boolPref("download_origin_image", false)
-    var saveAsCbz by boolPref("save_as_cbz", false)
-    var archiveMetadata by boolPref("archive_metadata", true)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
-    var defaultFavSlot by intPref("default_favorite_slot", -2)
-    var securityDelay by intPref("require_unlock_delay", 0)
     var clipboardTextHashCode by intPref("clipboard_text_hash_code", 0)
     var requestNewsTime by intPref("request_news_time", 0).observed { updateWhenRequestNewsChanges() }
-    var updateIntervalDays by intPref("update_interval_days", 7)
     var lastDawnDays by intPref("last_dawn_days", 0)
     var recentToplist by stringPref("recent_toplist", "11")
-    var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
+    var defaultDownloadLabel by stringOrNullPref("default_download_label")
     var lastUpdateTime by longPref("last_update_time", BuildConfig.COMMIT_TIME)
 
     // Reader
@@ -196,7 +169,8 @@ object Settings : DataStorePreferences(null) {
     val keepScreenOn = boolPref("pref_keep_screen_on_key", true)
     val readerLongTapAction = boolPref("reader_long_tap", true)
     val pageTransitions = boolPref("pref_enable_transitions_key", true)
-    val readerReverseControls = boolPref("reader_volume_keys_inverted", false)
+    val readWithVolumeKeys = boolPref("reader_volume_keys", false)
+    val readWithVolumeKeysInverted = boolPref("reader_volume_keys_inverted", false)
     val grayScale = boolPref("pref_grayscale", false)
     val invertedColors = boolPref("pref_inverted_colors", false)
     val readerWebtoonNav = intPref("reader_navigation_mode_webtoon", 0)
@@ -213,43 +187,39 @@ object Settings : DataStorePreferences(null) {
     val stripExtraneousAds = boolPref("strip_extraneous_ads", false)
 
     init {
-        if ("CN" == Locale.getDefault().country) {
-            edit {
-                if (KEY_SHOW_TAG_TRANSLATIONS !in prefs) showTagTranslations = true
+        edit { pref ->
+            if ("CN" == Locale.getDefault().country) {
+                if (showTagTranslations !in pref) pref[showTagTranslations] = true
             }
-        }
-        if (downloadFilterMode.value == DownloadsFilterMode.ARTIST.flag && recentDownloadLabel.value == null) {
-            recentDownloadLabel.value = ""
+            if (pref[downloadFilterMode] == DownloadsFilterMode.ARTIST.flag && pref[recentDownloadLabel] == null) {
+                pref[recentDownloadLabel] = ""
+            }
         }
     }
 
     interface Delegate<R> {
-        val flowGetter: () -> Flow<Unit>
+        fun changesFlow(): Flow<Unit>
         operator fun getValue(thisRef: Any?, prop: KProperty<*>?): R
         operator fun setValue(thisRef: Any?, prop: KProperty<*>?, value: R)
     }
 
     private fun intArrayPref(key: String, count: Int) = object : Delegate<IntArray> {
-        override val flowGetter: () -> Flow<Unit> = { _value.asFlow().flatMapMerge { it.changesFlow() }.conflate() }
-
-        @Suppress("ktlint:standard:backing-property-naming")
-        private var _value = (0 until count).map { intPref("${key}_$it", 0) }.toTypedArray()
-        override fun getValue(thisRef: Any?, prop: KProperty<*>?): IntArray = _value.map { it.value }.toIntArray()
+        private val delegates = Array(count) { intPref("${key}_$it", 0) }
+        override fun changesFlow(): Flow<Unit> = delegates.asFlow().flatMapMerge { it.changesFlow() }.conflate()
+        override fun getValue(thisRef: Any?, prop: KProperty<*>?) = IntArray(delegates.size) { delegates[it].value }
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: IntArray) {
             check(value.size == count)
-            edit { value.zip(_value) { v, d -> d.value = v } }
+            edit { pref -> value.zip(delegates) { v, d -> pref[d] = v } }
         }
     }
 
     private fun stringArrayPref(key: String, count: Int, defMetaValue: String) = object : Delegate<Array<String>> {
-        override val flowGetter: () -> Flow<Unit> = { _value.asFlow().flatMapMerge { it.changesFlow() }.conflate() }
-
-        @Suppress("ktlint:standard:backing-property-naming")
-        private var _value = (0 until count).map { stringPref("${key}_$it", "$defMetaValue $it") }.toTypedArray()
-        override fun getValue(thisRef: Any?, prop: KProperty<*>?): Array<String> = _value.map { it.value }.toTypedArray()
+        private val delegates = Array(count) { stringPref("${key}_$it", "$defMetaValue $it") }
+        override fun changesFlow(): Flow<Unit> = delegates.asFlow().flatMapMerge { it.changesFlow() }.conflate()
+        override fun getValue(thisRef: Any?, prop: KProperty<*>?) = Array(delegates.size) { delegates[it].value }
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: Array<String>) {
             check(value.size == count)
-            edit { value.zip(_value) { v, d -> d.value = v } }
+            edit { pref -> value.zip(delegates) { v, d -> pref[d] = v } }
         }
     }
 }

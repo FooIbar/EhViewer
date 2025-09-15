@@ -1,5 +1,3 @@
-import com.android.build.api.dsl.ManagedVirtualDevice
-
 plugins {
     alias(libs.plugins.android.test)
     alias(libs.plugins.kotlin.android)
@@ -8,21 +6,8 @@ plugins {
 
 android {
     namespace = "com.ehviewer.baselineprofile"
-    compileSdk = 35
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 
     defaultConfig {
-        minSdk = 28
-        targetSdk = 35
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -34,17 +19,22 @@ android {
         create("marshmallow") { dimension = "api" }
     }
 
-    testOptions.managedDevices.devices {
-        create<ManagedVirtualDevice>("pixel6Api34") {
+    testOptions.managedDevices.localDevices {
+        create("pixel6Api35") {
             device = "Pixel 6"
-            apiLevel = 34
+            apiLevel = 35
+            testedAbi = "x86_64"
             systemImageSource = "aosp-atd"
         }
     }
 }
 
+kotlin {
+    jvmToolchain(21)
+}
+
 baselineProfile {
-    managedDevices += "pixel6Api34"
+    managedDevices += "pixel6Api35"
     useConnectedDevices = false
 }
 

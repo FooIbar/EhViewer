@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.client.parser.Archive
 import com.hippo.ehviewer.client.parser.Funds
 
@@ -36,7 +38,7 @@ fun ArchiveList(
     val archiveOriginal = stringResource(R.string.archive_original)
     val archiveResample = stringResource(R.string.archive_resample)
     val fundsStyle = MaterialTheme.typography.labelLarge
-    val (hAtH, nonHAtH) = remember(items) { items.partition { it.isHAtH } }
+    val (hath, nonHath) = remember(items) { items.partition { it.isHath } }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier,
@@ -62,7 +64,7 @@ fun ArchiveList(
                 textStyle = fundsStyle,
             )
         }
-        items(nonHAtH) {
+        items(nonHath) {
             ArchiveItem(
                 name = if (it.res == "org") archiveOriginal else archiveResample,
                 cost = if (it.cost == "Free!") archiveFree else it.cost,
@@ -76,7 +78,7 @@ fun ArchiveList(
                 Text(text = "H@H")
             }
         }
-        items(hAtH) {
+        items(hath) {
             ArchiveItem(
                 name = if (it.res == "org") archiveOriginal else it.name,
                 cost = if (it.cost == "Free") archiveFree else it.cost,
@@ -101,7 +103,7 @@ private fun ArchiveItem(
             text = cost,
             style = labelStyle,
         )
-        Button(onClick = onClick) {
+        Button(onClick = onClick, shapes = ButtonDefaults.shapes(), modifier = Modifier.width(100.dp)) {
             Text(text = name)
         }
         Text(

@@ -3,12 +3,12 @@ package com.hippo.ehviewer.dailycheck
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.text.style.URLSpan
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.PendingIntentCompat
+import androidx.core.net.toUri
 import androidx.core.text.getSpans
 import androidx.core.text.parseAsHtml
 import androidx.work.Constraints
@@ -19,15 +19,15 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import java.time.Duration
 import java.util.concurrent.TimeUnit
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -66,7 +66,7 @@ private fun getDailyCheckWorkRequest(): PeriodicWorkRequest {
 private const val WORK_NAME = "DailyCheckWork"
 
 fun updateDailyCheckWork(context: Context) {
-    if (Settings.requestNews) {
+    if (Settings.requestNews.value) {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             WORK_NAME,
             ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
@@ -93,7 +93,7 @@ suspend fun checkDawn() = runCatching {
 
 @SuppressLint("MissingPermission")
 fun showEventNotification(html: String) {
-    if (Settings.hideHvEvents && html.contains("You have encountered a monster!")) {
+    if (Settings.hideHvEvents.value && html.contains("You have encountered a monster!")) {
         return
     }
     val notificationManager = NotificationManagerCompat.from(appCtx)
@@ -110,7 +110,7 @@ fun showEventNotification(html: String) {
         .setStyle(NotificationCompat.BigTextStyle())
     val urls = text.getSpans<URLSpan>(0, text.length)
     if (urls.isNotEmpty()) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(urls.first().url))
+        val intent = Intent(Intent.ACTION_VIEW, urls.first().url.toUri())
         val pi = PendingIntentCompat.getActivity(appCtx, 0, intent, 0, false)
         msg.setContentIntent(pi)
     }

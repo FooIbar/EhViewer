@@ -18,8 +18,6 @@ package com.hippo.ehviewer.client.parser
 import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.ehviewer.util.toIntOrDefault
 import com.hippo.ehviewer.util.toLocalDateTime
-import com.hippo.ehviewer.util.toLongOrDefault
-import com.hippo.ehviewer.util.unescapeXml
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format.char
 
@@ -30,7 +28,7 @@ object ParserUtils {
         char('-')
         monthNumber()
         char('-')
-        dayOfMonth()
+        day()
         char(' ')
         hour()
         char(':')
@@ -41,9 +39,5 @@ object ParserUtils {
 
     fun parseDate(str: String): Long = formatter.parse(str).toEpochMillis()
 
-    fun trim(str: String?): String = str?.unescapeXml()?.trim().orEmpty()
-
-    fun parseInt(str: String?, defValue: Int): Int = trim(str).replace(",", "").toIntOrDefault(defValue)
-
-    fun parseLong(str: String?, defValue: Long): Long = trim(str).replace(",", "").toLongOrDefault(defValue)
+    fun parseInt(str: String, defValue: Int): Int = str.replace(",", "").toIntOrDefault(defValue)
 }

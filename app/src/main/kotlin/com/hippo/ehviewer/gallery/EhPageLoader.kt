@@ -12,10 +12,10 @@ import kotlinx.coroutines.coroutineScope
 import moe.tarsin.kt.install
 import okio.Path
 
-suspend fun <T> useEhPageLoader(
+suspend inline fun <T> useEhPageLoader(
     info: GalleryInfo,
     startPage: Int,
-    block: suspend (PageLoader) -> T,
+    crossinline block: suspend (PageLoader) -> T,
 ) = autoCloseScope {
     coroutineScope {
         val queen = install(
@@ -24,7 +24,7 @@ suspend fun <T> useEhPageLoader(
         )
         queen.awaitReady()
         val loader = install(
-            object : PageLoader(info.gid, startPage, queen.size, info.hasAds) {
+            object : PageLoader(this, info.gid, startPage, queen.size, info.hasAds) {
                 override val title by lazy { EhUtils.getSuitableTitle(info) }
 
                 override fun getImageExtension(index: Int) = queen.getExtension(index)
@@ -45,7 +45,7 @@ suspend fun <T> useEhPageLoader(
                     }
                 }
 
-                override fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) = notifySourceReady(index)
+                override fun onPageReady(index: Int) = notifySourceReady(index)
 
                 override fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = notifyPageFailed(index, error)
             }

@@ -18,10 +18,10 @@ package com.hippo.ehviewer.util
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import java.util.Locale
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -56,19 +56,19 @@ object ReadableTime {
     private val DATE_FORMAT_WITHOUT_YEAR = LocalDate.Format {
         monthName(MonthNames.ENGLISH_ABBREVIATED)
         char(' ')
-        dayOfMonth(Padding.NONE)
+        day(Padding.NONE)
     }
     private val DATE_FORMAT_WITH_YEAR = LocalDate.Format {
         monthName(MonthNames.ENGLISH_ABBREVIATED)
         char(' ')
-        dayOfMonth(Padding.NONE)
+        day(Padding.NONE)
         chars(", ")
         year()
     }
     private val DATE_FORMAT_WITHOUT_YEAR_ZH = LocalDate.Format {
         monthNumber(Padding.NONE)
         char('月')
-        dayOfMonth(Padding.NONE)
+        day(Padding.NONE)
         char('日')
     }
     private val DATE_FORMAT_WITH_YEAR_ZH = LocalDate.Format {
@@ -76,7 +76,7 @@ object ReadableTime {
         char('年')
         monthNumber(Padding.NONE)
         char('月')
-        dayOfMonth(Padding.NONE)
+        day(Padding.NONE)
         char('日')
     }
 
@@ -86,7 +86,7 @@ object ReadableTime {
         char('-')
         monthNumber()
         char('-')
-        dayOfMonth()
+        day()
         char('-')
         hour()
         char('-')

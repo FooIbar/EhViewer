@@ -95,6 +95,7 @@ fun BoxScope.PausableAlertDialog(
     val state = rememberDraggable2DState { delta -> idle += delta }
     FilledTonalIconButton(
         onClick = { showDialog = true },
+        shapes = IconButtonDefaults.shapes(),
         modifier = Modifier.offset {
             lerp(disappear, idle.round(), fraction)
         }.graphicsLayer {

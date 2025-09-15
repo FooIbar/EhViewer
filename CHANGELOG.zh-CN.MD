@@ -1,5 +1,85 @@
 # 变更日志
 
+## [1.14.3] - 2025-09-01
+
+### 新功能
+
+* 支持以 label: 语法搜索下载标签
+
+### Bug 修复
+
+* [阅读器] 关闭滤镜设置时崩溃 [#2573](https://github.com/FooIbar/EhViewer/issues/2573)
+* 编辑评论时上下文菜单缺少格式化选项
+* 某些情况下搜索相似画廊时出错
+
+
+## [1.14.2] - 2025-08-16
+
+### 改进
+
+* [下载] 支持将最低下载速度设为 0 [#2545](https://github.com/FooIbar/EhViewer/issues/2545)
+* [下载] 移除令人困惑的连接超时设置 [#2556](https://github.com/FooIbar/EhViewer/issues/2556)
+
+### Bug 修复
+
+* 下载速度计算不准确导致下载失败误报 [#2545](https://github.com/FooIbar/EhViewer/issues/2545)
+* 无法解析带有 location: 标签的画廊
+
+
+## [1.14.1] - 2025-07-31
+
+### 改进
+
+* 更新 GitHub 访问令牌
+
+
+## [1.14.0] - 2025-07-23
+
+### 重大变更
+
+* 默认隐藏分数为 -100 的评论
+* 迁移部分组件到 Material 3 Expressive
+
+### 新功能
+
+* [EH] 支持显示标签投票状态
+* 支持添加画廊标签时自动补全
+* [下载] 支持指定连接超时和最低响应速度 [#1915](https://github.com/FooIbar/EhViewer/issues/1915)
+* [阅读器] 支持反转物理按键控制 [#1962](https://github.com/FooIbar/EhViewer/issues/1962)
+* [高级] 支持禁用 QUIC 支持
+* [高级] 重新添加桌面版网站选项以绕过 Cloudflare [#2230](https://github.com/FooIbar/EhViewer/issues/2230)
+* 支持 Android 6.0 上的动画 WebP
+
+### 改进
+
+* 优化压缩包加载性能
+* 优化预加载策略
+* 更新日本语翻译
+* 为已选中的项目使用不同的颜色 [#2121](https://github.com/FooIbar/EhViewer/issues/2121)
+* 缩略图模式下显示已收藏图标 [#2128](https://github.com/FooIbar/EhViewer/issues/2128)
+* 迁移大部分解析器到 Rust 实现
+* 优化动画 WebP 解码性能 [#2415](https://github.com/FooIbar/EhViewer/issues/2415)
+* 优化标签自动补全命中率 [#2473](https://github.com/FooIbar/EhViewer/issues/2473)
+* 在状态栏后绘制半透明背景以提高对比度
+* 杂项优化
+
+### Bug 修复
+
+* 退出阅读器时崩溃
+* Android 8.0 以下的设备无法读取某些压缩包
+* 列表模式下点击画廊封面无法进入详情页
+* 点击某些评论时崩溃
+* 开启裁剪边缘时某些图片被不正确裁剪
+* 下载数较多时无网络时启动 app 时崩溃 [#2041](https://github.com/FooIbar/EhViewer/issues/2041)
+* 标签翻译数据无法更新 [#2075](https://github.com/FooIbar/EhViewer/issues/2075)
+* 画廊详情页面显示的收藏夹名称错误 [#2081](https://github.com/FooIbar/EhViewer/issues/2081)
+* 不使用 CI 频道时无法更新
+* 添加后移动快捷搜索闪退 [#2124](https://github.com/FooIbar/EhViewer/issues/2124)
+* 某些数据无法导入
+* App 位于后台时清除下载通知时崩溃
+* 杂项修复
+
+
 ## [1.13.1] - 2024-11-11
 
 ### 重大变更

@@ -1,0 +1,65 @@
+name: Baseline profile generation
+
+on:
+  schedule:
+    - cron: '30 0 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'benchmark/**'
+      - '.github/workflows/baseline-profile.yml'
+
+jobs:
+  baseline-profile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Free disk space
+        run: rm -rf $AGENT_TOOLSDIRECTORY
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Rust Toolchain
+        run: rustup target add armv7-linux-androideabi
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./app/src/main/rust"
+
+      - name: CMake Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: app/.cxx
+          key: cmake-
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
+          cache-read-only: true
+
+      - name: Generate Baseline Profile
+        run: ./gradlew generateBaselineProfile
+          -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect"
+
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: benchmark/build/reports

@@ -11,8 +11,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.WavyProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -22,7 +22,7 @@ import androidx.compose.ui.draw.rotate
 fun CombinedCircularProgressIndicator(progress: Float) {
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
+        animationSpec = WavyProgressIndicatorDefaults.ProgressAnimationSpec,
         label = "progress",
     )
     AnimatedContent(
@@ -32,7 +32,7 @@ fun CombinedCircularProgressIndicator(progress: Float) {
     ) { indeterminate ->
         if (indeterminate) {
             // Indeterminate
-            CircularProgressIndicator()
+            CircularWavyProgressIndicator()
         } else {
             // Determinate
             val infiniteTransition = rememberInfiniteTransition(label = "infiniteRotation")
@@ -45,7 +45,7 @@ fun CombinedCircularProgressIndicator(progress: Float) {
                 ),
                 label = "rotation",
             )
-            CircularProgressIndicator(
+            CircularWavyProgressIndicator(
                 progress = { animatedProgress },
                 modifier = Modifier.rotate(rotation),
             )

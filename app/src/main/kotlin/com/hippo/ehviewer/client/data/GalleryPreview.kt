@@ -15,30 +15,46 @@
  */
 package com.hippo.ehviewer.client.data
 
-import android.os.Parcelable
-import com.hippo.ehviewer.client.keyToUrl
-import kotlinx.parcelize.Parcelize
+import com.hippo.ehviewer.client.getThumbKey
+import com.hippo.ehviewer.client.getV2PreviewKey
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.cbor.CborArray
 
-sealed interface GalleryPreview : Parcelable {
+@Serializable
+sealed interface GalleryPreview {
     val url: String
     val imageKey: String
     val position: Int
+    val pToken: String
 }
 
-@Parcelize
+@Serializable
+@SerialName("V1")
 data class V1GalleryPreview(
-    override val imageKey: String,
+    override val url: String,
     override val position: Int,
+    override val pToken: String,
 ) : GalleryPreview {
-    override val url get() = keyToUrl(imageKey)
+    override val imageKey get() = getThumbKey(url)
 }
 
-@Parcelize
+@Serializable
+@SerialName("V2")
 data class V2GalleryPreview(
     override val url: String,
-    override val imageKey: String,
     override val position: Int,
+    override val pToken: String,
     val offsetX: Int,
     val clipWidth: Int,
     val clipHeight: Int,
-) : GalleryPreview
+) : GalleryPreview {
+    override val imageKey get() = getV2PreviewKey(url)
+}
+
+@Serializable
+@CborArray
+class GalleryPreviewList(
+    val previews: List<GalleryPreview>,
+    val total: Int,
+)

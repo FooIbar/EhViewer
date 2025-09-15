@@ -21,80 +21,49 @@ package com.hippo.ehviewer.ui
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.AuthenticationRequest.Biometric
+import androidx.biometric.AuthenticationRequest.Companion.biometricRequest
+import androidx.biometric.AuthenticationResult
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
-import androidx.biometric.BiometricPrompt
-import androidx.biometric.auth.AuthPromptCallback
-import androidx.biometric.auth.startClass2BiometricOrCredentialAuthentication
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
+import androidx.biometric.registerForAuthenticationResult
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.hippo.ehviewer.R
+import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 
-fun Context.isAuthenticationSupported(): Boolean {
+context(ctx: Context)
+fun isAuthenticationSupported(): Boolean {
     val authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK or DEVICE_CREDENTIAL
-    return BiometricManager.from(this).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
+    return BiometricManager.from(ctx).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
 }
 
 class SecurityActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (isAuthenticationSupported()) {
-            startAuthentication(getString(R.string.settings_privacy_require_unlock))
+            startAuthentication()
         } else {
             onSuccess()
         }
     }
 
-    @Synchronized
-    private fun startAuthentication(
-        title: String,
-        subtitle: String? = null,
-        confirmationRequired: Boolean = true,
-    ) {
-        if (isAuthenticating) return
-        isAuthenticating = true
-        startClass2BiometricOrCredentialAuthentication(
-            title = title,
-            subtitle = subtitle,
-            confirmationRequired = confirmationRequired,
-            executor = ContextCompat.getMainExecutor(this),
-            callback = callback(
-                { _, _, _ -> onError() },
-                { _, _ -> onSuccess() },
-                { },
-            ),
-        )
+    private val authLauncher = registerForAuthenticationResult { result ->
+        when (result) {
+            is AuthenticationResult.Success -> onSuccess()
+            is AuthenticationResult.Error -> onError()
+        }
     }
 
-    inline fun callback(
-        crossinline onAuthenticationError: (
-            activity: FragmentActivity?,
-            errorCode: Int,
-            errString: CharSequence,
-        ) -> Unit,
-        crossinline onAuthenticationSucceeded: (
-            activity: FragmentActivity?,
-            result: BiometricPrompt.AuthenticationResult,
-        ) -> Unit,
-        crossinline onAuthenticationFailed: (
-            activity: FragmentActivity?,
-        ) -> Unit,
-    ) = object : AuthPromptCallback() {
-        override fun onAuthenticationError(
-            activity: FragmentActivity?,
-            errorCode: Int,
-            errString: CharSequence,
-        ) = onAuthenticationError(activity, errorCode, errString)
-
-        override fun onAuthenticationSucceeded(
-            activity: FragmentActivity?,
-            result: BiometricPrompt.AuthenticationResult,
-        ) = onAuthenticationSucceeded(activity, result)
-
-        override fun onAuthenticationFailed(activity: FragmentActivity?) = onAuthenticationFailed(activity)
+    @Synchronized
+    private fun startAuthentication() {
+        if (isAuthenticating) return
+        isAuthenticating = true
+        val request = biometricRequest(
+            title = getString(R.string.settings_privacy_require_unlock),
+            authFallback = Biometric.Fallback.DeviceCredential,
+        ) {}
+        authLauncher.launch(request)
     }
 
     private fun onSuccess() {
@@ -125,7 +94,7 @@ val lockObserver = object : DefaultLifecycleObserver {
 fun Context.interceptSecurityOrReturn() {
     val lockedResumeTime = System.currentTimeMillis() / 1000
     val lockedDelayTime = lockedResumeTime - lockedLastLeaveTime
-    if (lockedDelayTime < Settings.securityDelay * 60) {
+    if (lockedDelayTime < Settings.securityDelay.value * 60) {
         locked = false
     } else if (Settings.security.value && isAuthenticationSupported() && locked) {
         startActivity(Intent(this, SecurityActivity::class.java))

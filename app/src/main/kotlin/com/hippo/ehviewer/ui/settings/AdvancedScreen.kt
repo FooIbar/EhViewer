@@ -1,6 +1,8 @@
 package com.hippo.ehviewer.ui.settings
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
@@ -9,40 +11,38 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.launch
+import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.ui.tools.observed
-import com.hippo.ehviewer.ui.tools.rememberedAccessor
+import com.hippo.ehviewer.ui.Screen
+import com.hippo.ehviewer.ui.main.NavigationIcon
+import com.hippo.ehviewer.ui.showRestartDialog
 import com.hippo.ehviewer.util.AdsPlaceholderFile
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.CrashHandler
@@ -51,57 +51,84 @@ import com.hippo.ehviewer.util.displayPath
 import com.hippo.ehviewer.util.getAppLanguage
 import com.hippo.ehviewer.util.getLanguages
 import com.hippo.ehviewer.util.isAtLeastO
+import com.hippo.ehviewer.util.isAtLeastSExtension7
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.setAppLanguage
 import com.hippo.files.delete
 import com.hippo.files.toOkioPath
-import com.jamal.composeprefs3.ui.prefs.DropDownPref
-import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.merge
+import me.zhanghai.compose.preference.DropdownListPreference
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.snackbar
+import moe.tarsin.string
+
+context(ctx: Context)
+private fun dumplog(uri: Uri): Unit = with(ctx) {
+    grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+    contentResolver.openOutputStream(uri)?.use { outputStream ->
+        val files = ArrayList<File>()
+        AppConfig.externalParseErrorDir?.listFiles()?.let { files.addAll(it) }
+        AppConfig.externalCrashDir?.listFiles()?.let { files.addAll(it) }
+        ZipOutputStream(outputStream).use { zipOs ->
+            files.forEach { file ->
+                if (!file.isFile) return@forEach
+                val entry = ZipEntry(file.name)
+                zipOs.putNextEntry(entry)
+                file.inputStream().use { it.copyTo(zipOs) }
+            }
+            val logcatEntry = ZipEntry("logcat-" + ReadableTime.getFilenamableTime() + ".txt")
+            zipOs.putNextEntry(logcatEntry)
+            CrashHandler.collectInfo(zipOs.writer())
+            Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
+        }
+    }
+}
+
+context(ctx: Context)
+private fun exportDatabase(uri: Uri) {
+    ctx.grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    EhDB.exportDB(ctx, uri.toOkioPath())
+}
+
+context(ctx: Context)
+private suspend fun importDatabase(uri: Uri) {
+    ctx.grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    EhDB.importDB(ctx, uri)
+}
 
 @Destination<RootGraph>
 @Composable
-fun AdvancedScreen(navigator: DestinationsNavigator) {
-    val context = LocalContext.current
+fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
+    fun launchSnackbar(message: String) = launch { snackbar(message) }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.settings_advanced)) },
-                navigationIcon = {
-                    IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
-                    }
-                },
+                navigationIcon = { NavigationIcon() },
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_parse_error_body),
                 summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
-                value = Settings::saveParseErrorBody,
+                state = Settings.saveParseErrorBody.asMutableState(),
             )
             val stripAds = Settings.stripExtraneousAds.asMutableState()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_block_extraneous_ads),
-                value = stripAds.rememberedAccessor,
+                state = stripAds,
             )
             AnimatedVisibility(visible = stripAds.value) {
                 LauncherPreference(
@@ -121,7 +148,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
             SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_crash_log),
                 summary = stringResource(id = R.string.settings_advanced_save_crash_log_summary),
-                value = Settings::saveCrashLog,
+                state = Settings.saveCrashLog.asMutableState(),
             )
             val dumpLogError = stringResource(id = R.string.settings_advanced_dump_logcat_failed)
             LauncherPreference(
@@ -131,57 +158,55 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 key = "log-" + ReadableTime.getFilenamableTime() + ".zip",
             ) { uri ->
                 uri?.run {
-                    context.runCatching {
-                        grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                        contentResolver.openOutputStream(uri)?.use { outputStream ->
-                            val files = ArrayList<File>()
-                            AppConfig.externalParseErrorDir?.listFiles()?.let { files.addAll(it) }
-                            AppConfig.externalCrashDir?.listFiles()?.let { files.addAll(it) }
-                            ZipOutputStream(outputStream).use { zipOs ->
-                                files.forEach { file ->
-                                    if (!file.isFile) return@forEach
-                                    val entry = ZipEntry(file.name)
-                                    zipOs.putNextEntry(entry)
-                                    file.inputStream().use { it.copyTo(zipOs) }
-                                }
-                                val logcatEntry = ZipEntry("logcat-" + ReadableTime.getFilenamableTime() + ".txt")
-                                zipOs.putNextEntry(logcatEntry)
-                                CrashHandler.collectInfo(zipOs.writer())
-                                Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
-                            }
-                            launchSnackBar(getString(R.string.settings_advanced_dump_logcat_to, uri.displayPath))
-                        }
+                    runCatching {
+                        dumplog(uri)
+                        launchSnackbar(string(R.string.settings_advanced_dump_logcat_to, uri.displayPath))
                     }.onFailure {
-                        launchSnackBar(dumpLogError)
+                        launchSnackbar(dumpLogError)
                         logcat(it)
                     }
                 }
             }
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_advanced_read_cache_size),
-                entry = R.array.read_cache_size_entries,
-                entryValueRes = R.array.read_cache_size_entry_values,
-                value = Settings::readCacheSize.observed,
+                entry = com.hippo.ehviewer.R.array.read_cache_size_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.read_cache_size_entry_values,
+                state = Settings.readCacheSize.asMutableState(),
             )
             var currentLanguage by remember { mutableStateOf(getAppLanguage()) }
-            val languages = remember { context.getLanguages() }
-            DropDownPref(
-                title = stringResource(id = R.string.settings_advanced_app_language_title),
-                defaultValue = currentLanguage,
+            val languages = remember { getLanguages() }
+            DropdownListPreference(
+                value = currentLanguage,
                 onValueChange = {
                     setAppLanguage(it)
                     currentLanguage = it
                 },
-                useSelectedAsSummary = true,
-                entries = languages,
+                items = languages,
+                title = { Text(stringResource(id = R.string.settings_advanced_app_language_title)) },
+                summary = { Text(languages[currentLanguage].orEmpty()) },
             )
-            var enableCronet by Settings.enableCronet.asMutableState()
-            if (BuildConfig.DEBUG || !enableCronet) {
-                SwitchPref(
-                    checked = enableCronet,
-                    onMutate = { enableCronet = !enableCronet },
-                    title = "Enable Cronet",
-                )
+            if (isAtLeastSExtension7) {
+                val enableCronet = Settings.enableCronet.asMutableState()
+                if (BuildConfig.DEBUG || !enableCronet.value) {
+                    SwitchPreference(
+                        title = "Enable Cronet",
+                        state = enableCronet,
+                    )
+                }
+                AnimatedVisibility(enableCronet.value) {
+                    SwitchPreference(
+                        title = stringResource(id = R.string.settings_advanced_enable_quic),
+                        state = Settings.enableQuic.asMutableState(),
+                    )
+                }
+                LaunchedEffect(Unit) {
+                    merge(
+                        Settings.enableCronet.changesFlow(),
+                        Settings.enableQuic.changesFlow(),
+                    ).collectLatest {
+                        showRestartDialog()
+                    }
+                }
             }
             if (isAtLeastO) {
                 IntSliderPreference(
@@ -189,19 +214,22 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     step = 3,
                     title = stringResource(id = R.string.settings_advanced_hardware_bitmap_threshold),
                     summary = stringResource(id = R.string.settings_advanced_hardware_bitmap_threshold_summary),
-                    value = Settings::hardwareBitmapThreshold,
+                    state = Settings.hardwareBitmapThreshold.asMutableState(),
                 )
             }
             SwitchPreference(
                 title = stringResource(id = R.string.preload_thumb_aggressively),
-                value = Settings::preloadThumbAggressively,
+                state = Settings.preloadThumbAggressively.asMutableState(),
             )
-            var animateItems by Settings.animateItems.asMutableState()
-            SwitchPref(
-                checked = animateItems,
-                onMutate = { animateItems = !animateItems },
+            SwitchPreference(
                 title = stringResource(id = R.string.animate_items),
                 summary = stringResource(id = R.string.animate_items_summary),
+                state = Settings.animateItems.asMutableState(),
+            )
+            SwitchPreference(
+                title = stringResource(id = R.string.desktop_site),
+                summary = stringResource(id = R.string.desktop_site_summary),
+                state = Settings.desktopSite.asMutableState(),
             )
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
             LauncherPreference(
@@ -211,13 +239,12 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 key = ReadableTime.getFilenamableTime() + ".db",
             ) { uri ->
                 uri?.let {
-                    context.runCatching {
-                        grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                        EhDB.exportDB(context, uri.toOkioPath())
-                        launchSnackBar(getString(R.string.settings_advanced_export_data_to, uri.displayPath))
+                    runCatching {
+                        exportDatabase(uri)
+                        launchSnackbar(string(R.string.settings_advanced_export_data_to, uri.displayPath))
                     }.onFailure {
                         logcat(it)
-                        launchSnackBar(exportFailed)
+                        launchSnackbar(exportFailed)
                     }
                 }
             }
@@ -230,13 +257,12 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 key = "application/octet-stream",
             ) { uri ->
                 uri?.let {
-                    context.runCatching {
-                        grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        EhDB.importDB(context, uri)
-                        launchSnackBar(importSucceed)
+                    runCatching {
+                        importDatabase(uri)
+                        launchSnackbar(importSucceed)
                     }.onFailure {
                         logcat(it)
-                        launchSnackBar(importFailed)
+                        launchSnackbar(importFailed)
                     }
                 }
             }
@@ -255,50 +281,53 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     tailrec suspend fun doBackup() {
                         val result = EhEngine.getFavorites(favListUrlBuilder.build())
                         if (result.galleryInfoList.isEmpty()) {
-                            launchSnackBar(backupNothing)
+                            launchSnackbar(backupNothing)
                         } else {
                             if (favTotal == 0) favTotal = result.countArray.sum()
                             favIndex += result.galleryInfoList.size
                             val status = "($favIndex/$favTotal)"
                             EhDB.putLocalFavorites(result.galleryInfoList)
-                            launchSnackBar(context.getString(R.string.settings_advanced_backup_favorite_start, status))
+                            launchSnackbar(string(R.string.settings_advanced_backup_favorite_start, status))
                             if (result.next != null) {
-                                delay(Settings.downloadDelay.toLong())
+                                delay(Settings.downloadDelay.value.toLong())
                                 favListUrlBuilder.setIndex(result.next, true)
                                 doBackup()
                             }
                         }
                     }
-                    coroutineScope.launch {
+                    launch {
                         runSuspendCatching {
                             doBackup()
                         }.onSuccess {
-                            launchSnackBar(backupSucceed)
+                            launchSnackbar(backupSucceed)
                         }.onFailure {
                             logcat(it)
-                            launchSnackBar(backupFailed)
+                            launchSnackbar(backupFailed)
                         }
                     }
                 }
             }
             Preference(title = stringResource(id = R.string.open_by_default)) {
-                context.run {
-                    try {
-                        @SuppressLint("InlinedApi")
-                        val intent = Intent(
-                            ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-                            Uri.parse("package:$packageName"),
-                        )
-                        startActivity(intent)
-                    } catch (t: Throwable) {
-                        val intent = Intent(
-                            ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.parse("package:$packageName"),
-                        )
-                        startActivity(intent)
-                    }
-                }
+                openByDefaultSettings()
             }
         }
+    }
+}
+
+context(ctx: Context)
+private fun openByDefaultSettings() = with(ctx) {
+    try {
+        @SuppressLint("InlinedApi")
+        val intent = Intent(
+            ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
+            "package:$packageName".toUri(),
+        )
+        startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        val intent = Intent(
+            ACTION_APPLICATION_DETAILS_SETTINGS,
+            "package:$packageName".toUri(),
+        )
+        startActivity(intent)
     }
 }

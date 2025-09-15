@@ -1,21 +1,21 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.os.Parcelable
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.collection.SieveCache
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.NewLabel
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.AppBarRow
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -34,9 +34,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastJoinToString
 import androidx.lifecycle.viewModelScope
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.util.LocalWindowSizeClass
+import com.ehviewer.core.ui.util.isExpanded
+import com.ehviewer.core.ui.util.launchInVM
+import com.ehviewer.core.ui.util.rememberInVM
+import com.ehviewer.core.util.launchIO
+import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
@@ -55,10 +61,11 @@ import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
+import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
-import com.hippo.ehviewer.ui.tools.launchInVM
-import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitSelectTags
 import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.bgWork
@@ -68,24 +75,25 @@ import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.snackbar
+import moe.tarsin.tip
 
 typealias VoteTag = suspend GalleryDetail.(String, Int) -> Unit
 
 val detailCache = SieveCache<Long, GalleryDetail>(25)
 
-sealed interface GalleryDetailScreenArgs : Parcelable
+@Serializable
+sealed interface GalleryDetailScreenArgs
 
-@Parcelize
+@Serializable
 data class GalleryInfoArgs(
     val galleryInfo: BaseGalleryInfo,
 ) : GalleryDetailScreenArgs
 
-@Parcelize
+@Serializable
 data class TokenArgs(
     val gid: Long,
     val token: String,
@@ -102,7 +110,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
         }
     }
     val galleryDetailUrl = remember(gid, token) { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
-    ProvideAssistContent(galleryDetailUrl)
+    contextOf<MainActivity>().ProvideAssistContent(galleryDetailUrl)
 
     var galleryInfo by rememberInVM {
         val casted = args as? GalleryInfoArgs
@@ -114,7 +122,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
 
     (galleryInfo as? GalleryDetail)?.apply {
         rememberInVM(this) {
-            if (Settings.preloadThumbAggressively) {
+            if (Settings.preloadThumbAggressively.value) {
                 previewList.forEach {
                     imageRequest(it) { justDownload() }.executeIn(viewModelScope)
                 }
@@ -147,16 +155,25 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
             val new = copy(tagGroups = result).apply { fillInfo() }
             detailCache[gid] = new
             galleryInfo = new
-            showTip(R.string.tag_vote_successfully)
+            tip(R.string.tag_vote_successfully)
         }.onFailure { e ->
-            showTip(e.displayString())
+            tip(e.displayString())
         }
     }
 
     val signInFirst = stringResource(R.string.sign_in_first)
+    val addTag = stringResource(id = R.string.action_add_tag)
+    val refresh = stringResource(id = R.string.refresh)
+    val clearCache = stringResource(id = R.string.clear_image_cache)
+    val cacheCleared = stringResource(R.string.image_cache_cleared)
+    val openInBrowser = stringResource(id = R.string.open_in_other_app)
+    val exportArchive = stringResource(id = R.string.export_as_archive)
+    val exportSuccess = stringResource(id = R.string.export_as_archive_success)
+    val exportFailed = stringResource(id = R.string.export_as_archive_failed)
+    val windowSizeClass = LocalWindowSizeClass.current
     Scaffold(
         topBar = {
-            LargeTopAppBar(
+            MediumFlexibleTopAppBar(
                 title = {
                     galleryInfo?.let {
                         Text(
@@ -166,47 +183,34 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                         )
                     }
                 },
-                navigationIcon = {
-                    IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            contentDescription = null,
-                        )
-                    }
-                },
+                navigationIcon = { NavigationIcon() },
                 scrollBehavior = scrollBehavior,
                 actions = {
-                    IconButton(
-                        onClick = {
-                            AppHelper.share(implicit<MainActivity>(), galleryDetailUrl)
-                            // In case the link is copied to the clipboard
-                            Settings.clipboardTextHashCode = galleryDetailUrl.hashCode()
+                    AppBarRow(
+                        overflowIndicator = {
+                            IconButton(onClick = { it.show() }, shapes = IconButtonDefaults.shapes()) {
+                                Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
+                            }
                         },
+                        maxItemCount = if (windowSizeClass.isExpanded) 4 else 2,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = null,
-                        )
-                    }
-                    var dropdown by rememberSaveable { mutableStateOf(false) }
-                    IconButton(onClick = { dropdown = !dropdown }) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = null,
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = dropdown,
-                        onDismissRequest = { dropdown = false },
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.action_add_tag)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
-                                val detail = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
+                                AppHelper.share(contextOf<MainActivity>(), galleryDetailUrl)
+                                // In case the link is copied to the clipboard
+                                Settings.clipboardTextHashCode = galleryDetailUrl.hashCode()
+                            },
+                            icon = {
+                                Icon(imageVector = Icons.Default.Share, contentDescription = null)
+                            },
+                            label = "",
+                        )
+                        clickableItem(
+                            onClick = {
+                                val detail = galleryInfo as? GalleryDetail ?: return@clickableItem
                                 launchIO {
                                     if (detail.apiUid < 0) {
-                                        showSnackbar(signInFirst)
+                                        snackbar(signInFirst)
                                     } else {
                                         val tags = awaitSelectTags()
                                         if (tags.isNotEmpty()) {
@@ -216,11 +220,13 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                     }
                                 }
                             },
+                            icon = {
+                                Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
+                            },
+                            label = addTag,
                         )
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.refresh)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
                                 // Invalidate cache
                                 detailCache.remove(gid)
 
@@ -228,13 +234,14 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                 galleryInfo = galleryInfo?.findBaseInfo()
                                 getDetailError = ""
                             },
+                            icon = {
+                                Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
+                            },
+                            label = refresh,
                         )
-                        val imageCacheClear = stringResource(R.string.image_cache_cleared)
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
-                                val gd = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
+                                val gd = galleryInfo as? GalleryDetail ?: return@clickableItem
                                 launchIO {
                                     awaitConfirmationOrCancel(
                                         confirmText = R.string.clear_all,
@@ -242,27 +249,25 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                     ) {
                                         Text(text = stringResource(id = R.string.clear_image_cache_confirm))
                                     }
-                                    (0..<gd.pages).forEach {
+                                    repeat(gd.pages) {
                                         val key = getImageKey(gd.gid, it)
                                         imageCache.remove(key)
                                     }
-                                    showSnackbar(imageCacheClear)
+                                    snackbar(cacheCleared)
                                 }
                             },
+                            icon = {},
+                            label = clearCache,
                         )
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
                                 openBrowser(galleryDetailUrl)
                             },
+                            icon = {},
+                            label = openInBrowser,
                         )
-                        val exportSuccess = stringResource(id = R.string.export_as_archive_success)
-                        val exportFailed = stringResource(id = R.string.export_as_archive_failed)
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.export_as_archive)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
                                 launchIO {
                                     val downloadInfo = DownloadManager.getDownloadInfo(gid)
                                     val canExport = downloadInfo?.state == DownloadInfo.STATE_FINISH
@@ -292,11 +297,13 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                                 file.delete()
                                                 exportFailed
                                             }
-                                            showSnackbar(message = msg)
+                                            snackbar(message = msg)
                                         }
                                     }
                                 }
                             },
+                            icon = {},
+                            label = exportArchive,
                         )
                     }
                 },
@@ -309,7 +316,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 val from = stringResource(id = R.string.read_from, args.page)
                 val read = stringResource(id = R.string.read)
                 launchInVM {
-                    val result = showSnackbar(from, read, true)
+                    val result = snackbar(from, read, true)
                     if (result == SnackbarResult.ActionPerformed) {
                         navToReader(gi.findBaseInfo(), args.page)
                     }
@@ -330,7 +337,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator()
+                CircularWavyProgressIndicator()
             }
         }
     }

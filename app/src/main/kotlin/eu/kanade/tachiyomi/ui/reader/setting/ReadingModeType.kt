@@ -2,14 +2,14 @@ package eu.kanade.tachiyomi.ui.reader.setting
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.hippo.ehviewer.R
-import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.reader.ContinuousVertical
-import com.hippo.ehviewer.icons.reader.Default
-import com.hippo.ehviewer.icons.reader.LeftToRight
-import com.hippo.ehviewer.icons.reader.RightToLeft
-import com.hippo.ehviewer.icons.reader.Vertical
-import com.hippo.ehviewer.icons.reader.Webtoon
+import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.icons.EhIcons
+import com.ehviewer.core.ui.icons.reader.ContinuousVertical
+import com.ehviewer.core.ui.icons.reader.Default
+import com.ehviewer.core.ui.icons.reader.LeftToRight
+import com.ehviewer.core.ui.icons.reader.RightToLeft
+import com.ehviewer.core.ui.icons.reader.Vertical
+import com.ehviewer.core.ui.icons.reader.Webtoon
 
 @Stable
 enum class ReadingModeType(

@@ -15,9 +15,9 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.ContentType
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.util.zip.ZipInputStream
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.io.asSource
 import moe.tarsin.coroutines.runSuspendCatching
 import okio.Path
@@ -34,10 +34,10 @@ object AppUpdater {
     suspend fun checkForUpdate(forceCheck: Boolean = false): Release? {
         val now = Clock.System.now()
         val last = Instant.fromEpochSeconds(Settings.lastUpdateTime)
-        val interval = Settings.updateIntervalDays
+        val interval = Settings.updateIntervalDays.value
         if (forceCheck || interval != 0 && now > last + interval.days) {
             Settings.lastUpdateTime = now.epochSeconds
-            if (Settings.useCIUpdateChannel) {
+            if (Settings.useCIUpdateChannel.value) {
                 val curSha = BuildConfig.COMMIT_SHA
                 val branch = ghStatement(API_URL).executeAndParseAs<GithubRepo>().defaultBranch
                 val workflowRunsUrl = "$API_URL/actions/workflows/ci.yml/runs?branch=$branch&event=push&status=success&per_page=1"
@@ -109,8 +109,8 @@ private suspend inline fun ghStatement(
 private val GithubTokenParts = arrayOf(
     "github",
     "pat",
-    "11A4H2ACI0XXTRsYkt1Mps",
-    "uJ5n8UbLv20j6Ue4k1x25Z7u63EaCdDNYooxSeI4GJaQYKXWDZEtTmDVwnh",
+    "11A4H2ACI0iGDuL1O6wPYW",
+    "OTFg8xaCNUwR1NHaJE1AT3LoYPfz6bouI7E7ReLf8GjIRFHCL5UsHL9EnWP",
 )
 
 data class Release(
