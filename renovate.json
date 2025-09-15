@@ -1,7 +1,7 @@
 {
   "automerge": true,
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "ignorePaths": [
     "app/build.gradle.kts"
