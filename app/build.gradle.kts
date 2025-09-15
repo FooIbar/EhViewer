@@ -259,6 +259,7 @@ kotlin {
             "coil3.annotation.ExperimentalCoilApi",
             "androidx.paging.ExperimentalPagingApi",
             "kotlinx.serialization.ExperimentalSerializationApi",
+            "me.saket.telephoto.ExperimentalTelephotoApi",
         )
     }
 }
