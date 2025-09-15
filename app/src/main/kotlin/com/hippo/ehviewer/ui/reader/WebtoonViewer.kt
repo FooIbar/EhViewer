@@ -24,6 +24,8 @@ import eu.kanade.tachiyomi.ui.reader.viewer.NavigationRegions
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import eu.kanade.tachiyomi.ui.reader.viewer.getAction
 import kotlinx.coroutines.launch
+import me.saket.telephoto.zoomable.OverzoomEffect
+import me.saket.telephoto.zoomable.ZoomLimit
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
@@ -90,4 +92,7 @@ fun WebtoonViewer(
     }
 }
 
-private val WebtoonZoomSpec = ZoomSpec(maxZoomFactor = 3f)
+private val WebtoonZoomSpec = ZoomSpec(
+    maximum = ZoomLimit(factor = 3f),
+    minimum = ZoomLimit(factor = 1f, overzoomEffect = OverzoomEffect.Disabled),
+)

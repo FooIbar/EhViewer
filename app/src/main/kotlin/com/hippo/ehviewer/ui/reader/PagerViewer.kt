@@ -42,7 +42,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import me.saket.telephoto.zoomable.OverzoomEffect
 import me.saket.telephoto.zoomable.Viewport
+import me.saket.telephoto.zoomable.ZoomLimit
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.ZoomableContentLocation
 import me.saket.telephoto.zoomable.ZoomableState
@@ -266,4 +268,7 @@ private inline fun ZoomableState?.canPan(getRemaining: (Rect) -> Float): Boolean
         getRemaining(with(coordinateSystem) { contentBounds(false).rectIn(CoordinateSpace.Viewport) }) > 1f
 }
 
-private val PagerZoomSpec = ZoomSpec(maxZoomFactor = 5f)
+private val PagerZoomSpec = ZoomSpec(
+    maximum = ZoomLimit(factor = 5f),
+    minimum = ZoomLimit(factor = 1f, overzoomEffect = OverzoomEffect.Disabled),
+)
