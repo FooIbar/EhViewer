@@ -1,7 +1,7 @@
 {
   "automerge": true,
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "ignorePaths": [
     "app/build.gradle.kts"
@@ -102,8 +102,6 @@
       "matchDepNames": [
         "rust-nightly"
       ],
-      // Rustup components history updates at 2:00 UTC
-      // https://github.com/rust-lang/rustup-components-history/blob/7f196546c6b982e937b41f5d782bdbfcf06eb019/.github/workflows/rust.yml#L10
       "schedule": [
         "* 4-23 1 */3 *",
         "* 4-23 15 2-11/3 *"
