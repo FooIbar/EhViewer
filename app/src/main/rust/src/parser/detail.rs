@@ -233,15 +233,11 @@ fn parse_detail(gd: &mut GalleryDetail, dom: &VDom, parser: &Parser, body: &str)
 
 pub fn parse_gallery_detail(dom: &mut VDom, body: &str) -> Result<GalleryDetail> {
     let parser = dom.parser();
-    let error = get_vdom_first_element_by_class_name(dom, "d");
-    if let Some(tag) = error.and_then(|n| get_first_child(n.as_tag()?, parser)) {
-        let node = tag.children().top()[0].get(parser).unwrap();
-        bail!(EhError::Error(node.inner_text(parser).to_string()));
-    }
 
     let mut gallery_detail = GalleryDetail {
-        tagGroups: parse_tag_groups(dom, parser, false)?,
+        // Check availability in `parse_preview_list` as that will be called independently
         previewList: parse_preview_list(dom, parser)?,
+        tagGroups: parse_tag_groups(dom, parser, false)?,
         comments: parse_comments(dom)?,
         ..Default::default()
     };
@@ -474,6 +470,13 @@ pub fn parse_pages(dom: &VDom, parser: &Parser) -> Result<i32> {
 }
 
 pub fn parse_preview_list(dom: &VDom, parser: &Parser) -> Result<Vec<GalleryPreview>> {
+    // Check Gallery Not Available
+    let error = get_vdom_first_element_by_class_name(dom, "d");
+    if let Some(tag) = error.and_then(|n| get_first_child(n.as_tag()?, parser)) {
+        let node = tag.children().top()[0].get(parser).unwrap();
+        bail!(EhError::Error(node.inner_text(parser).to_string()));
+    }
+
     dom.get_element_by_id("gdt")
         .and_then(|n| n.get(parser)?.children())
         .context("Failed to find gdt")?
