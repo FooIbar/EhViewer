@@ -125,11 +125,6 @@ private fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuff
         throw IpBannedException(message)
     }
 
-    // Check Gallery Not Available
-    body.onLeft {
-        if ("Gallery Not Available - " in it) throw e
-    }
-
     // Check parse error thrown by rust
     val cause = e.cause
     if (e is ParseException && cause is RuntimeException) {
@@ -139,7 +134,12 @@ private fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuff
             "2" -> throw NotLoggedInException()
             "3" -> throw NoHathClientException()
             "4" -> throw InsufficientFundsException()
-            is String if message.startsWith('5') -> throw IpBannedException(message.drop(1))
+            is String if message.isNotEmpty() -> {
+                when (message[0]) {
+                    '5' -> throw IpBannedException(message.substring(1))
+                    '6' -> throw EhException(message.substring(1))
+                }
+            }
         }
     }
 

@@ -245,7 +245,7 @@ where
 {
     parse_raw_marshal_inplace(env, str, limit, |html| {
         let mut dom = tl::parse(html, options)?;
-        ensure!(dom.version().is_some(), EhError::Error(html.to_string()));
+        ensure!(dom.version().is_some(), EhError::IpBanned(html.to_string()));
         f(&mut dom, html)
     })
 }

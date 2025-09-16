@@ -74,6 +74,7 @@ enum EhError {
     NeedLogin,
     NoHathClient,
     InsufficientFunds,
+    IpBanned(String),
     Error(String),
 }
 
@@ -85,7 +86,8 @@ impl Display for EhError {
             EhError::NeedLogin => "2",
             EhError::NoHathClient => "3",
             EhError::InsufficientFunds => "4",
-            EhError::Error(s) => &format!("5{s}"),
+            EhError::IpBanned(s) => &format!("5{s}"),
+            EhError::Error(s) => &format!("6{s}"),
         };
         f.write_str(msg)
     }
