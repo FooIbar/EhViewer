@@ -809,7 +809,7 @@ private fun GalleryDetail.collectPreviewItems() = rememberInVM(previewList) {
                 runSuspendCatching {
                     (up..end).filterNot { it in previewPagesMap }.map { it / pageSize }.toSet()
                         .parMap(concurrency = Settings.multiThreadDownload.value) { page ->
-                            val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
+                            val url = EhUrl.getGalleryDetailUrl(gid, token, page)
                             EhEngine.getPreviewList(url).previews
                         }.flattenForEach {
                             previewPagesMap[it.position] = it

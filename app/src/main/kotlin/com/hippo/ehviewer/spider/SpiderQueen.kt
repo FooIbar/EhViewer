@@ -328,7 +328,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     private suspend fun readSpiderInfoFromInternet() = EhEngine.getPreviewList(
-        getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
+        getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token),
     ).run {
         val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, total)
         readPreviews(previews, 0, spiderInfo)
@@ -356,12 +356,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         } else {
             0
         }
-        val url = getGalleryDetailUrl(
-            galleryInfo.gid,
-            galleryInfo.token,
-            previewIndex,
-            false,
-        )
+        val url = getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, previewIndex)
         return runSuspendCatching {
             EhEngine.getPreviewList(url).run {
                 readPreviews(previews, previewIndex, spiderInfo)
