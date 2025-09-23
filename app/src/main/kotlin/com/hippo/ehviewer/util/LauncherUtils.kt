@@ -22,6 +22,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.withIOContext
 import com.ehviewer.core.util.withUIContext
 import java.io.File
 import kotlin.concurrent.atomics.AtomicInt
@@ -104,7 +105,7 @@ context(ctx: Context)
 suspend fun installPackage(file: File) = with(ctx) {
     val canInstall = !isAtLeastO || requestInstallPermission()
     check(canInstall) { getString(R.string.permission_denied) }
-    val contentUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+    val contentUri = withIOContext { FileProvider.getUriForFile(ctx, "$packageName.fileprovider", file) }
     val intent = Intent(Intent.ACTION_VIEW).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
