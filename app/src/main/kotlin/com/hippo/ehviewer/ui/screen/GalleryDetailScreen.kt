@@ -109,7 +109,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
             is TokenArgs -> args.gid to args.token
         }
     }
-    val galleryDetailUrl = remember(gid, token) { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
+    val galleryDetailUrl = remember(gid, token) { EhUrl.getGalleryDetailUrl(gid, token) }
     contextOf<MainActivity>().ProvideAssistContent(galleryDetailUrl)
 
     var galleryInfo by rememberInVM {

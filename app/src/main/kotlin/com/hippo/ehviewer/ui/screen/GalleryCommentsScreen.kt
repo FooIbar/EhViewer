@@ -193,7 +193,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
     val density = LocalDensity.current
 
     suspend fun refreshComment(showAll: Boolean) {
-        val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
+        val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, allComment = showAll)
         val detail = EhEngine.getGalleryDetail(url)
         comments = detail.comments
     }
@@ -216,7 +216,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
     suspend fun sendComment() {
         commenting = false
         withUIContext { focusManager.clearFocus() }
-        val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, false)
+        val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token)
         userComment.runSuspendCatching {
             val bbcode = annotatedString.normalizeSpan().toBBCode()
             logcat("sendComment") { bbcode }
