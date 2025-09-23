@@ -145,13 +145,15 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
     Await(
         block = asyncInVM(args) { alive ->
             suspendCancellableCoroutine { cont ->
-                alive.launchIO {
-                    catch {
-                        usePageLoader(args) { loader ->
-                            cont.resume(loader.right())
-                            awaitCancellation()
-                        }
-                    }.let { left -> cont.resume(left) }
+                with(alive) {
+                    launchIO {
+                        catch {
+                            usePageLoader(args) { loader ->
+                                cont.resume(loader.right())
+                                awaitCancellation()
+                            }
+                        }.let { left -> cont.resume(left) }
+                    }
                 }
             }
         }.value.run {

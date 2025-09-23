@@ -40,7 +40,6 @@ import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
 import com.ehviewer.core.ui.util.initSETConnection
 import com.ehviewer.core.util.launchIO
-import com.ehviewer.core.util.launchUI
 import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.coil.AnimatedWebPDecoder
@@ -90,13 +89,11 @@ import splitties.init.appCtx
 private val lifecycle = ProcessLifecycleOwner.get().lifecycle
 private val lifecycleScope = lifecycle.coroutineScope
 
-class EhApplication :
-    Application(),
-    SingletonImageLoader.Factory {
-    override fun onCreate() {
+class EhApplication : Application(), SingletonImageLoader.Factory {
+    override fun onCreate() = with(lifecycleScope) {
         initSETConnection()
         // Initialize Settings on first access
-        lifecycleScope.launchIO {
+        launchIO {
             val mode = Settings.theme.value
             if (!isAtLeastS) {
                 withUIContext {
@@ -116,20 +113,20 @@ class EhApplication :
         CrashHandler.install()
         super.onCreate()
         System.loadLibrary("ehviewer")
-        lifecycleScope.launchIO {
-            launchUI {
-                FavouriteStatusRouter.collect { info ->
-                    detailCache[info.gid]?.apply {
-                        favoriteSlot = info.favoriteSlot
-                        favoriteName = info.favoriteName
-                        favoriteNote = info.favoriteNote
-                    }
+        launch {
+            FavouriteStatusRouter.collect { info ->
+                detailCache[info.gid]?.apply {
+                    favoriteSlot = info.favoriteSlot
+                    favoriteName = info.favoriteName
+                    favoriteNote = info.favoriteNote
                 }
             }
+        }
+        launchIO {
             EhTagDatabase.launchUpdate()
             launch { EhDB }
-            launchIO { dataStateFlow.value }
-            launchIO { OSUtils.totalMemory }
+            launch { dataStateFlow.value }
+            launch { OSUtils.totalMemory }
             launch {
                 if (DownloadManager.labelList.isNotEmpty() && Settings.downloadFilterMode !in Settings.snapshot()) {
                     Settings.downloadFilterMode.value = DownloadsFilterMode.CUSTOM.flag

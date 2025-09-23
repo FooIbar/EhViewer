@@ -67,8 +67,6 @@ import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.util.thenIf
-import com.ehviewer.core.util.launchIO
-import com.ehviewer.core.util.launchUI
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
@@ -195,7 +193,7 @@ fun SearchBarScreen(
         // May have invalid whitespaces if pasted from clipboard, replace them with spaces
         val query = searchFieldState.text.trim().replace(WhitespaceRegex, " ")
         if (query.isNotEmpty()) {
-            scope.launchIO {
+            scope.launch {
                 mSearchDatabase.deleteQuery(query)
                 val search = Search(System.currentTimeMillis(), query)
                 mSearchDatabase.insert(search)
@@ -257,7 +255,7 @@ fun SearchBarScreen(
                             }
                         } else {
                             val drawerState = LocalNavDrawerState.current
-                            IconButton(onClick = { scope.launchUI { drawerState.open() } }, shapes = IconButtonDefaults.shapes()) {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(Icons.Default.Menu, contentDescription = null)
                             }
                         }
