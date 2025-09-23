@@ -28,34 +28,21 @@ fun rememberHapticFeedback(): HapticFeedback {
 class AndroidHapticFeedback(private val view: View) : HapticFeedback {
     override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) {
         val feedbackConstant = when (hapticFeedbackType) {
-            HapticFeedbackType.START -> {
-                if (isAtLeastU) {
-                    HapticFeedbackConstants.DRAG_START
-                } else if (isAtLeastR) {
-                    HapticFeedbackConstants.GESTURE_START
-                } else if (isAtLeastOMR1) {
-                    HapticFeedbackConstants.KEYBOARD_PRESS
-                } else {
-                    HapticFeedbackConstants.VIRTUAL_KEY
-                }
+            HapticFeedbackType.START -> when {
+                isAtLeastU -> HapticFeedbackConstants.DRAG_START
+                isAtLeastR -> HapticFeedbackConstants.GESTURE_START
+                isAtLeastOMR1 -> HapticFeedbackConstants.KEYBOARD_PRESS
+                else -> HapticFeedbackConstants.VIRTUAL_KEY
             }
-            HapticFeedbackType.MOVE -> {
-                if (isAtLeastU) {
-                    HapticFeedbackConstants.SEGMENT_FREQUENT_TICK
-                } else if (isAtLeastOMR1) {
-                    HapticFeedbackConstants.TEXT_HANDLE_MOVE
-                } else {
-                    HapticFeedbackConstants.CLOCK_TICK
-                }
+            HapticFeedbackType.MOVE -> when {
+                isAtLeastU -> HapticFeedbackConstants.SEGMENT_FREQUENT_TICK
+                isAtLeastOMR1 -> HapticFeedbackConstants.TEXT_HANDLE_MOVE
+                else -> HapticFeedbackConstants.CLOCK_TICK
             }
-            HapticFeedbackType.END -> {
-                if (isAtLeastR) {
-                    HapticFeedbackConstants.GESTURE_END
-                } else if (isAtLeastOMR1) {
-                    HapticFeedbackConstants.KEYBOARD_RELEASE
-                } else {
-                    HapticFeedbackConstants.VIRTUAL_KEY
-                }
+            HapticFeedbackType.END -> when {
+                isAtLeastR -> HapticFeedbackConstants.GESTURE_END
+                isAtLeastOMR1 -> HapticFeedbackConstants.KEYBOARD_RELEASE
+                else -> HapticFeedbackConstants.VIRTUAL_KEY
             }
         }
         view.performHapticFeedback(feedbackConstant)
