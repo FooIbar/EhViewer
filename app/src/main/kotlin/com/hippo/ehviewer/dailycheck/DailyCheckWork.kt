@@ -19,11 +19,11 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.ehviewer.core.util.logcat
 import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
-import eu.kanade.tachiyomi.util.system.logcat
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.time.Clock

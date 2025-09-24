@@ -15,7 +15,7 @@
  */
 package com.hippo.ehviewer.client.data
 
-import moe.tarsin.kt.unreachable
+import com.ehviewer.core.util.unreachable
 
 interface GalleryInfo {
     var gid: Long

@@ -7,13 +7,11 @@ kotlin {
         commonMain {
             dependencies {
                 api(projects.core.common)
-                api(project.dependencies.platform(libs.okio.bom))
                 api(libs.androidx.datastore)
             }
         }
         androidMain {
             dependencies {
-                api(libs.splitties.appctx)
             }
         }
     }

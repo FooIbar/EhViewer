@@ -37,6 +37,7 @@ import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.component.DropdownFilterChip
 import com.ehviewer.core.ui.util.thenIf
 import com.ehviewer.core.util.launch
+import com.ehviewer.core.util.toIntOrDefault
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
@@ -44,7 +45,6 @@ import com.hippo.ehviewer.client.data.GalleryInfo.Companion.S_LANG_TAGS
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.awaitResult
-import com.hippo.ehviewer.util.toIntOrDefault
 import kotlinx.coroutines.CoroutineScope
 
 private val categoryTable = arrayOf(

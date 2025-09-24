@@ -88,6 +88,7 @@ import com.ehviewer.core.ui.util.snackBarPadding
 import com.ehviewer.core.ui.util.thenIf
 import com.ehviewer.core.util.launch
 import com.ehviewer.core.util.launchIO
+import com.ehviewer.core.util.logcat
 import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -116,7 +117,6 @@ import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.navigate

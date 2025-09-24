@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.tools
+package com.ehviewer.core.ui.component
 
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -18,10 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.ui.util.IconCached
 import kotlin.math.roundToInt
 
 private val colorYellow800 = Color(0xfff9a825)
@@ -34,7 +33,7 @@ private fun getImageVector(index: Int, rating: Int) = when {
 }
 
 @Composable
-fun MetaRatingWidgetReuse(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier: Modifier = Modifier) {
+fun RatingWidgetReuse(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier: Modifier = Modifier) {
     val r = (rating * 2).roundToInt().coerceIn(0, 10)
     Row(modifier = modifier) {
         repeat(5) {
@@ -50,7 +49,7 @@ fun MetaRatingWidgetReuse(rating: Float, ratingSize: Dp, ratingInterval: Dp, mod
 }
 
 @Composable
-fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier: Modifier = Modifier, onRatingChange: ((Float) -> Unit)? = null) {
+fun RatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier: Modifier = Modifier, onRatingChange: ((Float) -> Unit)? = null) {
     val r = (rating * 2).roundToInt().coerceIn(0, 10)
     val density = LocalDensity.current
     val ratingSizePx = remember { with(density) { ratingSize.toPx() } }
@@ -89,22 +88,22 @@ fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier
 
 @Composable
 fun GalleryListCardRating(rating: Float, modifier: Modifier = Modifier) {
-    MetaRatingWidgetReuse(
+    RatingWidgetReuse(
         rating = rating,
-        ratingSize = dimensionResource(id = R.dimen.rating_size),
-        ratingInterval = dimensionResource(id = R.dimen.rating_interval),
+        ratingSize = 16.dp,
+        ratingInterval = 1.dp,
         modifier = modifier,
     )
 }
 
 @Composable
 fun GalleryDetailRating(rating: Float) {
-    MetaRatingWidget(rating = rating, ratingSize = 48.dp, ratingInterval = 12.dp)
+    RatingWidget(rating = rating, ratingSize = 48.dp, ratingInterval = 12.dp)
 }
 
 @Composable
 fun GalleryRatingBar(rating: Float, onRatingChange: (Float) -> Unit, modifier: Modifier = Modifier) {
-    MetaRatingWidget(
+    RatingWidget(
         rating = rating,
         ratingSize = 48.dp,
         ratingInterval = 0.dp,

@@ -78,7 +78,9 @@ import com.ehviewer.core.ui.component.ProvideSideSheetContent
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.filled.GoTo
 import com.ehviewer.core.ui.util.Await
+import com.ehviewer.core.ui.util.HapticFeedbackType
 import com.ehviewer.core.ui.util.asyncState
+import com.ehviewer.core.ui.util.rememberHapticFeedback
 import com.ehviewer.core.ui.util.thenIf
 import com.ehviewer.core.util.launch
 import com.ehviewer.core.util.launchIO
@@ -113,11 +115,9 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.tools.DialogState
-import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitInputText
 import com.hippo.ehviewer.ui.tools.awaitInputTextWithCheckBox
-import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberMutableStateInDataStore
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.ramcosta.composedestinations.annotation.Destination

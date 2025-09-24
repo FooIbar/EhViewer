@@ -4,13 +4,13 @@ import android.app.UiModeManager
 import androidx.appcompat.app.AppCompatDelegate
 import arrow.core.Either.Companion.catch
 import com.ehviewer.core.preferences.PrefDelegate
+import com.ehviewer.core.util.isAtLeastS
+import com.ehviewer.core.util.logcat
 import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dailycheck.updateDailyCheckWork
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
-import com.hippo.ehviewer.util.isAtLeastS
-import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

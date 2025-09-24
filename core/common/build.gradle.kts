@@ -7,6 +7,9 @@ kotlin {
         commonMain {
             dependencies {
                 api(libs.kotlinx.coroutines.core)
+                api(libs.kotlinx.datetime)
+                api(libs.kotlinx.io)
+                api(libs.okio)
                 api(libs.logcat)
                 api(project.dependencies.platform(libs.arrow.stack))
                 api(libs.bundles.arrow)
@@ -15,6 +18,8 @@ kotlin {
         androidMain {
             dependencies {
                 api(libs.kotlinx.coroutines.android)
+                api(libs.splitties.appctx)
+                implementation(libs.androidx.core)
             }
         }
     }

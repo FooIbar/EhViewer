@@ -6,16 +6,16 @@ import coil3.intercept.Interceptor
 import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
+import com.ehviewer.core.files.delete
+import com.ehviewer.core.files.isDirectory
+import com.ehviewer.core.files.isFile
+import com.ehviewer.core.files.sendTo
+import com.ehviewer.core.files.toUri
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.getThumbKey
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.downloadLocation
-import com.hippo.ehviewer.util.sendTo
-import com.hippo.files.delete
-import com.hippo.files.isDirectory
-import com.hippo.files.isFile
-import com.hippo.files.toUri
 
 private val downloadInfoKey = Extras.Key<DownloadInfo?>(default = null)
 

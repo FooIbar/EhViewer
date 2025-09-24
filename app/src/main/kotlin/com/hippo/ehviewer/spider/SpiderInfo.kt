@@ -1,12 +1,12 @@
 package com.hippo.ehviewer.spider
 
+import com.ehviewer.core.files.read
+import com.ehviewer.core.files.write
+import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.coil.edit
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.legacy.readLegacySpiderInfo
-import com.hippo.files.read
-import com.hippo.files.write
-import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.io.readByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor

@@ -25,15 +25,13 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.unreachable
 import com.hippo.ehviewer.util.toRangeSet
 import io.github.petertrr.diffutils.diffInline
-import io.github.petertrr.diffutils.patch.ChangeDelta
 import io.github.petertrr.diffutils.patch.DeleteDelta
-import io.github.petertrr.diffutils.patch.EqualDelta
 import io.github.petertrr.diffutils.patch.InsertDelta
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import moe.tarsin.kt.unreachable
 import moe.tarsin.string
 
 fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
@@ -58,8 +56,6 @@ fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
                         append(annoStr.subSequence(end, len))
                     }
                 }
-                is ChangeDelta -> unreachable()
-                is EqualDelta -> unreachable()
                 is InsertDelta -> {
                     val pos = delta.source.position
                     val toIns = delta.target.lines.first()
@@ -69,6 +65,7 @@ fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
                         append(annoStr.subSequence(pos, len))
                     }
                 }
+                else -> unreachable()
             }
             // Update span range for updated comment
             return copy(annotatedString = str)

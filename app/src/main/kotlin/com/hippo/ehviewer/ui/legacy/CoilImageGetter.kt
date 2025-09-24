@@ -7,8 +7,8 @@ import coil3.decode.DecodeUtils
 import coil3.imageLoader
 import coil3.request.crossfade
 import coil3.size.Scale
+import com.ehviewer.core.util.toIntOrDefault
 import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.util.toIntOrDefault
 import kotlin.math.roundToInt
 import splitties.init.appCtx
 

@@ -15,9 +15,9 @@
  */
 package com.hippo.ehviewer.client.parser
 
-import com.hippo.ehviewer.util.toEpochMillis
-import com.hippo.ehviewer.util.toIntOrDefault
-import com.hippo.ehviewer.util.toLocalDateTime
+import com.ehviewer.core.util.toEpochMillis
+import com.ehviewer.core.util.toIntOrDefault
+import com.ehviewer.core.util.toLocalDateTime
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format.char
 

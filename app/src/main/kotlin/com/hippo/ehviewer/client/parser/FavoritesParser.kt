@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.client.parser
 
+import com.ehviewer.core.util.unescapeXml
 import com.hippo.ehviewer.client.exception.ParseException
-import com.hippo.ehviewer.util.unescapeXml
 import java.nio.ByteBuffer
 import kotlinx.serialization.Serializable
 import moe.tarsin.coroutines.runSuspendCatching

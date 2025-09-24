@@ -15,8 +15,8 @@
  */
 package com.hippo.ehviewer.client.parser
 
+import com.ehviewer.core.util.unescapeXml
 import com.hippo.ehviewer.client.exception.ParseException
-import com.hippo.ehviewer.util.unescapeXml
 
 object GalleryPageParser {
     private val PATTERN_IMAGE_URL = Regex("<img[^>]*src=\"([^\"]+)\" style")

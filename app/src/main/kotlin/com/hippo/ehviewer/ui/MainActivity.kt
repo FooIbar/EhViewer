@@ -102,6 +102,8 @@ import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.compose.rememberNavController
+import com.ehviewer.core.files.isDirectory
+import com.ehviewer.core.files.toOkioPath
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.component.LabeledCheckbox
 import com.ehviewer.core.ui.component.LocalSideSheetState
@@ -110,6 +112,8 @@ import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.filled.Subscriptions
 import com.ehviewer.core.ui.util.LocalSnackBarFabPadding
 import com.ehviewer.core.ui.util.LocalWindowSizeClass
+import com.ehviewer.core.util.isAtLeastQ
+import com.ehviewer.core.util.isAtLeastS
 import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.EhApplication.Companion.initialized
 import com.hippo.ehviewer.Settings
@@ -144,11 +148,7 @@ import com.hippo.ehviewer.util.calculateFraction
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
-import com.hippo.ehviewer.util.isAtLeastQ
-import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.ehviewer.util.sha1
-import com.hippo.files.isDirectory
-import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.spec.Direction
 import com.ramcosta.composedestinations.utils.currentDestinationAsState

@@ -16,7 +16,7 @@
 package com.hippo.ehviewer.util
 
 import com.ehviewer.core.mainthread.checkNotMainThread
-import eu.kanade.tachiyomi.util.system.logcat
+import com.ehviewer.core.util.logcat
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking

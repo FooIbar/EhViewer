@@ -22,6 +22,7 @@ import arrow.core.right
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -61,7 +62,6 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.bodyAsUtf8Text
 import com.hippo.ehviewer.util.ensureSuccess
-import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel

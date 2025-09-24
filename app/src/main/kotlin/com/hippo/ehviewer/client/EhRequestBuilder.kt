@@ -15,11 +15,11 @@
  */
 package com.hippo.ehviewer.client
 
+import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.EhApplication.Companion.noRedirectKtorClient
 import com.hippo.ehviewer.util.bodyAsUtf8Text
 import com.hippo.ehviewer.util.ensureSuccess
-import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.header

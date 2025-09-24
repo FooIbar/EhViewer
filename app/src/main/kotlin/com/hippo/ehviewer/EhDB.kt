@@ -19,6 +19,7 @@ import android.content.Context
 import android.net.Uri
 import arrow.fx.coroutines.resource
 import arrow.fx.coroutines.resourceScope
+import com.ehviewer.core.files.sendTo
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.dao.DownloadDirname
@@ -32,7 +33,6 @@ import com.hippo.ehviewer.dao.ProgressInfo
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.dao.Schema17to18
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.util.sendTo
 import kotlinx.coroutines.flow.Flow
 import okio.Path
 import okio.Path.Companion.toOkioPath
