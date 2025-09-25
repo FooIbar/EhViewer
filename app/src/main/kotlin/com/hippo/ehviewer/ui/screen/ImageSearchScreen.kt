@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.ehviewer.core.files.toOkioPath
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.util.snackBarPadding
 import com.ehviewer.core.util.launch
@@ -39,7 +40,6 @@ import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.hippo.ehviewer.util.sha1
-import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator

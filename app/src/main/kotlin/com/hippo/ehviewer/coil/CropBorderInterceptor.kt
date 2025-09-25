@@ -12,9 +12,9 @@ import coil3.asImage
 import coil3.intercept.Interceptor
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
+import com.ehviewer.core.util.isAtLeastQ
+import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.image.copyBitmapToAHB
-import com.hippo.ehviewer.util.isAtLeastQ
-import eu.kanade.tachiyomi.util.system.logcat
 import moe.tarsin.coroutines.runSuspendCatching
 
 @RequiresApi(Build.VERSION_CODES.O)

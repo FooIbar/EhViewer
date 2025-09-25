@@ -1,11 +1,11 @@
 package com.hippo.ehviewer.ui.login
 
 import arrow.core.Either.Companion.catch
+import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
-import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers

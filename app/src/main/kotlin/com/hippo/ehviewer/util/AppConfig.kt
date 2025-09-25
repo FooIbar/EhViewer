@@ -17,11 +17,11 @@ package com.hippo.ehviewer.util
 
 import android.os.Build
 import android.os.Environment
+import com.ehviewer.core.files.exists
+import com.ehviewer.core.files.isDirectory
+import com.ehviewer.core.files.mkdirs
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.client.parser.ParserUtils
-import com.hippo.files.exists
-import com.hippo.files.isDirectory
-import com.hippo.files.mkdirs
 import java.io.File
 import okio.Path
 import okio.Path.Companion.toOkioPath

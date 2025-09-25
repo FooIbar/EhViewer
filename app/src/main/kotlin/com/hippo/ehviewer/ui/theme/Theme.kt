@@ -19,10 +19,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.ehviewer.core.ui.component.scrollbarStyle
+import com.ehviewer.core.util.isAtLeastOMR1
+import com.ehviewer.core.util.isAtLeastS
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.util.isAtLeastOMR1
-import com.hippo.ehviewer.util.isAtLeastS
 import com.materialkolor.dynamicColorScheme
 
 fun ColorScheme.amoled(amoled: Boolean) = if (amoled) {

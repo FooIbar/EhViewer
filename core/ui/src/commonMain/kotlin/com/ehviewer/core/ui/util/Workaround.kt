@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.tools
+package com.ehviewer.core.ui.util
 
 import androidx.collection.MutableScatterMap
 import androidx.collection.mutableScatterMapOf

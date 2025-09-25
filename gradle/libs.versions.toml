@@ -22,6 +22,7 @@ compose-preference = "2.1.0"
 kotlin = "2.2.20"
 kotlinx-coroutines = "1.10.2"
 kotlinx-datetime = "0.7.1"
+kotlinx-io = "0.8.0"
 kotlinx-serialization = "1.9.0"
 ksp = "2.2.20-2.0.3"
 ktor = "3.3.0"
@@ -94,6 +95,7 @@ diff = "io.github.petertrr:kotlin-multiplatform-diff:1.1.0"
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
 
 ktlint = "com.pinterest.ktlint:ktlint-cli:1.7.1"
 
@@ -104,7 +106,7 @@ logcat = "com.squareup.logcat:logcat:0.4"
 
 moko-resources = { module = "dev.icerock.moko:resources", version.ref = "moko-resources" }
 
-okio-bom = { module = "com.squareup.okio:okio-bom", version.ref = "okio" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 
 reorderable = "sh.calvin.reorderable:reorderable:3.0.0"
 

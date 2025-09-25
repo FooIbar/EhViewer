@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.util
+package com.ehviewer.core.util
 
 private val EntityRegex = "&(?:amp|lt|gt|quot|#039);".toRegex()
 private val EntityMap = mapOf(

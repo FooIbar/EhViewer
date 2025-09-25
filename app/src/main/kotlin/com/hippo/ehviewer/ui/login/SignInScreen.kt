@@ -60,6 +60,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.util.LocalWindowSizeClass
+import com.ehviewer.core.ui.util.ifTrueThen
 import com.ehviewer.core.ui.util.isExpanded
 import com.ehviewer.core.ui.util.thenIf
 import com.ehviewer.core.util.launchIO
@@ -73,7 +74,6 @@ import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.util.displayString
-import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator

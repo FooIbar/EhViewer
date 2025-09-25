@@ -2,9 +2,9 @@ package com.hippo.ehviewer.util
 
 import android.os.Build
 import android.os.Debug
+import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.Settings
-import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.io.PrintWriter
 import java.io.Writer

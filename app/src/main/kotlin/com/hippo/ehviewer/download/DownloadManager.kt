@@ -26,7 +26,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.core.util.size
 import arrow.fx.coroutines.parMapNotNull
+import com.ehviewer.core.files.delete
+import com.ehviewer.core.files.find
+import com.ehviewer.core.files.toOkioPath
+import com.ehviewer.core.files.toUri
 import com.ehviewer.core.preferences.edit
+import com.ehviewer.core.util.logcat
+import com.ehviewer.core.util.mapNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -46,13 +52,7 @@ import com.hippo.ehviewer.spider.readCompatFromPath
 import com.hippo.ehviewer.spider.toSimpleTags
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.insertWith
-import com.hippo.ehviewer.util.mapNotNull
 import com.hippo.ehviewer.util.runAssertingNotMainThread
-import com.hippo.files.delete
-import com.hippo.files.find
-import com.hippo.files.toOkioPath
-import com.hippo.files.toUri
-import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

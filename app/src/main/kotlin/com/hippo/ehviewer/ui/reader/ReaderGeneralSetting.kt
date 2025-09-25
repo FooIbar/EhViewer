@@ -12,9 +12,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.isAtLeastP
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import com.hippo.ehviewer.util.isAtLeastP
 
 @Composable
 fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {

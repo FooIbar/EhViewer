@@ -96,10 +96,10 @@ import arrow.core.right
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.component.FastScrollLazyColumn
 import com.ehviewer.core.ui.component.LabeledCheckbox
+import com.ehviewer.core.ui.util.ifNotNullThen
+import com.ehviewer.core.ui.util.ifTrueThen
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhTagDatabase.suggestion
-import com.jamal.composeprefs3.ui.ifNotNullThen
-import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation

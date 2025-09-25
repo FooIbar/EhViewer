@@ -1,4 +1,4 @@
-package com.jamal.composeprefs3.ui
+package com.ehviewer.core.ui.util
 
 import androidx.compose.runtime.Composable
 

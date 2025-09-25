@@ -20,8 +20,8 @@ import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.ActivityNavigator
+import com.ehviewer.core.util.isAtLeastR
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.util.isAtLeastR
 import eu.kanade.tachiyomi.util.view.setSecureScreen
 
 abstract class EhActivity : AppCompatActivity() {

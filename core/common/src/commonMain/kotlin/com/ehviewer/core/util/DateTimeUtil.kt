@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.util
+package com.ehviewer.core.util
 
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate

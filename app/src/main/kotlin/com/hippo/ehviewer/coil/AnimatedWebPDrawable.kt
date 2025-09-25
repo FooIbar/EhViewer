@@ -9,7 +9,7 @@ import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.os.SystemClock
 import androidx.core.graphics.createBitmap
-import eu.kanade.tachiyomi.util.system.logcat
+import com.ehviewer.core.util.logcat
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope

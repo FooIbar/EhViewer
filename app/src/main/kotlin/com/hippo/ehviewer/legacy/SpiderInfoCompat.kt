@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.legacy
 
+import com.ehviewer.core.files.read
 import com.hippo.ehviewer.spider.SpiderInfo
-import com.hippo.files.read
 import kotlinx.io.readLineStrict
 import okio.Path
 

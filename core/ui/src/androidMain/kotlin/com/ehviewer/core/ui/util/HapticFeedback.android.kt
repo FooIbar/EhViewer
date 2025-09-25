@@ -1,26 +1,16 @@
-package com.hippo.ehviewer.ui.tools
+package com.ehviewer.core.ui.util
 
 import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalView
-import com.hippo.ehviewer.util.isAtLeastOMR1
-import com.hippo.ehviewer.util.isAtLeastR
-import com.hippo.ehviewer.util.isAtLeastU
-
-enum class HapticFeedbackType {
-    START,
-    MOVE,
-    END,
-}
-
-interface HapticFeedback {
-    fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType)
-}
+import com.ehviewer.core.util.isAtLeastOMR1
+import com.ehviewer.core.util.isAtLeastR
+import com.ehviewer.core.util.isAtLeastU
 
 @Composable
-fun rememberHapticFeedback(): HapticFeedback {
+actual fun rememberHapticFeedback(): HapticFeedback {
     val view = LocalView.current
     return remember(view) { AndroidHapticFeedback(view) }
 }

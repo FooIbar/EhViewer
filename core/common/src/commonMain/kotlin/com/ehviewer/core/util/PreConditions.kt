@@ -1,3 +1,3 @@
-package moe.tarsin.kt
+package com.ehviewer.core.util
 
 fun unreachable(): Nothing = error("Unreachable!!!")

@@ -15,7 +15,7 @@
  */
 package com.hippo.ehviewer.util
 
-import com.hippo.files.write
+import com.ehviewer.core.files.write
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
 import io.ktor.utils.io.rethrowCloseCauseIfNeeded

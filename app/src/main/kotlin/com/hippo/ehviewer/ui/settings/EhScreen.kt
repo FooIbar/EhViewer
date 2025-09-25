@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.isAtLeastT
 import com.ehviewer.core.util.launch
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
@@ -45,7 +46,6 @@ import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitSelectItem
 import com.hippo.ehviewer.ui.tools.awaitSelectTime
 import com.hippo.ehviewer.util.copyTextToClipboard
-import com.hippo.ehviewer.util.isAtLeastT
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator

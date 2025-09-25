@@ -22,6 +22,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.util.isAtLeastO
 import com.ehviewer.core.util.withIOContext
 import com.ehviewer.core.util.withUIContext
 import java.io.File

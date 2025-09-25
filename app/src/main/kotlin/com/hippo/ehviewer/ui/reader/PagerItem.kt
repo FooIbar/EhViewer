@@ -39,6 +39,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.util.thenIf
+import com.ehviewer.core.util.unreachable
 import com.google.accompanist.drawablepainter.DrawablePainter
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
@@ -52,7 +53,6 @@ import com.hippo.ehviewer.util.AdsPlaceholderFile
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.drop
-import moe.tarsin.kt.unreachable
 
 @Composable
 fun PagerItem(

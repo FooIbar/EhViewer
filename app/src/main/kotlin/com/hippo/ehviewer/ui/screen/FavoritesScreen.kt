@@ -61,8 +61,10 @@ import com.ehviewer.core.ui.component.ProvideSideSheetContent
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.filled.GoTo
 import com.ehviewer.core.ui.util.asyncState
+import com.ehviewer.core.ui.util.takeAndClear
 import com.ehviewer.core.ui.util.thenIf
 import com.ehviewer.core.util.launch
+import com.ehviewer.core.util.mapToLongArray
 import com.ehviewer.core.util.onEachLatest
 import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.EhDB
@@ -81,8 +83,6 @@ import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitSelectItem
-import com.hippo.ehviewer.util.mapToLongArray
-import com.hippo.ehviewer.util.takeAndClear
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator

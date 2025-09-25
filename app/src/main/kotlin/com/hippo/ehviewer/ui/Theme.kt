@@ -14,10 +14,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
+import com.ehviewer.core.ui.util.ProvideVectorPainterCache
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalGlobalDialogState
-import com.hippo.ehviewer.ui.tools.ProvideVectorPainterCache
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import me.zhanghai.compose.preference.ProvidePreferenceTheme
 import me.zhanghai.compose.preference.preferenceTheme

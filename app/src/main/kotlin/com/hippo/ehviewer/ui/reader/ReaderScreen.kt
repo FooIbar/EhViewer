@@ -54,7 +54,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.zIndex
-import androidx.core.view.WindowInsetsControllerCompat
 import arrow.core.Either
 import arrow.core.Either.Companion.catch
 import arrow.core.raise.ensure
@@ -62,10 +61,11 @@ import arrow.core.right
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.util.Await
 import com.ehviewer.core.ui.util.asyncInVM
+import com.ehviewer.core.ui.util.rememberSystemUiController
 import com.ehviewer.core.ui.util.thenIf
 import com.ehviewer.core.util.launch
 import com.ehviewer.core.util.launchIO
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.ehviewer.core.util.unreachable
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -104,7 +104,6 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.Serializable
-import moe.tarsin.kt.unreachable
 import moe.tarsin.string
 import okio.Path.Companion.toPath
 
@@ -209,10 +208,10 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
     val keepScreenOn by Settings.keepScreenOn.collectAsState()
     val uiController = rememberSystemUiController()
     DisposableEffect(uiController) {
-        uiController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        uiController.showTransientSystemBarsBySwipe = true
         onDispose {
             uiController.isSystemBarsVisible = true
-            uiController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+            uiController.showTransientSystemBarsBySwipe = false
         }
     }
     val lazyListState = rememberLazyListState(LazyLayoutCacheWindow(SCROLL_FRACTION, SCROLL_FRACTION), pageLoader.startPage)

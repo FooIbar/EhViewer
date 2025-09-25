@@ -66,6 +66,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.util.ifNotNullThen
+import com.ehviewer.core.ui.util.ifTrueThen
 import com.ehviewer.core.ui.util.thenIf
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.Settings
@@ -80,8 +82,6 @@ import com.hippo.ehviewer.ui.theme.scrim
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.rememberCompositionActiveState
-import com.jamal.composeprefs3.ui.ifNotNullThen
-import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

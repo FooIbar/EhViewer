@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.ehviewer.core.ui.component.CrystalCard
 import com.ehviewer.core.ui.component.ElevatedCard
+import com.ehviewer.core.ui.component.GalleryListCardRating
 import com.ehviewer.core.ui.util.SharedElementBox
 import com.ehviewer.core.ui.util.TransitionsVisibilityScope
 import com.ehviewer.core.ui.util.listThumbGenerator
@@ -48,7 +49,6 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.ui.tools.GalleryListCardRating
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 
 @Composable

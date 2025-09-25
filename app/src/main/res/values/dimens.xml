@@ -24,10 +24,6 @@
 
     <dimen name="strip_item_padding">8dp</dimen>
 
-    <!-- RatingView -->
-    <dimen name="rating_size">16dp</dimen>
-    <dimen name="rating_interval">1dp</dimen>
-
     <dimen name="gallery_list_interval">12dp</dimen>
     <dimen name="gallery_list_margin_h">12dp</dimen>
     <dimen name="gallery_list_margin_v">4dp</dimen>

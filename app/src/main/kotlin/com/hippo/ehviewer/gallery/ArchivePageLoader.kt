@@ -16,6 +16,8 @@
 package com.hippo.ehviewer.gallery
 
 import arrow.autoCloseScope
+import com.ehviewer.core.files.openFileDescriptor
+import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.Settings.archivePasswds
 import com.hippo.ehviewer.image.ImageSource
 import com.hippo.ehviewer.image.byteBufferSource
@@ -29,8 +31,6 @@ import com.hippo.ehviewer.jni.providePassword
 import com.hippo.ehviewer.jni.releaseByteBuffer
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.displayName
-import com.hippo.files.openFileDescriptor
-import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.coroutineScope
 import moe.tarsin.kt.install
 import okio.Path

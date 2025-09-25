@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.util.system
+package com.ehviewer.core.util
 
 import logcat.LogPriority
 import logcat.asLog

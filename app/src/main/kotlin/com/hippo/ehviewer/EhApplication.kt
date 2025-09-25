@@ -38,8 +38,14 @@ import coil3.request.allowRgb565
 import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
+import com.ehviewer.core.files.deleteContent
 import com.ehviewer.core.ui.util.initSETConnection
+import com.ehviewer.core.util.isAtLeastO
+import com.ehviewer.core.util.isAtLeastP
+import com.ehviewer.core.util.isAtLeastS
+import com.ehviewer.core.util.isAtLeastSExtension7
 import com.ehviewer.core.util.launchIO
+import com.ehviewer.core.util.logcat
 import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.coil.AnimatedWebPDecoder
@@ -68,12 +74,6 @@ import com.hippo.ehviewer.util.CrashHandler
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.OSUtils
-import com.hippo.ehviewer.util.isAtLeastO
-import com.hippo.ehviewer.util.isAtLeastP
-import com.hippo.ehviewer.util.isAtLeastS
-import com.hippo.ehviewer.util.isAtLeastSExtension7
-import com.hippo.files.deleteContent
-import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.Dispatchers

@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.util
+package com.ehviewer.core.util
 
 inline fun <R : Any, C : MutableCollection<in R>> LongArray.mapNotNullTo(destination: C, transform: (Long) -> R?): C {
     forEach { element -> transform(element)?.let { destination.add(it) } }

@@ -1,5 +1,7 @@
 package com.hippo.ehviewer.spider
 
+import com.ehviewer.core.files.read
+import com.ehviewer.core.files.write
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -17,8 +19,6 @@ import com.hippo.ehviewer.client.data.TagNamespace.Male
 import com.hippo.ehviewer.client.data.TagNamespace.Mixed
 import com.hippo.ehviewer.client.data.TagNamespace.Other
 import com.hippo.ehviewer.client.data.TagNamespace.Parody
-import com.hippo.files.read
-import com.hippo.files.write
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

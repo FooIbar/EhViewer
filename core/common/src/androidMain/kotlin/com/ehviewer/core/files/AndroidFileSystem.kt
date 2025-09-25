@@ -1,4 +1,4 @@
-package com.hippo.files
+package com.ehviewer.core.files
 
 import android.content.Context
 import android.net.Uri
@@ -22,7 +22,6 @@ import okio.IOException
 import okio.Path
 import okio.Sink
 import okio.Source
-import splitties.init.appCtx
 
 class AndroidFileSystem(context: Context) : FileSystem() {
     private val contentResolver = context.contentResolver
@@ -237,5 +236,3 @@ class AndroidFileSystem(context: Context) : FileSystem() {
 private fun Path.isPhysicalFile() = toString().startsWith('/')
 
 private fun Uri.isCifsDocument() = authority == "com.wa2c.android.cifsdocumentsprovider.documents"
-
-val SystemFileSystem = AndroidFileSystem(appCtx)

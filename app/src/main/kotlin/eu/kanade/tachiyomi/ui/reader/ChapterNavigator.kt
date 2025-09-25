@@ -21,10 +21,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.ui.component.Slider
 import com.ehviewer.core.ui.component.defaultMaxTickCount
+import com.ehviewer.core.ui.util.HapticFeedbackType
 import com.ehviewer.core.ui.util.LocalWindowSizeClass
 import com.ehviewer.core.ui.util.isExpanded
-import com.hippo.ehviewer.ui.tools.HapticFeedbackType
-import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
+import com.ehviewer.core.ui.util.rememberHapticFeedback
 
 @Composable
 fun ChapterNavigator(
