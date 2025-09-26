@@ -1720,7 +1720,7 @@ dependencies = [
 [[package]]
 name = "tl"
 version = "0.7.8"
-source = "git+https://github.com/y21/tl.git?rev=13ed128e35ce04c4f16c41cb1e38347da3da0b46#13ed128e35ce04c4f16c41cb1e38347da3da0b46"
+source = "git+https://github.com/FooIbar/tl.git#13ed128e35ce04c4f16c41cb1e38347da3da0b46"
 
 [[package]]
 name = "tokio"
