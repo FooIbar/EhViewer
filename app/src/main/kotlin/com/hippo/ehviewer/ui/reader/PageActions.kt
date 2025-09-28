@@ -15,12 +15,12 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.core.content.FileProvider
 import com.ehviewer.core.files.toOkioPath
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.util.isAtLeastQ
 import com.ehviewer.core.util.isAtLeastT
 import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.BuildConfig.APPLICATION_ID
 import com.hippo.ehviewer.client.EhUrl
-import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader
 import com.hippo.ehviewer.util.AppConfig

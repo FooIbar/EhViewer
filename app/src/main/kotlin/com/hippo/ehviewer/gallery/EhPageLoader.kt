@@ -1,8 +1,8 @@
 package com.hippo.ehviewer.gallery
 
 import arrow.autoCloseScope
+import com.ehviewer.core.model.GalleryInfo
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.obtainSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen

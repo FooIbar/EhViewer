@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.download
 
+import com.ehviewer.core.database.model.DownloadInfo
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.dao.DownloadInfo
 
 data class SortMode(val field: Field, val order: Order, val groupByDownloadLabel: Boolean = false) {
     val flag

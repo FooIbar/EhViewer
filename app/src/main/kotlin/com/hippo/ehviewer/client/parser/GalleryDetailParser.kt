@@ -17,9 +17,9 @@ package com.hippo.ehviewer.client.parser
 
 import arrow.core.Either
 import arrow.core.getOrElse
-import com.hippo.ehviewer.client.data.GalleryCommentList
-import com.hippo.ehviewer.client.data.GalleryDetail
-import com.hippo.ehviewer.client.data.GalleryPreviewList
+import com.ehviewer.core.model.GalleryCommentList
+import com.ehviewer.core.model.GalleryDetail
+import com.ehviewer.core.model.GalleryPreviewList
 import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
 import kotlinx.serialization.Serializable

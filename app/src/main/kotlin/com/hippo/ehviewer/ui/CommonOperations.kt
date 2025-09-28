@@ -35,11 +35,16 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.ehviewer.core.database.model.DownloadInfo
 import com.ehviewer.core.files.delete
 import com.ehviewer.core.files.exists
 import com.ehviewer.core.files.isDirectory
 import com.ehviewer.core.files.write
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.BaseGalleryInfo
+import com.ehviewer.core.model.GalleryInfo
+import com.ehviewer.core.model.GalleryInfo.Companion.LOCAL_FAVORITED
+import com.ehviewer.core.model.GalleryInfo.Companion.NOT_FAVORITED
 import com.ehviewer.core.ui.component.LabeledCheckbox
 import com.ehviewer.core.util.isAtLeastT
 import com.ehviewer.core.util.mapToLongArray
@@ -50,12 +55,7 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.data.BaseGalleryInfo
-import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
-import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 import com.hippo.ehviewer.client.exception.EhException
-import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadDir
@@ -177,7 +177,7 @@ suspend fun startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGaller
 }
 
 context(_: DialogState)
-suspend fun modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
+suspend fun modifyFavorites(galleryInfo: GalleryInfo): Boolean {
     val localFavorited = EhDB.containLocalFavorites(galleryInfo.gid)
     if (Settings.hasSignedIn.value) {
         val isFavorited = galleryInfo.favoriteSlot != NOT_FAVORITED
@@ -215,7 +215,7 @@ suspend fun modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
 }
 
 private suspend fun doModifyFavorites(
-    galleryInfo: BaseGalleryInfo,
+    galleryInfo: GalleryInfo,
     slot: Int = NOT_FAVORITED,
     localFavorited: Boolean = true,
     note: String = "",
@@ -263,7 +263,7 @@ private suspend fun doModifyFavorites(
     add
 }
 
-suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorites(
+suspend fun removeFromFavorites(galleryInfo: GalleryInfo) = doModifyFavorites(
     galleryInfo = galleryInfo,
     localFavorited = EhDB.containLocalFavorites(galleryInfo.gid),
 )

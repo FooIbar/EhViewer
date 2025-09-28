@@ -14,6 +14,7 @@ internal fun KotlinCommonCompilerOptions.configureKotlin() {
         "kotlin.time.ExperimentalTime",
         "kotlinx.coroutines.ExperimentalCoroutinesApi",
         "kotlinx.coroutines.FlowPreview",
+        "kotlinx.serialization.ExperimentalSerializationApi",
     )
     freeCompilerArgs.addAll(
         "-Xcontext-parameters",

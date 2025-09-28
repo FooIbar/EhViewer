@@ -204,7 +204,6 @@ dependencies {
     implementation(libs.androidx.paging.compose)
 
     // https://developer.android.com/jetpack/androidx/releases/room
-    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.paging)
 
     implementation(libs.androidx.work.runtime)
@@ -256,14 +255,12 @@ kotlin {
         optIn.addAll(
             "coil3.annotation.ExperimentalCoilApi",
             "androidx.paging.ExperimentalPagingApi",
-            "kotlinx.serialization.ExperimentalSerializationApi",
             "me.saket.telephoto.ExperimentalTelephotoApi",
         )
     }
 }
 
 ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
     arg("compose-destinations.codeGenPackageName", "com.hippo.ehviewer.ui")
 }
 

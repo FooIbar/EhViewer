@@ -7,10 +7,13 @@ import coil3.decode.BlackholeDecoder
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.size.SizeResolver
-import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.data.GalleryPreview
+import com.ehviewer.core.database.model.DownloadInfo
+import com.ehviewer.core.model.GalleryInfo
+import com.ehviewer.core.model.GalleryPreview
+import com.ehviewer.core.model.V2GalleryPreview
+import com.hippo.ehviewer.client.getThumbKey
+import com.hippo.ehviewer.client.getV2PreviewKey
 import com.hippo.ehviewer.client.thumbUrl
-import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.execute
 
@@ -30,7 +33,7 @@ fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
 // Load in original size so the memory cache can be reused for preload requests
 fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = apply {
     with(preview) {
-        val key = imageKey
+        val key = if (this is V2GalleryPreview) getV2PreviewKey(url) else getThumbKey(url)
         data(url)
         size(SizeResolver.ORIGINAL)
         memoryCacheKey(key)

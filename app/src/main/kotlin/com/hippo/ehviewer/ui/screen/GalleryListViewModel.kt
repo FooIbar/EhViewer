@@ -11,9 +11,9 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
+import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.client.EhEngine
-import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
 import com.hippo.ehviewer.ui.tools.foldToLoadResult

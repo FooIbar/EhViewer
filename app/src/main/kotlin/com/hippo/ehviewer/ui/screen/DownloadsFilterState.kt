@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.ui.screen
 
+import com.ehviewer.core.database.model.DownloadInfo
 import com.ehviewer.core.util.containsIgnoreCase
-import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import kotlinx.serialization.Serializable
 

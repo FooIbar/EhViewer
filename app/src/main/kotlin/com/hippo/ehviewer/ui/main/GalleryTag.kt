@@ -22,12 +22,12 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ehviewer.core.model.GalleryTagGroup
+import com.ehviewer.core.model.PowerStatus
+import com.ehviewer.core.model.TagNamespace
+import com.ehviewer.core.model.VoteStatus
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
-import com.hippo.ehviewer.client.data.GalleryTagGroup
-import com.hippo.ehviewer.client.data.PowerStatus
-import com.hippo.ehviewer.client.data.TagNamespace
-import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.includeFontPadding
 

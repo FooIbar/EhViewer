@@ -22,6 +22,8 @@ import arrow.core.getOrElse
 import arrow.core.partially1
 import com.ehviewer.core.files.find
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.GalleryInfo
+import com.ehviewer.core.model.GalleryPreview
 import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -29,8 +31,6 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUrl.getGalleryDetailUrl
 import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.exception.FatalException
 import com.hippo.ehviewer.client.exception.QuotaExceededException
 import com.hippo.ehviewer.util.displayString

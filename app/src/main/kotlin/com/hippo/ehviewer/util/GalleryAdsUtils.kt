@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.util
 
+import com.ehviewer.core.model.GalleryInfo
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.data.GalleryInfo
 import okio.Path.Companion.toOkioPath
 import splitties.init.appCtx
 

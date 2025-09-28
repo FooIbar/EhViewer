@@ -1,10 +1,10 @@
 package com.hippo.ehviewer.client
 
 import arrow.core.memoize
+import com.ehviewer.core.database.model.Filter
+import com.ehviewer.core.database.model.FilterMode
+import com.ehviewer.core.model.GalleryInfo
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.dao.Filter
-import com.hippo.ehviewer.dao.FilterMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

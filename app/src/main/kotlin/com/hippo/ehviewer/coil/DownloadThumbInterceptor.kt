@@ -6,6 +6,7 @@ import coil3.intercept.Interceptor
 import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
+import com.ehviewer.core.database.model.DownloadInfo
 import com.ehviewer.core.files.delete
 import com.ehviewer.core.files.isDirectory
 import com.ehviewer.core.files.isFile
@@ -14,7 +15,6 @@ import com.ehviewer.core.files.toUri
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.getThumbKey
-import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.downloadLocation
 
 private val downloadInfoKey = Extras.Key<DownloadInfo?>(default = null)
@@ -35,7 +35,7 @@ object DownloadThumbInterceptor : Interceptor {
                 info.thumbKey = thumbKey
                 EhDB.putGalleryInfo(info.galleryInfo)
             }
-            val dir = downloadLocation / info.dirname
+            val dir = downloadLocation / info.dirname!!
             val format = thumbKey.substringAfterLast('.', "")
             check(format.isNotBlank())
             val thumb = dir / "thumb.$format"
