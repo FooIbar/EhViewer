@@ -27,10 +27,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import arrow.core.memoize
+import com.ehviewer.core.model.GalleryDetail
+import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.data.GalleryDetail
-import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.parser.Archive
 import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.util.AppConfig

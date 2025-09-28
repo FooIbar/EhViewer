@@ -15,7 +15,7 @@
  */
 package com.hippo.ehviewer.client
 
-import com.hippo.ehviewer.client.data.GalleryInfo
+import com.ehviewer.core.model.GalleryInfo
 
 // Normal Preview (v2): https://*.hath.network/c(m|1|2)/[timed token]/[gid]-[index].(jpg|webp)
 // ExHentai Large Preview (v1 Cover): https://s.exhentai.org/t/***

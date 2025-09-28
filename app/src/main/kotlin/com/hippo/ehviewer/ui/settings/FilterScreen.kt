@@ -53,6 +53,8 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.ehviewer.core.database.model.Filter
+import com.ehviewer.core.database.model.FilterMode
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.util.Await
 import com.ehviewer.core.ui.util.thenIf
@@ -64,8 +66,6 @@ import com.hippo.ehviewer.client.EhFilter.forget
 import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhFilter.trigger
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.dao.Filter
-import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel

@@ -82,7 +82,9 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import arrow.core.partially1
+import com.ehviewer.core.database.model.DownloadInfo
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.TagNamespace
 import com.ehviewer.core.ui.component.FAB_ANIMATE_TIME
 import com.ehviewer.core.ui.component.FabLayout
 import com.ehviewer.core.ui.component.FastScrollLazyColumn
@@ -109,9 +111,7 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
-import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadManager.downloadInfoList
 import com.hippo.ehviewer.download.DownloadService
@@ -562,7 +562,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
 
         fun onItemClick(info: DownloadInfo) {
-            launchIO { EhDB.putHistoryInfo(info.galleryInfo) }
+            launchIO { EhDB.putHistoryInfo(info) }
             navToReader(info.galleryInfo)
         }
 

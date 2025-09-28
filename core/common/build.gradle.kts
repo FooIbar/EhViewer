@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.ehviewer.multiplatform.library)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -10,6 +11,7 @@ kotlin {
                 api(libs.kotlinx.datetime)
                 api(libs.kotlinx.io)
                 api(libs.okio)
+                api(libs.serialization.cbor)
                 api(libs.logcat)
                 api(project.dependencies.platform(libs.arrow.stack))
                 api(libs.bundles.arrow)

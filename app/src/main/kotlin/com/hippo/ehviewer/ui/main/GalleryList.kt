@@ -52,13 +52,13 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.ui.component.FastScrollLazyVerticalGrid
 import com.ehviewer.core.ui.component.FastScrollLazyVerticalStaggeredGrid
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.big.SadAndroid
 import com.ehviewer.core.util.launch
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.exception.NoHitsFoundException
 import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.collectAsState

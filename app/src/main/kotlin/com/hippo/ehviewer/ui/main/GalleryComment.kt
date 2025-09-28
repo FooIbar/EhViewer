@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.parseAsHtml
 import com.ehviewer.core.i18n.R
-import com.hippo.ehviewer.client.data.GalleryComment
+import com.ehviewer.core.model.GalleryComment
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.legacy.LinkifyTextView
 import com.hippo.ehviewer.util.ReadableTime

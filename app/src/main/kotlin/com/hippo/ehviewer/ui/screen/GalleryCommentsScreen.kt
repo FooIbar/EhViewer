@@ -82,7 +82,10 @@ import androidx.core.text.buildSpannedString
 import androidx.core.text.getSpans
 import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
+import com.ehviewer.core.database.model.Filter
+import com.ehviewer.core.database.model.FilterMode
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.GalleryComment
 import com.ehviewer.core.ui.util.animateFloatMergePredictiveBackAsState
 import com.ehviewer.core.ui.util.snackBarPadding
 import com.ehviewer.core.ui.util.thenIf
@@ -94,11 +97,8 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhUrl
-import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.dao.Filter
-import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
@@ -394,7 +394,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         }
                         if (!comment.voteState.isNullOrEmpty()) {
                             onSelect(checkVoteStatus) {
-                                showCommentVoteStatus(comment.voteState)
+                                showCommentVoteStatus(comment.voteState!!)
                             }
                         }
                     }()

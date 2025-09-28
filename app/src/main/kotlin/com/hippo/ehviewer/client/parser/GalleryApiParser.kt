@@ -15,9 +15,9 @@
  */
 package com.hippo.ehviewer.client.parser
 
+import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.util.unescapeXml
 import com.hippo.ehviewer.client.EhUtils.getCategory
-import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.getThumbKey
 import com.hippo.ehviewer.client.parseAs
 import kotlinx.serialization.SerialName

@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.client.parser
 
-import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.ehviewer.core.model.BaseGalleryInfo
 import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
 import kotlinx.serialization.Serializable

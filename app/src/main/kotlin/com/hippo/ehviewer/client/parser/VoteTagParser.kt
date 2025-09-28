@@ -19,7 +19,7 @@ package com.hippo.ehviewer.client.parser
 
 import arrow.core.Either.Companion.catch
 import arrow.core.getOrElse
-import com.hippo.ehviewer.client.data.GalleryTagGroup
+import com.ehviewer.core.model.GalleryTagGroup
 import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
 

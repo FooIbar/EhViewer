@@ -5,8 +5,8 @@ import coil3.ImageLoader
 import coil3.disk.DiskCache
 import coil3.imageLoader
 import coil3.request.ImageRequest
-import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.data.GalleryPreview
+import com.ehviewer.core.model.GalleryInfo
+import com.ehviewer.core.model.GalleryPreview
 import com.hippo.ehviewer.coil.ehPreview
 import com.hippo.ehviewer.coil.ehUrl
 import kotlinx.coroutines.CoroutineScope

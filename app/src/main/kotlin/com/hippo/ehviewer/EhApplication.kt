@@ -38,6 +38,7 @@ import coil3.request.allowRgb565
 import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
+import com.ehviewer.core.database.SearchDatabase
 import com.ehviewer.core.files.deleteContent
 import com.ehviewer.core.ui.util.initSETConnection
 import com.ehviewer.core.util.isAtLeastO
@@ -57,7 +58,6 @@ import com.hippo.ehviewer.coil.MapExtraInfoInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
 import com.hippo.ehviewer.coil.QrCodeInterceptor
 import com.hippo.ehviewer.dailycheck.checkDawn
-import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.ktbuilder.diskCache

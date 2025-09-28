@@ -21,7 +21,7 @@ import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
 import com.ehviewer.core.i18n.R
-import com.hippo.ehviewer.client.data.GalleryDetail
+import com.ehviewer.core.model.GalleryDetail
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 

@@ -34,9 +34,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastJoinToString
 import androidx.lifecycle.viewModelScope
+import com.ehviewer.core.data.model.findBaseInfo
+import com.ehviewer.core.database.model.DownloadInfo
 import com.ehviewer.core.files.delete
 import com.ehviewer.core.files.toOkioPath
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.BaseGalleryInfo
+import com.ehviewer.core.model.GalleryDetail
+import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.ui.util.LocalWindowSizeClass
 import com.ehviewer.core.ui.util.isExpanded
 import com.ehviewer.core.ui.util.launchInVM
@@ -50,13 +55,9 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.data.BaseGalleryInfo
-import com.hippo.ehviewer.client.data.GalleryDetail
-import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.data.findBaseInfo
+import com.hippo.ehviewer.client.data.fillInfo
 import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.coil.justDownload
-import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
@@ -137,12 +138,12 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                     withIOContext { EhEngine.getGalleryDetail(galleryDetailUrl) }
                 }.onSuccess { galleryDetail ->
                     detailCache[galleryDetail.gid] = galleryDetail
-                }.onFailure {
-                    galleryInfo?.let { info -> EhDB.putHistoryInfo(info.findBaseInfo()) }
-                    getDetailError = it.displayString()
+                }.onFailure { e ->
+                    galleryInfo?.let { EhDB.putHistoryInfo(it) }
+                    getDetailError = e.displayString()
                 }.getOrNull()
             galleryDetail?.let {
-                EhDB.putHistoryInfo(it.galleryInfo)
+                EhDB.putHistoryInfo(it)
                 galleryInfo = it
             }
         }

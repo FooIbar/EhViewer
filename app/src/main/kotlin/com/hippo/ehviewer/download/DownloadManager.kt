@@ -26,21 +26,22 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.core.util.size
 import arrow.fx.coroutines.parMapNotNull
+import com.ehviewer.core.data.model.asEntity
+import com.ehviewer.core.database.model.DownloadArtist
+import com.ehviewer.core.database.model.DownloadInfo
+import com.ehviewer.core.database.model.DownloadLabel
 import com.ehviewer.core.files.delete
 import com.ehviewer.core.files.find
 import com.ehviewer.core.files.toOkioPath
 import com.ehviewer.core.files.toUri
+import com.ehviewer.core.model.BaseGalleryInfo
+import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.preferences.edit
 import com.ehviewer.core.util.logcat
 import com.ehviewer.core.util.mapNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.data.BaseGalleryInfo
-import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.exception.FatalException
-import com.hippo.ehviewer.dao.DownloadArtist
-import com.hippo.ehviewer.dao.DownloadInfo
-import com.hippo.ehviewer.dao.DownloadLabel
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpeedTracker
 import com.hippo.ehviewer.spider.SpiderQueen
@@ -179,7 +180,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             }
         } else {
             // It is new download info
-            info = DownloadInfo(galleryInfo, galleryInfo.downloadDirname())
+            info = DownloadInfo(galleryInfo.asEntity(), galleryInfo.downloadDirname())
             info.label = label
             info.state = DownloadInfo.STATE_WAIT
             // Add to all download list and map
@@ -198,7 +199,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             ensureDownload()
 
             // Add it to history
-            EhDB.putHistoryInfo(info.galleryInfo)
+            EhDB.putHistoryInfo(info)
         }
     }
 
@@ -288,7 +289,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun restoreDownload(galleryInfo: BaseGalleryInfo, dirname: String) {
-        val info = DownloadInfo(galleryInfo, dirname)
+        val info = DownloadInfo(galleryInfo.asEntity(), dirname)
         info.state = DownloadInfo.STATE_NONE
 
         // Add to all download list and map
@@ -575,13 +576,14 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             }
         }
 
-        val galleryInfoList = mutableListOf<BaseGalleryInfo>()
-        list.forEach { (info, artists) ->
-            info?.let {
-                galleryInfoList.add(it)
-            }
-            artists?.let { (gid, updateList) ->
-                EhDB.putDownloadArtist(gid, updateList)
+        val galleryInfoList = buildList {
+            list.forEach { (info, artists) ->
+                info?.let {
+                    add(it)
+                }
+                artists?.let { (gid, updateList) ->
+                    EhDB.putDownloadArtist(gid, updateList)
+                }
             }
         }
         if (galleryInfoList.isNotEmpty()) EhDB.updateGalleryInfo(galleryInfoList)

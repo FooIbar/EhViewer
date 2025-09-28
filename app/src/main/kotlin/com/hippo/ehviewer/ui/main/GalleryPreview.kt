@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.IntSize
 import coil3.BitmapImage
 import coil3.compose.AsyncImagePainter.State
 import coil3.compose.rememberAsyncImagePainter
+import com.ehviewer.core.model.GalleryPreview
+import com.ehviewer.core.model.V2GalleryPreview
 import com.ehviewer.core.ui.component.CrystalCard
-import com.hippo.ehviewer.client.data.GalleryPreview
-import com.hippo.ehviewer.client.data.V2GalleryPreview
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.shouldCrop
 

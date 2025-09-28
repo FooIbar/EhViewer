@@ -15,13 +15,14 @@
  */
 package com.hippo.ehviewer.client.data
 
+import com.ehviewer.core.database.model.QuickSearch
+import com.ehviewer.core.model.GalleryInfo
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.addQueryParameter
 import com.hippo.ehviewer.client.addQueryParameterIfNotBlank
 import com.hippo.ehviewer.client.ehUrl
-import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.ui.main.AdvanceTable
 import io.ktor.http.Parameters
 import kotlinx.serialization.Serializable

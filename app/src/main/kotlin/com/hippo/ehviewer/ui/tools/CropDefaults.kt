@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.ui.tools
 
 import coil3.Image
-import com.hippo.ehviewer.client.data.V2GalleryPreview
+import com.ehviewer.core.model.V2GalleryPreview
 
 private const val CROP_MIN_ASPECT = 0.5F
 private const val CROP_MAX_ASPECT = 0.8f

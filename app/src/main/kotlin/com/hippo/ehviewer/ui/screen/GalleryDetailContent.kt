@@ -68,7 +68,21 @@ import androidx.paging.compose.itemKey
 import arrow.core.partially1
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
+import com.ehviewer.core.data.model.asGalleryDetail
+import com.ehviewer.core.data.model.findBaseInfo
+import com.ehviewer.core.database.model.DownloadInfo
+import com.ehviewer.core.database.model.Filter
+import com.ehviewer.core.database.model.FilterMode
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.GalleryComment
+import com.ehviewer.core.model.GalleryDetail
+import com.ehviewer.core.model.GalleryInfo
+import com.ehviewer.core.model.GalleryInfo.Companion.NOT_FAVORITED
+import com.ehviewer.core.model.GalleryPreview
+import com.ehviewer.core.model.GalleryTagGroup
+import com.ehviewer.core.model.TagNamespace
+import com.ehviewer.core.model.V2GalleryPreview
+import com.ehviewer.core.model.VoteStatus
 import com.ehviewer.core.ui.component.CrystalCard
 import com.ehviewer.core.ui.component.FastScrollLazyVerticalGrid
 import com.ehviewer.core.ui.component.FilledTertiaryIconButton
@@ -95,26 +109,12 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.data.GalleryComment
-import com.hippo.ehviewer.client.data.GalleryDetail
-import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
-import com.hippo.ehviewer.client.data.GalleryPreview
-import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.ListUrlBuilder
-import com.hippo.ehviewer.client.data.TagNamespace
-import com.hippo.ehviewer.client.data.V2GalleryPreview
-import com.hippo.ehviewer.client.data.VoteStatus
-import com.hippo.ehviewer.client.data.asGalleryDetail
-import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHathClientException
 import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.dao.DownloadInfo
-import com.hippo.ehviewer.dao.Filter
-import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
@@ -498,7 +498,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                     launchIO {
                         favoritesLock.mutate {
                             runSuspendCatching {
-                                modifyFavorites(galleryDetail.galleryInfo)
+                                modifyFavorites(galleryDetail)
                             }.onSuccess { add ->
                                 if (add) {
                                     snackbar(addSucceed)

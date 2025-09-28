@@ -59,6 +59,7 @@ import arrow.core.Either.Companion.catch
 import arrow.core.raise.ensure
 import arrow.core.right
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.ui.util.Await
 import com.ehviewer.core.ui.util.asyncInVM
 import com.ehviewer.core.ui.util.rememberSystemUiController
@@ -68,7 +69,6 @@ import com.ehviewer.core.util.launchIO
 import com.ehviewer.core.util.unreachable
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
