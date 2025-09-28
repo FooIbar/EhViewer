@@ -25,9 +25,9 @@ import kotlinx.serialization.Serializable
 data class FavListUrlBuilder(
     val favCat: Int = FAV_CAT_ALL,
     val keyword: String? = null,
-    var jumpTo: String? = null,
-    var prev: String? = null,
-    var next: String? = null,
+    private var jumpTo: String? = null,
+    private var prev: String? = null,
+    private var next: String? = null,
 ) {
     val isLocal
         get() = favCat == FAV_CAT_LOCAL
@@ -35,6 +35,7 @@ data class FavListUrlBuilder(
     fun setIndex(index: String?, isNext: Boolean) {
         next = index.takeIf { isNext }
         prev = index.takeUnless { isNext }
+        jumpTo = null
     }
 
     fun build() = ehUrl(EhUrl.FAV_PATH) {

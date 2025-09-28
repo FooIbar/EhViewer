@@ -17,49 +17,54 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import moe.tarsin.coroutines.runSuspendCatching
 
 class GalleryListViewModel(lub: ListUrlBuilder, savedStateHandle: SavedStateHandle) : ViewModel() {
+    private val mutex = Mutex()
+
     val urlBuilder by savedStateHandle.saved(MutableStateSerializer()) {
         mutableStateOf(lub)
     }
 
-    val data = Pager(PagingConfig(25)) {
+    // Use a smaller prefetch distance to avoid prepending an additional page after jumping
+    val data = Pager(PagingConfig(25, prefetchDistance = 20)) {
         object : PagingSource<String, BaseGalleryInfo>() {
             override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
             override suspend fun load(params: LoadParams<String>) = withIOContext {
                 val urlBuilder = urlBuilder.value
                 if (urlBuilder.mode == MODE_TOPLIST) {
                     // TODO: Since we know total pages, let pager support jump
-                    val key = (params.key ?: urlBuilder.jumpTo)?.toInt() ?: 0
+                    val key: Int
+                    val url = mutex.withLock {
+                        with(urlBuilder) {
+                            params.key?.let { page = it.toInt() }
+                            key = page
+                            build()
+                        }
+                    }
                     val prev = (key - 1).takeIf { it > 0 }
-                    val next = (key + 1).takeIf { it < TOPLIST_PAGES }
+                    val next = (key + 1).takeIf { it <= TOPLIST_PAGES }
                     runSuspendCatching {
-                        urlBuilder.setJumpTo(key)
-                        EhEngine.getGalleryList(urlBuilder.build())
+                        EhEngine.getGalleryList(url)
                     }.foldToLoadResult { result ->
                         LoadResult.Page(result.galleryInfoList, prev?.toString(), next?.toString())
                     }
                 } else {
-                    when (params) {
-                        is LoadParams.Prepend -> urlBuilder.setIndex(params.key, isNext = false)
-                        is LoadParams.Append -> urlBuilder.setIndex(params.key, isNext = true)
-                        is LoadParams.Refresh -> {
-                            val key = params.key
-                            if (key.isNullOrBlank()) {
-                                if (urlBuilder.jumpTo != null) {
-                                    urlBuilder.next ?: urlBuilder.setIndex("2", true)
-                                }
-                            } else {
-                                urlBuilder.setIndex(key, false)
+                    val url = mutex.withLock {
+                        with(urlBuilder) {
+                            when (params) {
+                                is LoadParams.Prepend -> setIndex(params.key, isNext = false)
+                                is LoadParams.Append -> setIndex(params.key, isNext = true)
+                                is LoadParams.Refresh -> params.key?.let { setIndex(it, false) }
                             }
+                            build()
                         }
                     }
                     runSuspendCatching {
-                        val url = urlBuilder.build()
                         EhEngine.getGalleryList(url)
                     }.foldToLoadResult { result ->
-                        urlBuilder.jumpTo = null
                         LoadResult.Page(result.galleryInfoList, result.prev, result.next)
                     }
                 }

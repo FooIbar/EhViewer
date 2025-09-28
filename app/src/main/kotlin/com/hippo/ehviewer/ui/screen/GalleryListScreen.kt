@@ -590,22 +590,21 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         if (urlBuilder.mode != MODE_WHATS_HOT) {
             onClick(EhIcons.Default.GoTo) {
                 if (isTopList) {
-                    val page = urlBuilder.jumpTo?.toIntOrNull() ?: 0
-                    val hint = string(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
+                    val hint = string(R.string.go_to_hint, urlBuilder.page, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
-                        val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum } - 1
-                        ensure(goto in 0..<TOPLIST_PAGES) { outOfRange }
-                    }.trim().toInt() - 1
-                    urlBuilder.setJumpTo(text)
+                        val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum }
+                        ensure(goto in 1..TOPLIST_PAGES) { outOfRange }
+                    }
+                    urlBuilder.page = text.trim().toInt()
                 } else {
                     val date = awaitSelectDate()
-                    urlBuilder.jumpTo = date
+                    urlBuilder.setSeek(date)
                 }
                 data.refresh()
             }
             onClick(Icons.AutoMirrored.Default.LastPage) {
                 if (isTopList) {
-                    urlBuilder.setJumpTo(TOPLIST_PAGES - 1)
+                    urlBuilder.page = TOPLIST_PAGES
                 } else {
                     urlBuilder.setIndex("1", false)
                 }

@@ -419,7 +419,7 @@ suspend fun showMoveDownloadLabelList(list: Collection<DownloadInfo>): String? {
 }
 
 context(_: DialogState)
-suspend fun awaitSelectDate(): String? {
+suspend fun awaitSelectDate(): String {
     val initial = LocalDate(2007, 3, 21)
     val yesterday = Clock.System.todayIn(TimeZone.UTC).minus(1, DateTimeUnit.DAY)
     val initialMillis = initial.toEpochMillis()
@@ -432,8 +432,7 @@ suspend fun awaitSelectDate(): String? {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis in dateRange
         },
     )
-    val date = dateMillis?.run { toLocalDateTime().date.toString() }
-    return date
+    return dateMillis.toLocalDateTime().date.toString()
 }
 
 context(_: Context, _: DialogState)

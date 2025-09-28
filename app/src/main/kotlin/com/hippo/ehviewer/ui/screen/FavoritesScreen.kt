@@ -313,7 +313,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
             }
             onClick(EhIcons.Default.GoTo) {
                 val date = awaitSelectDate()
-                refresh(urlBuilder.copy(jumpTo = date))
+                refresh(urlBuilder.copy(jumpTo = date, prev = null, next = "2"))
             }
             onClick(Icons.Default.Refresh) {
                 refresh()

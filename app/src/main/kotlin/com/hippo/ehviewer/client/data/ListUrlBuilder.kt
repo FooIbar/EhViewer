@@ -24,16 +24,14 @@ import com.hippo.ehviewer.client.ehUrl
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.ui.main.AdvanceTable
 import io.ktor.http.Parameters
-import kotlin.text.toIntOrNull
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ListUrlBuilder(
     var mode: Int = MODE_NORMAL,
     private var prev: String? = null,
-    var next: String? = null,
-    // Reset to null after initial loading
-    var jumpTo: String? = null,
+    private var next: String? = null,
+    private var jumpTo: String? = null,
     private var range: Int = 0,
     var category: Int = EhUtils.NONE,
     private var mKeyword: String? = null,
@@ -49,17 +47,25 @@ data class ListUrlBuilder(
         next = index.takeIf { isNext }
         prev = index.takeUnless { isNext }
         range = 0
+        jumpTo = null
     }
 
-    fun setJumpTo(to: Int) {
-        jumpTo = to.takeUnless { it == 0 }?.toString()
-    }
+    var page: Int
+        get() = (jumpTo?.toInt() ?: 0) + 1
+        set(value) {
+            jumpTo = (value - 1).takeUnless { it == 0 }?.toString()
+        }
 
     fun setRange(to: Int) {
         range = to
         prev = null
         next = null
         jumpTo = null
+    }
+
+    fun setSeek(date: String) {
+        setIndex("2", true)
+        jumpTo = date
     }
 
     var keyword: String?
