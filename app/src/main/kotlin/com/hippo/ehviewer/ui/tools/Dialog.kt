@@ -487,7 +487,7 @@ suspend fun awaitSelectDate(
     initialDisplayMode: DisplayMode = DisplayMode.Picker,
     selectableDates: SelectableDates = DatePickerDefaults.AllDates,
     showModeToggle: Boolean = true,
-): Long? = dialog { cont ->
+): Long = dialog { cont ->
     val state = rememberDatePickerState(
         initialSelectedDateMillis,
         initialDisplayedMonthMillis,
@@ -498,7 +498,7 @@ suspend fun awaitSelectDate(
     DatePickerDialog(
         onDismissRequest = { cont.cancel() },
         confirmButton = {
-            TextButton(onClick = { cont.resume(state.selectedDateMillis) }, shapes = ButtonDefaults.shapes()) {
+            TextButton(onClick = { state.selectedDateMillis?.let { cont.resume(it) } ?: cont.cancel() }, shapes = ButtonDefaults.shapes()) {
                 Text(text = stringResource(id = android.R.string.ok))
             }
         },

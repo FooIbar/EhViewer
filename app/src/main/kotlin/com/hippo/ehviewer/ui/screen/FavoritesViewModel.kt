@@ -23,9 +23,13 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import moe.tarsin.coroutines.runSuspendCatching
 
 class FavoritesViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
+    private val mutex = Mutex()
+
     val urlBuilder by savedStateHandle.saved(MutableStateSerializer()) {
         mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat))
     }
@@ -43,32 +47,26 @@ class FavoritesViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
                 }
             }
         } else {
-            Pager(PagingConfig(25)) {
+            Pager(PagingConfig(DEFAULT_PAGE_SIZE, prefetchDistance = 20)) {
                 object : PagingSource<String, BaseGalleryInfo>() {
                     override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
                     override suspend fun load(params: LoadParams<String>) = withIOContext {
-                        val urlBuilder = urlBuilder.value
-                        when (params) {
-                            is LoadParams.Prepend -> urlBuilder.setIndex(params.key, isNext = false)
-                            is LoadParams.Append -> urlBuilder.setIndex(params.key, isNext = true)
-                            is LoadParams.Refresh -> {
-                                val key = params.key
-                                if (key.isNullOrBlank()) {
-                                    if (urlBuilder.jumpTo != null) {
-                                        urlBuilder.next ?: urlBuilder.setIndex("2", true)
-                                    }
-                                } else {
-                                    urlBuilder.setIndex(key, false)
+                        val url = mutex.withLock {
+                            with(urlBuilder.value) {
+                                when (params) {
+                                    is LoadParams.Prepend -> setIndex(params.key, isNext = false)
+                                    is LoadParams.Append -> setIndex(params.key, isNext = true)
+                                    is LoadParams.Refresh -> params.key?.let { setIndex(it, false) }
                                 }
+                                build()
                             }
                         }
                         runSuspendCatching {
-                            EhEngine.getFavorites(urlBuilder.build())
+                            EhEngine.getFavorites(url)
                         }.foldToLoadResult { result ->
                             Settings.favCat = result.catArray.toTypedArray()
                             Settings.favCount = result.countArray.toIntArray()
                             Settings.favCloudCount = result.countArray.sum()
-                            urlBuilder.jumpTo = null
                             LoadResult.Page(result.galleryInfoList, result.prev, result.next)
                         }
                     }
@@ -77,8 +75,10 @@ class FavoritesViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
         }.flow.map { pagingData ->
             // https://github.com/FooIbar/EhViewer/issues/1190
             // Workaround for duplicate items when sorting by favorited time
-            val gidSet = MutableLongSet(50)
+            val gidSet = MutableLongSet(DEFAULT_PAGE_SIZE)
             pagingData.filter { gidSet.add(it.gid) }
         }
     }.cachedIn(viewModelScope)
 }
+
+private const val DEFAULT_PAGE_SIZE = 50
