@@ -25,7 +25,7 @@ private val tabs = intArrayOf(
 )
 
 @Composable
-fun SettingsPager(modifier: Modifier = Modifier, onPageSelected: (Int) -> Unit) {
+fun SettingsPager(isWebtoon: Boolean, modifier: Modifier = Modifier, onPageSelected: (Int) -> Unit) {
     val pagerState = rememberPagerState { tabs.size }
     LaunchedEffect(onPageSelected) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
@@ -53,7 +53,7 @@ fun SettingsPager(modifier: Modifier = Modifier, onPageSelected: (Int) -> Unit) 
     ) { page ->
         ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
             when (page) {
-                0 -> ReaderModeSetting()
+                0 -> ReaderModeSetting(isWebtoon)
                 1 -> ReaderGeneralSetting()
                 2 -> ColorFilterSetting()
             }

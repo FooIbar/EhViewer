@@ -15,22 +15,17 @@ enum class OrientationType(
     val flag: Int,
     override val stringRes: Int,
     override val icon: ImageVector,
-    override val flagValue: Int,
 ) : PreferenceType {
-    DEFAULT(0, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, R.string.label_default, EhIcons.Reader.ScreenRotation, 0x00000000),
-    FREE(1, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, R.string.rotation_free, EhIcons.Reader.ScreenRotation, 0x00000008),
-    PORTRAIT(2, ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT, R.string.rotation_portrait, EhIcons.Reader.Portrait, 0x00000010),
-    LANDSCAPE(3, ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, R.string.rotation_landscape, EhIcons.Reader.Landscape, 0x00000018),
-    LOCKED_PORTRAIT(4, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, R.string.rotation_force_portrait, EhIcons.Reader.PortraitLocked, 0x00000020),
-    LOCKED_LANDSCAPE(5, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, R.string.rotation_force_landscape, EhIcons.Reader.LandscapeLocked, 0x00000028),
-    REVERSE_PORTRAIT(6, ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT, R.string.rotation_reverse_portrait, EhIcons.Reader.Portrait, 0x00000030),
+    DEFAULT(0, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, R.string.label_default, EhIcons.Reader.ScreenRotation),
+    FREE(1, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, R.string.rotation_free, EhIcons.Reader.ScreenRotation),
+    PORTRAIT(2, ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT, R.string.rotation_portrait, EhIcons.Reader.Portrait),
+    LANDSCAPE(3, ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, R.string.rotation_landscape, EhIcons.Reader.Landscape),
+    LOCKED_PORTRAIT(4, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, R.string.rotation_force_portrait, EhIcons.Reader.PortraitLocked),
+    LOCKED_LANDSCAPE(5, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, R.string.rotation_force_landscape, EhIcons.Reader.LandscapeLocked),
+    REVERSE_PORTRAIT(6, ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT, R.string.rotation_reverse_portrait, EhIcons.Reader.Portrait),
     ;
 
     companion object {
-        const val MASK = 0x00000038
-
-        fun fromPreference(preference: Int?): OrientationType = entries.find { it.flagValue == preference } ?: FREE
-
-        fun fromSpinner(position: Int?) = entries.find { value -> value.prefValue == position } ?: DEFAULT
+        fun fromPreference(preference: Int): OrientationType = entries.find { it.prefValue == preference } ?: DEFAULT
     }
 }

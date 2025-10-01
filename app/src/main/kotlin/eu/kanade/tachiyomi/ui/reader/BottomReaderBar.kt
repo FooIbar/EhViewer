@@ -49,7 +49,7 @@ fun BottomReaderBar(onClickSettings: () -> Unit, containerColor: Color) = Flexib
         menuItems = ReadingModeType.entries,
         selectedItem = readingMode,
         onSelectedItemChange = {
-            Settings.readingMode.value = it.flagValue
+            Settings.readingMode.value = it.prefValue
         },
         minMenuWidth = 192.dp,
     )
@@ -59,7 +59,7 @@ fun BottomReaderBar(onClickSettings: () -> Unit, containerColor: Color) = Flexib
         menuItems = OrientationType.entries,
         selectedItem = orientationMode,
         onSelectedItemChange = {
-            Settings.orientationMode.value = it.flagValue
+            Settings.orientationMode.value = it.prefValue
         },
         minMenuWidth = 192.dp,
     )
