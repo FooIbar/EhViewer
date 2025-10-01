@@ -199,8 +199,15 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
             }
         }
     }
+    val defaultToWebtoon = remember(info) {
+        // Tags in database may or may not have the prefix "other:"
+        info?.simpleTags?.any { it.endsWith("webtoon") } == true
+    }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
-    val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
+    val readingMode by Settings.readingMode.collectAsState {
+        val mode = ReadingModeType.fromPreference(it)
+        if (mode == ReadingModeType.DEFAULT && defaultToWebtoon) ReadingModeType.WEBTOON else mode
+    }
     val volumeKeysEnabled by Settings.readWithVolumeKeys.collectAsState()
     val volumeKeysInverted by Settings.readWithVolumeKeysInverted.collectAsState()
     val fullscreen by Settings.fullscreen.collectAsState()
@@ -366,7 +373,7 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
                             dragHandle = null,
                             contentWindowInsets = { WindowInsets() },
                         ) {
-                            SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
+                            SettingsPager(isWebtoon = isWebtoon, modifier = Modifier.fillMaxSize()) { page ->
                                 isColorFilter = page == 2
                                 appbarVisible = !isColorFilter
                             }

@@ -10,6 +10,4 @@ interface PreferenceType {
     val stringRes: Int
 
     val icon: ImageVector
-
-    val flagValue: Int
 }

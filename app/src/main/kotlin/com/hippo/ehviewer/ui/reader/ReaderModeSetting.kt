@@ -12,7 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -20,11 +19,9 @@ import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import com.hippo.ehviewer.collectAsState
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 
 @Composable
-fun ReaderModeSetting() = Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
+fun ReaderModeSetting(isWebtoon: Boolean) = Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
     SpinnerChoice(
         title = stringResource(id = R.string.pref_category_reading_mode),
         entries = stringArrayResource(id = com.hippo.ehviewer.R.array.viewers_selector),
@@ -38,14 +35,11 @@ fun ReaderModeSetting() = Column(modifier = Modifier.verticalScroll(rememberScro
         field = Settings.orientationMode.asMutableState(),
     )
     Spacer(modifier = Modifier.size(16.dp))
-    val isPager by Settings.readingMode.collectAsState { value ->
-        ReadingModeType.isPagerType(value)
-    }
-    Crossfade(targetState = isPager, label = "Pager") { pager ->
-        if (pager) {
-            PagerSetting()
-        } else {
+    Crossfade(targetState = isWebtoon, label = "Setting") { webtoon ->
+        if (webtoon) {
             WebtoonSetting()
+        } else {
+            PagerSetting()
         }
     }
 }
