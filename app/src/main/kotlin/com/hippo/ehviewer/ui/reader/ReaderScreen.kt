@@ -199,14 +199,16 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
             }
         }
     }
-    val defaultToWebtoon = remember(info) {
+    val webtoon = remember(info) {
         // Tags in database may or may not have the prefix "other:"
         info?.simpleTags?.any { it.endsWith("webtoon") } == true
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
     val readingMode by Settings.readingMode.collectAsState {
-        val mode = ReadingModeType.fromPreference(it)
-        if (mode == ReadingModeType.DEFAULT && defaultToWebtoon) ReadingModeType.WEBTOON else mode
+        when (val mode = ReadingModeType.fromPreference(it)) {
+            ReadingModeType.DEFAULT -> if (webtoon) ReadingModeType.WEBTOON else ReadingModeType.RIGHT_TO_LEFT
+            else -> mode
+        }
     }
     val volumeKeysEnabled by Settings.readWithVolumeKeys.collectAsState()
     val volumeKeysInverted by Settings.readWithVolumeKeysInverted.collectAsState()
