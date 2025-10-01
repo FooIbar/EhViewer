@@ -143,8 +143,9 @@ corrosion_import_crate(
         MANIFEST_PATH ../rust/Cargo.toml
         LOCKED
         FEATURES $<IF:$<VERSION_GREATER_EQUAL:${ANDROID_NATIVE_API_LEVEL},26>,android-26,android>
-        FLAGS $<$<NOT:$<CONFIG:Debug>>:-Z build-std=std,panic_abort -Z unstable-options -C panic=immediate-abort>
+        FLAGS $<$<NOT:$<CONFIG:Debug>>:-Z build-std=std,panic_abort>
 )
+corrosion_add_target_rustflags(ehviewer_rust $<$<NOT:$<CONFIG:Debug>>:-Z unstable-options -C panic=immediate-abort>)
 corrosion_link_libraries(ehviewer_rust android jnigraphics log webp webpdemux)
 
 # Build and link our app's native lib
