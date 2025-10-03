@@ -115,7 +115,6 @@ import com.ehviewer.core.ui.util.LocalWindowSizeClass
 import com.ehviewer.core.util.isAtLeastQ
 import com.ehviewer.core.util.isAtLeastS
 import com.ehviewer.core.util.withIOContext
-import com.hippo.ehviewer.EhApplication.Companion.initialized
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
@@ -201,7 +200,7 @@ class MainActivity : EhActivity() {
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen().setKeepOnScreenCondition { !initialized }
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         setMD3Content {
             val configuration = LocalConfiguration.current
