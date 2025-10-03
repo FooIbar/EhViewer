@@ -5,8 +5,10 @@ import android.view.ViewConfiguration
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -43,6 +45,7 @@ import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -93,7 +96,6 @@ import com.ehviewer.core.ui.component.LocalSideSheetState
 import com.ehviewer.core.ui.component.ProvideSideSheetContent
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.big.Download
-import com.ehviewer.core.ui.util.Await
 import com.ehviewer.core.ui.util.HapticFeedbackType
 import com.ehviewer.core.ui.util.asyncState
 import com.ehviewer.core.ui.util.ifTrueThen
@@ -113,7 +115,6 @@ import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.download.DownloadManager.downloadInfoList
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
@@ -148,6 +149,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
     var filterState by rememberSerializable { mutableStateOf(DownloadsFilterState(filterMode, Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
+    var isLoading by rememberSaveable { mutableStateOf(true) }
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     val animateItems by Settings.animateItems.collectAsState()
@@ -183,10 +185,19 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         },
     )
     val hint = stringResource(R.string.search_bar_hint, title)
-    val list = remember(filterState, invalidateKey) {
-        downloadInfoList.filterTo(mutableStateListOf()) { info ->
-            filterState.take(info)
+    val list = if (DownloadManager.isInitialized) {
+        remember(filterState, invalidateKey) {
+            DownloadManager.downloadInfoList.filterTo(mutableStateListOf()) { info ->
+                filterState.take(info)
+            }.also {
+                launch {
+                    delay(200)
+                    isLoading = false
+                }
+            }
         }
+    } else {
+        remember { mutableStateListOf() }
     }
 
     val newLabel = stringResource(R.string.new_label_title)
@@ -632,24 +643,26 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             }
         }
 
-        Await({ delay(200) }) {
-            if (list.isEmpty()) {
-                Column(
-                    modifier = Modifier.padding(realPadding).fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        imageVector = EhIcons.Big.Default.Download,
-                        contentDescription = null,
-                        modifier = Modifier.padding(16.dp),
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                    Text(
-                        text = stringResource(id = R.string.no_download_info),
-                        style = MaterialTheme.typography.headlineMedium,
-                    )
-                }
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface), contentAlignment = Alignment.Center) {
+                CircularWavyProgressIndicator()
+            }
+        } else if (list.isEmpty()) {
+            Column(
+                modifier = Modifier.padding(realPadding).fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(
+                    imageVector = EhIcons.Big.Default.Download,
+                    contentDescription = null,
+                    modifier = Modifier.padding(16.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = stringResource(id = R.string.no_download_info),
+                    style = MaterialTheme.typography.headlineMedium,
+                )
             }
         }
     }
@@ -689,9 +702,12 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     oldMode.groupByDownloadLabel,
                 )
                 val mode = SortMode.All[selected].copy(groupByDownloadLabel = checked)
-                DownloadManager.sortDownloads(mode)
-                sortMode = mode.flag
-                invalidateKey = !invalidateKey
+                if (mode != oldMode) {
+                    sortMode = mode.flag
+                    isLoading = true
+                    DownloadManager.sortDownloads(mode)
+                    invalidateKey = !invalidateKey
+                }
             }
             onClick(Icons.Default.FilterList) {
                 val downloadStates = contextOf<Context>().resources.getStringArray(com.hippo.ehviewer.R.array.download_state).toList()
