@@ -76,6 +76,7 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.OSUtils
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import logcat.AndroidLogcatLogger
@@ -131,6 +132,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
                 if (DownloadManager.labelList.isNotEmpty() && Settings.downloadFilterMode !in Settings.snapshot()) {
                     Settings.downloadFilterMode.value = DownloadsFilterMode.CUSTOM.flag
                 }
+                initializedSignal.complete(Unit)
                 DownloadManager.readMetadataFromLocal()
             }
             launch {
@@ -212,6 +214,8 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
     }
 
     companion object {
+        val initializedSignal = CompletableDeferred<Unit>()
+
         val ktorClient by lazy {
             if (isAtLeastSExtension7 && Settings.enableCronet.value) {
                 HttpClient(Cronet) {
