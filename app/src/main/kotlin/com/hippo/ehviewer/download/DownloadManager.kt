@@ -110,8 +110,11 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     init {
         launch {
             val mode = sortMode
-            if (mode != SortMode.Default) sortDownloads(mode)
-            isInitialized = true
+            if (mode != SortMode.Default) {
+                sortDownloads(mode)
+            } else {
+                isInitialized = true
+            }
         }
     }
 
@@ -411,7 +414,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun sortDownloads(mode: SortMode) = sortMutex.withLock {
+        isInitialized = false
         allInfoList.sortWith(mode.comparator())
+        isInitialized = true
     }
 
     suspend fun resetAllReadingProgress() = runCatching {
