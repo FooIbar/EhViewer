@@ -7,6 +7,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -43,6 +44,7 @@ import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -113,7 +115,6 @@ import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.download.DownloadManager.downloadInfoList
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
@@ -183,10 +184,14 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         },
     )
     val hint = stringResource(R.string.search_bar_hint, title)
-    val list = remember(filterState, invalidateKey) {
-        downloadInfoList.filterTo(mutableStateListOf()) { info ->
-            filterState.take(info)
+    val list = if (DownloadManager.isInitialized) {
+        remember(filterState, invalidateKey) {
+            DownloadManager.downloadInfoList.filterTo(mutableStateListOf()) { info ->
+                filterState.take(info)
+            }
         }
+    } else {
+        remember { mutableStateListOf() }
     }
 
     val newLabel = stringResource(R.string.new_label_title)
@@ -633,7 +638,11 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
 
         Await({ delay(200) }) {
-            if (list.isEmpty()) {
+            if (!DownloadManager.isInitialized) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularWavyProgressIndicator()
+                }
+            } else if (list.isEmpty()) {
                 Column(
                     modifier = Modifier.padding(realPadding).fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -689,9 +698,11 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     oldMode.groupByDownloadLabel,
                 )
                 val mode = SortMode.All[selected].copy(groupByDownloadLabel = checked)
-                DownloadManager.sortDownloads(mode)
-                sortMode = mode.flag
-                invalidateKey = !invalidateKey
+                if (mode != oldMode) {
+                    sortMode = mode.flag
+                    DownloadManager.sortDownloads(mode)
+                    invalidateKey = !invalidateKey
+                }
             }
             onClick(Icons.Default.FilterList) {
                 val downloadStates = contextOf<Context>().resources.getStringArray(com.hippo.ehviewer.R.array.download_state).toList()

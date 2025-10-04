@@ -13,6 +13,7 @@ import androidx.paging.cachedIn
 import androidx.savedstate.compose.serialization.serializers.MutableStateSerializer
 import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.util.withIOContext
+import com.hippo.ehviewer.EhApplication.Companion.initializedSignal
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
@@ -67,6 +68,8 @@ class GalleryListViewModel(lub: ListUrlBuilder, savedStateHandle: SavedStateHand
                     }.foldToLoadResult { result ->
                         LoadResult.Page(result.galleryInfoList, result.prev, result.next)
                     }
+                }.also {
+                    initializedSignal.await()
                 }
             }
         }
