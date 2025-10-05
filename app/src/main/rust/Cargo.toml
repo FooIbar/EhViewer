@@ -1,3 +1,5 @@
+cargo-features = ["panic-immediate-abort"]
+
 [package]
 name = "ehviewer_rust"
 version = "0.0.0"
@@ -34,7 +36,7 @@ reqwest = "0.12"
 tokio = { version = "1", features = ["macros"] }
 
 [profile.release]
-panic = "abort"
+panic = "immediate-abort"
 strip = true
 lto = true
 codegen-units = 1
