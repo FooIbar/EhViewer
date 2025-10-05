@@ -11,7 +11,6 @@ data class SortMode(val field: Field, val order: Order, val groupByDownloadLabel
         GID(0),
         TITLE(1),
         TIME(2),
-        LABEL(3),
         PAGES(4),
     }
 
@@ -23,12 +22,15 @@ data class SortMode(val field: Field, val order: Order, val groupByDownloadLabel
     fun comparator(): Comparator<DownloadInfo> {
         var comparator = when (field) {
             Field.GID -> compareBy { it.gid }
-            Field.TITLE, Field.LABEL -> compareBy { EhUtils.getSuitableTitle(it) }
+            Field.TITLE -> compareBy { EhUtils.getSuitableTitle(it) }
             Field.TIME -> compareBy { it.time }
-            Field.PAGES -> compareBy<DownloadInfo> { it.pages }.thenBy { EhUtils.getSuitableTitle(it) }
+            Field.PAGES -> compareBy<DownloadInfo> { it.pages }
         }
         if (order == Order.DESC) {
             comparator = comparator.reversed()
+        }
+        if (field == Field.PAGES) {
+            comparator = comparator.thenByDescending { it.time }
         }
         if (groupByDownloadLabel) {
             comparator = compareBy<DownloadInfo> { it.label }.then(comparator)
@@ -38,15 +40,16 @@ data class SortMode(val field: Field, val order: Order, val groupByDownloadLabel
 
     companion object {
         fun from(flag: Int): SortMode {
-            val field = flag and 0xF shr 1
-            val order = flag and 0x1
+            val fieldValue = flag and 0xF shr 1
+            val orderValue = flag and 0x1
             val groupByDownloadLabel = flag shr 4 == 1
-            require(field in Field.entries.indices && order in Order.entries.indices)
-            return SortMode(Field.entries[field], Order.entries[order], groupByDownloadLabel)
+            val field = Field.entries.find { it.value == fieldValue } ?: Default.field
+            val order = Order.entries.find { it.value == orderValue } ?: Default.order
+            return SortMode(field, order, groupByDownloadLabel)
         }
         val Default = SortMode(Field.TIME, Order.DESC)
         val All = listOf(
-            SortMode(Field.TIME, Order.DESC),
+            Default,
             SortMode(Field.TIME, Order.ASC),
             SortMode(Field.GID, Order.DESC),
             SortMode(Field.GID, Order.ASC),
