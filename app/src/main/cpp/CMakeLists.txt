@@ -143,7 +143,7 @@ corrosion_import_crate(
         MANIFEST_PATH ../rust/Cargo.toml
         LOCKED
         FEATURES $<IF:$<VERSION_GREATER_EQUAL:${ANDROID_NATIVE_API_LEVEL},26>,android-26,android>
-        FLAGS $<$<NOT:$<CONFIG:Debug>>:-Z build-std=std,panic_abort -Z build-std-features=>
+        FLAGS $<$<NOT:$<CONFIG:Debug>>:-Z build-std -Z build-std-features=>
 )
 corrosion_link_libraries(ehviewer_rust android jnigraphics log webp webpdemux)
 
