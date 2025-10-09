@@ -109,11 +109,11 @@ fun PagerItem(
                     // DrawablePainter <: RememberObserver
                     painter = remember(painter) { painter },
                     contentDescription = null,
-                    modifier = contentModifier.fillMaxSize().thenIf(drawable is Animatable) {
+                    modifier = Modifier.thenIf(drawable is Animatable) {
                         onVisibilityChanged(minDurationMs = 33, minFractionVisible = 0.5f) {
                             drawable!!.setVisible(it, false)
                         }
-                    },
+                    }.then(contentModifier).fillMaxSize(),
                     contentScale = contentScale,
                     colorFilter = when {
                         grayScale && invert -> grayScaleAndInvertFilter
