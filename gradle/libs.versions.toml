@@ -1,5 +1,5 @@
 [versions]
-aboutlibraries = "12.2.4"
+aboutlibraries = "13.0.0"
 accompanist = "0.37.3"
 agp = "8.13.0"
 androidx-activity = "1.12.0-alpha09"
@@ -140,7 +140,8 @@ kotlinx-serialization = ["serialization-cbor", "serialization-json", "serializat
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-systemservices"]
 
 [plugins]
-aboutlibrariesPlugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
+aboutlibrariesAndroid = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlibraries" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }

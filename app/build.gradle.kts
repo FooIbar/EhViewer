@@ -9,7 +9,8 @@ plugins {
     alias(libs.plugins.ehviewer.android.application)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.aboutlibrariesPlugin)
+    alias(libs.plugins.aboutlibraries)
+    alias(libs.plugins.aboutlibrariesAndroid)
     alias(libs.plugins.baselineprofile)
 }
 
