@@ -18,7 +18,7 @@ import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.openBrowser
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
-import com.mikepenz.aboutlibraries.ui.compose.android.rememberLibraries
+import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -37,7 +37,7 @@ fun AnimatedVisibilityScope.LicenseScreen(navigator: DestinationsNavigator) = Sc
             )
         },
     ) { paddingValues ->
-        val libraries by rememberLibraries(com.hippo.ehviewer.R.raw.aboutlibraries)
+        val libraries by produceLibraries(com.hippo.ehviewer.R.raw.aboutlibraries)
         LibrariesContainer(
             libraries = libraries,
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
