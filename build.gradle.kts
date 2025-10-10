@@ -12,7 +12,8 @@ plugins {
     alias(libs.plugins.moko.resources) apply false
     alias(libs.plugins.room) apply false
     alias(libs.plugins.spotless) apply false
-    alias(libs.plugins.aboutlibrariesPlugin) apply false
+    alias(libs.plugins.aboutlibraries) apply false
+    alias(libs.plugins.aboutlibrariesAndroid) apply false
     alias(libs.plugins.composeCompilerReportGenerator) apply false
     alias(libs.plugins.android.test) apply false
     alias(libs.plugins.baselineprofile) apply false
