@@ -11,6 +11,7 @@ import android.text.style.URLSpan
 import androidx.annotation.ColorInt
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -89,6 +91,7 @@ import com.ehviewer.core.model.GalleryComment
 import com.ehviewer.core.ui.util.animateFloatMergePredictiveBackAsState
 import com.ehviewer.core.ui.util.snackBarPadding
 import com.ehviewer.core.ui.util.thenIf
+import com.ehviewer.core.util.isAtLeastP
 import com.ehviewer.core.util.launch
 import com.ehviewer.core.util.launchIO
 import com.ehviewer.core.util.logcat
@@ -454,6 +457,11 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         }
                     }
                 }
+            }
+            if (!isAtLeastP) {
+                // Workaround for crash when 0-sized TextField is focused
+                // https://issuetracker.google.com/440964236
+                Box(Modifier.size(1.dp).focusable())
             }
             Surface(
                 modifier = Modifier.align(Alignment.BottomCenter).layout { measurable, constraints ->
