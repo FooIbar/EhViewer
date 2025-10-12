@@ -1,5 +1,29 @@
 # 变更日志
 
+## [未发布]
+
+### 改进
+
+* [阅读器] 支持禁用使用音量键翻页 [#2593](https://github.com/FooIbar/EhViewer/issues/2593)
+* 视搜索警告为错误 [#2604](https://github.com/FooIbar/EhViewer/issues/2604)
+* 余额不足时停止下载并显示通知 [#2479](https://github.com/FooIbar/EhViewer/issues/2479)
+* [阅读器] 使用默认阅读模式时对带有 webtoon 标签的画廊自动使用条漫模式 [#2632](https://github.com/FooIbar/EhViewer/issues/2632)
+* 优化按页数排序下载项目的速度
+* 开启显示标签投票状态时为 power >= 100 的标签添加下划线
+* 杂项优化
+
+### Bug 修复
+
+* Android 16 QPR1 上画廊详情中的标签文本对比度不足
+* 初始化 DownloadManager 用时过长导致 ANR [#2588](https://github.com/FooIbar/EhViewer/issues/2588)
+* 某些设备上无法下载名称较长的画廊 [#2607](https://github.com/FooIbar/EhViewer/issues/2607)
+* 评论区链接实际可点击区域比画面显示上的略长 [#2615](https://github.com/FooIbar/EhViewer/issues/2615)
+* 主页快速搜索再次打开出现以前的画廊重复出现在最上层 [#2628](https://github.com/FooIbar/EhViewer/issues/2628)
+* 非条漫模式下原始大小较小的动图不播放 [#2652](https://github.com/FooIbar/EhViewer/issues/2652)
+* Android 9 以下打开评论区切屏后回来会闪退 [#2655](https://github.com/FooIbar/EhViewer/issues/2655)
+* 杂项修复
+
+
 ## [1.14.3] - 2025-09-01
 
 ### 新功能
