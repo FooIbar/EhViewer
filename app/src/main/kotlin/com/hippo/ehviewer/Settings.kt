@@ -118,7 +118,7 @@ object Settings : DataStorePreferences(null) {
     val desktopSite = boolPref("desktop_site", true)
 
     // About
-    val backupBeforeUpdate = boolPref("backup_before_update", true)
+    val backupBeforeUpdate = boolPref("backup_before_update", false)
     val useCIUpdateChannel = boolPref("ci_update_channel", AppConfig.isSnapshot)
     val updateIntervalDays = intPref("update_interval_days", 7)
 
