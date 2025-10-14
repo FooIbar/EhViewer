@@ -123,7 +123,7 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
     }
 }
 
-context(ctx: Context, _: DialogState)
+context(_: Context, _: DialogState)
 suspend fun showNewVersion(release: Release) {
     awaitConfirmationOrCancel(
         confirmText = R.string.download,
@@ -140,7 +140,7 @@ suspend fun showNewVersion(release: Release) {
     }
     if (Settings.backupBeforeUpdate.value) {
         val time = ReadableTime.getFilenamableTime()
-        EhDB.exportDB(ctx, (downloadLocation / "$time.db"))
+        EhDB.exportDB(downloadLocation / "$time.db")
     }
     // TODO: Download in the background and show progress in notification
     val path = AppConfig.tempDir / "update.apk"
