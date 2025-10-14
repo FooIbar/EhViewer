@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composer
 import androidx.compose.runtime.tooling.ComposeStackTraceMode
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.coroutineScope
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import coil3.EventListener
 import coil3.SingletonImageLoader
 import coil3.asImage
@@ -244,6 +245,10 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             }
         }
 
-        val searchDatabase by lazy { roomDb<SearchDatabase>("search_database.db") }
+        val searchDatabase by lazy {
+            roomDb<SearchDatabase>("search_database.db") {
+                setDriver(AndroidSQLiteDriver())
+            }
+        }
     }
 }
