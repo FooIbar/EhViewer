@@ -88,7 +88,7 @@ fun ColorFilterSetting() = Column(modifier = Modifier.verticalScroll(rememberScr
     SpinnerChoice(
         title = stringResource(id = R.string.pref_color_filter_mode),
         entries = stringArrayResource(id = com.hippo.ehviewer.R.array.color_filter_modes),
-        values = arrayOf("0", "1", "2", "3", "4", "5"),
+        values = listOf(0, 1, 2, 3, 4, 5),
         field = Settings.colorFilterMode.asMutableState(),
     )
     SwitchChoice(

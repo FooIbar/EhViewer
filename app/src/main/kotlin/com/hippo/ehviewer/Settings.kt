@@ -194,6 +194,10 @@ object Settings : DataStorePreferences(null) {
             if (pref[downloadFilterMode] == DownloadsFilterMode.ARTIST.flag && pref[recentDownloadLabel] == null) {
                 pref[recentDownloadLabel] = ""
             }
+            val orientation = pref[orientationMode]
+            if (OrientationType.entries.none { it.prefValue == orientation }) {
+                pref.remove(orientationMode)
+            }
         }
     }
 

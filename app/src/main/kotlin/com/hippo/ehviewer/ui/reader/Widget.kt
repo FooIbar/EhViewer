@@ -28,10 +28,10 @@ import androidx.compose.ui.unit.dp
 import com.ehviewer.core.ui.component.Slider
 
 @Composable
-fun SpinnerChoice(title: String, entries: Array<String>, values: Array<String>, field: MutableState<Int>) {
+fun SpinnerChoice(title: String, entries: Array<String>, values: List<Int>, field: MutableState<Int>) {
     var value by field
     var dropdown by remember { mutableStateOf(false) }
-    val data = remember { entries zip values.map { v -> v.toInt() } }
+    val data = remember { entries zip values }
     Row(
         modifier = Modifier.fillMaxWidth().height(48.dp).clickable { dropdown = true }.padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,

@@ -220,12 +220,12 @@
         <item>@string/automatic_background</item>
     </string-array>
 
-    <string-array name="reader_themes_values">
+    <integer-array name="reader_themes_values">
         <item>1</item>
         <item>2</item>
         <item>0</item>
         <item>3</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="color_filter_modes" tools:ignore="InconsistentArrays">
         <item>@string/label_default</item>
@@ -293,14 +293,14 @@
         <item>@string/webtoon_side_padding_25</item>
     </string-array>
 
-    <string-array name="webtoon_side_padding_values">
+    <integer-array name="webtoon_side_padding_values">
         <item>0</item>
         <item>5</item>
         <item>10</item>
         <item>15</item>
         <item>20</item>
         <item>25</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="update_frequency">
         <item>@string/update_frequency_never</item>

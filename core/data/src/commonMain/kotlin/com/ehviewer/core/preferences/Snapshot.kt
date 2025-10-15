@@ -9,6 +9,7 @@ open class Snapshot internal constructor(private val delegate: Preferences) {
 }
 
 class MutableSnapshot internal constructor(private val delegate: MutablePreferences) : Snapshot(delegate) {
+    fun <T> remove(pref: PrefDelegate<T>): T = delegate.remove(pref.key)
     operator fun <T> set(pref: PrefDelegate<T>, value: T) {
         if (value == null) {
             delegate.remove(pref.key)
