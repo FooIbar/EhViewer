@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.integerArrayResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import com.ehviewer.core.i18n.R
@@ -21,7 +22,7 @@ fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberS
     SpinnerChoice(
         title = stringResource(id = R.string.pref_reader_theme),
         entries = stringArrayResource(id = com.hippo.ehviewer.R.array.reader_themes),
-        values = stringArrayResource(id = com.hippo.ehviewer.R.array.reader_themes_values),
+        values = integerArrayResource(id = com.hippo.ehviewer.R.array.reader_themes_values).toList(),
         field = Settings.readerTheme.asMutableState(),
     )
     SwitchChoice(
