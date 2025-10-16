@@ -39,7 +39,7 @@
         <activity
             android:name=".ui.MainActivity"
             android:banner="@mipmap/ic_leanback_banner"
-            android:configChanges="screenSize"
+            android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.Splash"
