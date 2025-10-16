@@ -39,4 +39,54 @@ open class BaseGalleryInfo(
     override var favoriteSlot: Int = NOT_FAVORITED,
     override var favoriteName: String? = null,
     override var favoriteNote: String? = null,
-) : GalleryInfo
+) : GalleryInfo {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is BaseGalleryInfo) return false
+
+        if (gid != other.gid) return false
+        if (category != other.category) return false
+        if (disowned != other.disowned) return false
+        if (rating != other.rating) return false
+        if (rated != other.rated) return false
+        if (pages != other.pages) return false
+        if (thumbWidth != other.thumbWidth) return false
+        if (thumbHeight != other.thumbHeight) return false
+        if (favoriteSlot != other.favoriteSlot) return false
+        if (token != other.token) return false
+        if (title != other.title) return false
+        if (titleJpn != other.titleJpn) return false
+        if (thumbKey != other.thumbKey) return false
+        if (posted != other.posted) return false
+        if (uploader != other.uploader) return false
+        if (simpleTags != other.simpleTags) return false
+        if (simpleLanguage != other.simpleLanguage) return false
+        if (favoriteName != other.favoriteName) return false
+        if (favoriteNote != other.favoriteNote) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = gid.hashCode()
+        result = 31 * result + category
+        result = 31 * result + disowned.hashCode()
+        result = 31 * result + rating.hashCode()
+        result = 31 * result + rated.hashCode()
+        result = 31 * result + pages
+        result = 31 * result + thumbWidth
+        result = 31 * result + thumbHeight
+        result = 31 * result + favoriteSlot
+        result = 31 * result + token.hashCode()
+        result = 31 * result + (title?.hashCode() ?: 0)
+        result = 31 * result + (titleJpn?.hashCode() ?: 0)
+        result = 31 * result + (thumbKey?.hashCode() ?: 0)
+        result = 31 * result + (posted?.hashCode() ?: 0)
+        result = 31 * result + (uploader?.hashCode() ?: 0)
+        result = 31 * result + (simpleTags?.hashCode() ?: 0)
+        result = 31 * result + (simpleLanguage?.hashCode() ?: 0)
+        result = 31 * result + (favoriteName?.hashCode() ?: 0)
+        result = 31 * result + (favoriteNote?.hashCode() ?: 0)
+        return result
+    }
+}
