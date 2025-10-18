@@ -4,6 +4,7 @@ import androidx.collection.SieveCache
 import androidx.collection.mutableIntObjectMapOf
 import arrow.fx.coroutines.ExitCase
 import arrow.fx.coroutines.bracketCase
+import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.util.isAtLeastO
 import com.ehviewer.core.util.withNonCancellableContext
 import com.hippo.ehviewer.EhDB
@@ -35,7 +36,7 @@ private val progressScope = CoroutineScope(Dispatchers.IO)
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 256 * 1024 * 1024
 
-abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
+abstract class PageLoader(val scope: CoroutineScope, val info: GalleryInfo?, startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
     var startPage = startPage.coerceIn(0, size - 1)
 
     private val jobs = mutableIntObjectMapOf<Job>()
@@ -111,14 +112,14 @@ abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: I
 
     override fun close() {
         lock.write { cache.evictAll() }
-        if (gid != 0L) {
+        info?.run {
             progressScope.launch {
                 EhDB.putReadProgress(gid, startPage)
             }
         }
     }
 
-    protected abstract val title: String
+    abstract val title: String
 
     protected abstract fun getImageExtension(index: Int): String?
 
