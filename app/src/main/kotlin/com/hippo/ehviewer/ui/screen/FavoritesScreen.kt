@@ -104,6 +104,8 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
     var urlBuilder by viewModel.urlBuilder
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
+    var fabExpanded by remember { mutableStateOf(false) }
+    var fabHidden by remember { mutableStateOf(false) }
 
     // Derived State
     val keyword = urlBuilder.keyword
@@ -163,6 +165,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
                         val newCat = index - 2
                         refresh(FavListUrlBuilder(newCat))
                         Settings.recentFavCat = newCat
+                        fabHidden = false
                         launch { sheetState.close() }
                     },
                     colors = listItemOnDrawerColor(urlBuilder.favCat == index - 2),
@@ -171,8 +174,6 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         }
     }
 
-    var fabExpanded by remember { mutableStateOf(false) }
-    var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
     val selectMode = checkedInfoMap.isNotEmpty()
     DrawerHandle(!selectMode && !searchBarExpanded)
