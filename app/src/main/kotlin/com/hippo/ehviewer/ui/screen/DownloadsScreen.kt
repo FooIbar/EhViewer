@@ -228,6 +228,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     fun switchLabel(label: String?) {
         Settings.recentDownloadLabel.value = label
         filterState = filterState.copy(label = label)
+        fabHidden = false
     }
 
     LaunchedEffect(filterState) {
