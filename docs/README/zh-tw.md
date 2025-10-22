@@ -15,7 +15,7 @@
 </p>
 
 <h1 align="center">
-  <img src="https://github.com/Ehviewer-Overhauled/Art/blob/master/launcher_icon-web.svg" width="200" alt="EhViewer">
+  <img src="https://github.com/FooIbar/EhViewer-art/blob/master/launcher_icon-web.svg" width="200" alt="EhViewer">
   <br>EhViewer<br>
 </h1>
 
@@ -75,13 +75,13 @@
 | Marshmallow | 6.0           | 有限支援，無保證 |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
-<img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
+<img alt="Get it on GitHub" src="https://github.com/FooIbar/EhViewer-art/blob/master/get-it-on-github.svg" width="200px"/>
 </a>
 
 # 截圖
 
-![screenshot-01](https://github.com/Ehviewer-Overhauled/Art/blob/master/screenshot-01.png)
-![screenshot-02](https://github.com/Ehviewer-Overhauled/Art/blob/master/screenshot-02.png)
+![screenshots-01](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-01.webp)
+![screenshots-02](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-02.webp)
 
 # 感謝
 

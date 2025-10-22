@@ -15,7 +15,7 @@
 </p>
 
 <h1 align="center">
-  <img src="https://github.com/Ehviewer-Overhauled/Art/blob/master/launcher_icon-web.svg" width="200" alt="EhViewer">
+  <img src="https://github.com/FooIbar/EhViewer-art/blob/master/launcher_icon-web.svg" width="200" alt="EhViewer">
   <br>EhViewer<br>
 </h1>
 
@@ -78,13 +78,13 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 *Devices running Android 6 need to have the [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) certificate installed
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
-<img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
+<img alt="Get it on GitHub" src="https://github.com/FooIbar/EhViewer-art/blob/master/get-it-on-github.svg" width="200px"/>
 </a>
 
 # Screenshot
 
-![screenshot-01](https://github.com/Ehviewer-Overhauled/Art/blob/master/screenshot-01.png)
-![screenshot-02](https://github.com/Ehviewer-Overhauled/Art/blob/master/screenshot-02.png)
+![screenshots-01](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-01.webp)
+![screenshots-02](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-02.webp)
 
 # Thanks
 
