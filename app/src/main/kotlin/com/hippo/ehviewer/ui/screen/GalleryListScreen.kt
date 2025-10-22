@@ -172,15 +172,11 @@ fun AnimatedVisibilityScope.GalleryListScreen(
 
     LaunchedEffect(urlBuilder) {
         if (urlBuilder.category != EhUtils.NONE) category = urlBuilder.category
-        if (urlBuilder.mode != MODE_TOPLIST) {
-            var keyword = urlBuilder.keyword.orEmpty()
-            if (urlBuilder.mode == MODE_TAG) {
-                keyword = wrapTagKeyword(keyword)
-            }
-            if (keyword.isNotBlank()) {
-                searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
-            }
+        var keyword = urlBuilder.keyword.takeUnless { urlBuilder.mode == MODE_TOPLIST }.orEmpty()
+        if (urlBuilder.mode == MODE_TAG) {
+            keyword = wrapTagKeyword(keyword)
         }
+        searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
     }
 
     val density = LocalDensity.current
