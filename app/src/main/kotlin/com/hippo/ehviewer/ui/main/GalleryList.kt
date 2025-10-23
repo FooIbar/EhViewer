@@ -32,6 +32,7 @@ import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +45,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -66,6 +68,15 @@ import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
+
+@Stable
+operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
+    val l = this@plus
+    override fun calculateBottomPadding() = l.calculateBottomPadding() + r.calculateBottomPadding()
+    override fun calculateLeftPadding(layoutDirection: LayoutDirection) = l.calculateLeftPadding(layoutDirection) + r.calculateLeftPadding(layoutDirection)
+    override fun calculateRightPadding(layoutDirection: LayoutDirection) = l.calculateRightPadding(layoutDirection) + r.calculateRightPadding(layoutDirection)
+    override fun calculateTopPadding() = l.calculateTopPadding() + r.calculateTopPadding()
+}
 
 @Composable
 context(_: CoroutineScope, _: Context)
