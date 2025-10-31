@@ -16,7 +16,7 @@
 package com.hippo.ehviewer
 
 import android.content.Context
-import android.net.Uri
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import arrow.fx.coroutines.resource
 import arrow.fx.coroutines.resourceScope
 import com.ehviewer.core.data.model.asEntity
@@ -32,6 +32,7 @@ import com.ehviewer.core.database.model.HistoryInfo
 import com.ehviewer.core.database.model.LocalFavoriteInfo
 import com.ehviewer.core.database.model.ProgressInfo
 import com.ehviewer.core.database.model.QuickSearch
+import com.ehviewer.core.files.delete
 import com.ehviewer.core.files.sendTo
 import com.ehviewer.core.model.GalleryInfo
 import com.hippo.ehviewer.download.DownloadManager
@@ -43,6 +44,7 @@ import splitties.arch.room.roomDb
 object EhDB {
     private const val DB_NAME = "eh.db"
     private val db = roomDb<EhDatabase>(DB_NAME) {
+        setDriver(AndroidSQLiteDriver())
         addMigrations(Schema17to18())
     }
 
@@ -283,17 +285,18 @@ object EhDB {
         dbFile.toOkioPath() sendTo file
     }
 
-    suspend fun importDB(context: Context, uri: Uri) = resourceScope {
+    suspend fun importDB(context: Context, file: Path) = resourceScope {
         val tempDBName = "tmp.db"
+        val dbFile = context.getDatabasePath(tempDBName).toOkioPath()
+        file sendTo dbFile
         val oldDB = resource {
-            context.deleteDatabase(tempDBName)
             roomDb<EhDatabase>(tempDBName) {
-                createFromInputStream { context.contentResolver.openInputStream(uri) }
+                setDriver(AndroidSQLiteDriver())
                 addMigrations(Schema17to18())
             }
         } release { db ->
             db.close()
-            context.deleteDatabase(tempDBName)
+            dbFile.delete()
         }
 
         db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
