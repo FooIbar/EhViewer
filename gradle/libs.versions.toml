@@ -1,7 +1,7 @@
 [versions]
 aboutlibraries = "13.2.1"
 accompanist = "0.37.3"
-agp = "8.13.2"
+agp = "9.0.0"
 androidx-activity = "1.12.2"
 androidx-appcompat = "1.7.1"
 androidx-biometric = "1.4.0-alpha05"
@@ -144,13 +144,13 @@ splitties = ["splitties-appctx", "splitties-systemservices"]
 aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
 aboutlibrariesAndroid = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlibraries" }
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-builtInKotlin = { id = "com.android.built-in-kotlin", version.ref = "agp" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
 composeCompilerReportGenerator = { id = "dev.shreyaspatil.compose-compiler-report-generator", version = "1.5.0" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
