@@ -22,6 +22,7 @@ kotlin {
         androidMain {
             dependencies {
                 api(project.dependencies.platform(libs.compose.bom))
+                api(libs.bundles.compose)
                 implementation(libs.androidx.activity.compose)
             }
         }
