@@ -180,10 +180,6 @@ dependencies {
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.browser)
 
-    // https://developer.android.com/jetpack/androidx/releases/compose-material3
-    api(platform(libs.compose.bom))
-    implementation(libs.bundles.compose)
-
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.compiler)
 

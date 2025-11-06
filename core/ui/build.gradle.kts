@@ -1,5 +1,3 @@
-import org.jetbrains.compose.compose
-
 plugins {
     alias(libs.plugins.ehviewer.multiplatform.library.compose)
 }
@@ -9,20 +7,20 @@ kotlin {
         commonMain {
             dependencies {
                 api(projects.core.common)
-                api(compose.material3)
-                api(compose.materialIconsExtended)
+                api(libs.compose.material3)
+                api(libs.compose.material.icons.extended)
                 api(libs.compose.material3.adaptive)
                 api(libs.androidx.lifecycle.compose)
                 api(libs.androidx.lifecycle.viewmodel.compose)
-                implementation(compose("org.jetbrains.compose.ui:ui-backhandler"))
-                implementation(compose.preview)
+                implementation(libs.compose.ui.backhandler)
+                implementation(libs.compose.ui.tooling.preview)
             }
         }
 
         androidMain {
             dependencies {
                 api(project.dependencies.platform(libs.compose.bom))
-                api(libs.bundles.compose)
+                api(libs.compose.foundation)
                 implementation(libs.androidx.activity.compose)
             }
         }
