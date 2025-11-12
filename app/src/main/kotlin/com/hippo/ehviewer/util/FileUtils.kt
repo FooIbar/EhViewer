@@ -79,9 +79,9 @@ object FileUtils {
      */
     // From https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/FileUtils.java;l=1142;drc=7b647e4ea0e92f33c19b315eaed364ee067ba0aa
     fun sanitizeFilename(name: String): String {
-        if (name.isEmpty() || "." == name || ".." == name) {
-            return "(invalid)"
-        }
+        // Windows does not support filenames ending with a space or a period
+        val name = name.trimEnd(' ', '.')
+        check(name.isNotEmpty()) { "Invalid filename" }
         return buildString(name.length) {
             name.forEach {
                 if (isValidFatFilenameChar(it)) {
