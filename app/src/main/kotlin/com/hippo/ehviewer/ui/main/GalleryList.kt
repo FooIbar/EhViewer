@@ -207,7 +207,6 @@ fun GalleryList(
                     }
                 }
             }
-
             is LoadState.Error -> {
                 Surface {
                     ErrorTip(
@@ -216,7 +215,6 @@ fun GalleryList(
                     )
                 }
             }
-
             is LoadState.NotLoading -> if (data.itemCount == 0) {
                 // Only for local favorites as empty gallery lists from network are treated as error
                 ErrorTip(modifier = Modifier.widthIn(max = 228.dp), text = stringResource(id = R.string.gallery_list_empty_hit))

@@ -180,7 +180,6 @@ fun WebView(
                     is WebContent.Url -> {
                         wv.loadUrl(content.url, content.additionalHttpHeaders)
                     }
-
                     is WebContent.Data -> {
                         wv.loadDataWithBaseURL(
                             content.baseUrl,
@@ -190,14 +189,12 @@ fun WebView(
                             content.historyUrl,
                         )
                     }
-
                     is WebContent.Post -> {
                         wv.postUrl(
                             content.url,
                             content.postData,
                         )
                     }
-
                     is WebContent.NavigatorOnly -> {
                         // NO-OP
                     }
@@ -502,11 +499,9 @@ class WebViewNavigator(private val coroutineScope: CoroutineScope) {
                     event.encoding,
                     event.historyUrl,
                 )
-
                 is NavigationEvent.LoadUrl -> {
                     loadUrl(event.url, event.additionalHttpHeaders)
                 }
-
                 is NavigationEvent.PostUrl -> {
                     postUrl(event.url, event.postData)
                 }

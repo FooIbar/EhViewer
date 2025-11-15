@@ -42,7 +42,6 @@ object GalleryListUrlParser {
                     mode = if (head == "uploader") ListUrlBuilder.MODE_UPLOADER else ListUrlBuilder.MODE_TAG
                     keyword = segments[1].decodeURLQueryComponent(plusIsSpace = true)
                 }
-
                 "toplist.php" -> {
                     val tl = url.parameters["tl"]
                     if (tl != null && tl in arrayOf("11", "12", "13", "15")) {
@@ -55,7 +54,6 @@ object GalleryListUrlParser {
                         null
                     }
                 }
-
                 else -> {
                     val category = EhUtils.getCategory(head)
                     if (category != EhUtils.UNKNOWN) {

@@ -233,7 +233,6 @@ private suspend fun doModifyFavorites(
             }
             false
         }
-
         LOCAL_FAVORITED -> {
             if (localFavorited) {
                 EhDB.removeLocalFavorites(galleryInfo)
@@ -248,7 +247,6 @@ private suspend fun doModifyFavorites(
             }
             !localFavorited
         }
-
         in 0..9 -> {
             EhEngine.modifyFavorites(gid, token, slot, note)
             favoriteSlot = slot
@@ -256,7 +254,6 @@ private suspend fun doModifyFavorites(
             favoriteNote = note
             true
         }
-
         else -> throw EhException("Invalid favorite slot!")
     }
     FavouriteStatusRouter.notify(galleryInfo)
@@ -305,13 +302,11 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
             EhDB.putHistoryInfo(info)
             navToReader(info)
         }
-
         1 -> if (downloaded) {
             confirmRemoveDownload(info)
         } else {
             startDownload(false, info)
         }
-
         2 -> if (favorited) {
             runSuspendCatching {
                 removeFromFavorites(info)
@@ -327,7 +322,6 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
                 tip(R.string.add_to_favorite_failure)
             }
         }
-
         3 -> showMoveDownloadLabel(info)
     }
 }

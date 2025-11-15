@@ -130,7 +130,6 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                     }
                     src.right().decodeCoil(checkExtraneousAds)
                 }
-
                 is ByteBufferSource -> {
                     if (isAtLeastP && !isAtLeastU) {
                         rewriteGifSource(src.source)
