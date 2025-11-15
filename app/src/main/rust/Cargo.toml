@@ -1,3 +1,5 @@
+cargo-features = ["trim-paths"]
+
 [package]
 name = "ehviewer_rust"
 version = "0.0.0"
