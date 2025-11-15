@@ -113,14 +113,12 @@ class DownloadService :
                 val label = intent.getStringExtra(KEY_LABEL)
                 deferredMgr.await().startDownload(decodeFromSavedState(gi), label)
             }
-
             ACTION_START_RANGE -> {
                 val gidList = intent.getLongArrayExtra(KEY_GID_LIST)
                 if (gidList != null) {
                     deferredMgr.await().startRangeDownload(gidList)
                 }
             }
-
             ACTION_START_ALL -> deferredMgr.await().startAllDownload()
             ACTION_STOP_ALL -> deferredMgr.await().stopAllDownload()
             ACTION_CLEAR -> clear()
@@ -388,7 +386,6 @@ class DownloadService :
                             notifyManager.notify(id, builder.build())
                         }
                     }
-
                     Ops.Cancel -> notifyManager.cancel(id)
                     Ops.StartForeground -> service.startForeground(id, builder.build())
                 }

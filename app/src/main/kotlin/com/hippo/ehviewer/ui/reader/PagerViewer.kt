@@ -204,20 +204,17 @@ private fun PageContainer(
                             moveToNext()
                         }
                     }
-
                     NavigationRegion.PREV -> {
                         val canPan = if (isRtl) panLeft(distance, bounds) else panRight(distance, bounds)
                         if (!canPan) {
                             moveToPrevious()
                         }
                     }
-
                     NavigationRegion.RIGHT -> {
                         if (!panLeft(distance, bounds)) {
                             if (isRtl) moveToPrevious() else moveToNext()
                         }
                     }
-
                     NavigationRegion.LEFT -> {
                         if (!panRight(distance, bounds)) {
                             if (isRtl) moveToNext() else moveToPrevious()

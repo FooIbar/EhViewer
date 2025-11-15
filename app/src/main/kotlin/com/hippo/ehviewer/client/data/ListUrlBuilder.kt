@@ -212,7 +212,6 @@ data class ListUrlBuilder(
                 }
             }
         }.buildString()
-
         MODE_UPLOADER, MODE_TAG -> {
             val path = if (mode == MODE_UPLOADER) "uploader" else "tag"
             ehUrl(listOf(path, requireNotNull(mKeyword))) {
@@ -222,7 +221,6 @@ data class ListUrlBuilder(
                 addQueryParameterIfNotBlank("range", range.takeIf { it > 0 }?.toString())
             }.buildString()
         }
-
         MODE_WHATS_HOT -> EhUrl.popularUrl
         MODE_IMAGE_SEARCH -> ehUrl {
             addQueryParameter("f_shash", requireNotNull(hash))
@@ -231,7 +229,6 @@ data class ListUrlBuilder(
             addQueryParameter("tl", requireNotNull(mKeyword))
             addQueryParameterIfNotBlank("p", jumpTo)
         }.buildString()
-
         else -> throw IllegalStateException("Unexpected value: $mode")
     }
 

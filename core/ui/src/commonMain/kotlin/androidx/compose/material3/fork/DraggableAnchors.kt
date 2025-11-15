@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("ktlint:standard:kdoc")
+
 package androidx.compose.material3.fork
 
 /**

@@ -22,7 +22,6 @@ fun LoadStateIndicator(
     is LoadState.Loading -> {
         LinearWavyProgressIndicator(modifier = modifier)
     }
-
     is LoadState.Error -> {
         Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = state.error.displayString())
@@ -31,6 +30,5 @@ fun LoadStateIndicator(
             }
         }
     }
-
     is LoadState.NotLoading -> Unit
 }

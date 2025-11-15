@@ -86,6 +86,7 @@ internal abstract class HorizontalDragGestureNode(
     private fun startListeningForEvents() {
         isListeningForEvents = true
 
+        @Suppress("ktlint:standard:kdoc")
         /**
          * To preserve the original behavior we had (before the Modifier.Node migration) we need to
          * scope the DragStopped and DragCancel methods to the node's coroutine scope instead of using
