@@ -49,10 +49,8 @@ endif ()
 set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}")
 ExternalProject_Add(
         nettle
-        GIT_REPOSITORY https://gitlab.com/gnutls/nettle.git
-        GIT_TAG nettle_3.10.2_release_20250626
-        GIT_SHALLOW 1
-        GIT_CONFIG core.autocrlf=input
+        URL https://ftpmirror.gnu.org/nettle/nettle-3.10.2.tar.gz
+        URL_MD5 b28bcbf6f045ff007940a9401673600d
         CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
         BUILD_COMMAND bash -c "make -j4 libnettle.a CFLAGS='${CMAKE_C_FLAGS} -Qunused-arguments'"
         INSTALL_COMMAND ""
