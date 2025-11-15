@@ -1,5 +1,5 @@
 [toolchain]
-channel = "nightly-2025-10-05"
+channel = "nightly-2025-11-15"
 components = ["rustfmt", "clippy", "rust-src"]
 targets = ["aarch64-linux-android", "x86_64-linux-android"]
 profile = "minimal"
