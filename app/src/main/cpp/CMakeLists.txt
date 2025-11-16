@@ -54,8 +54,8 @@ ExternalProject_Add(
         nettle
         URL https://ftpmirror.gnu.org/nettle/nettle-3.10.2.tar.gz
         URL_MD5 b28bcbf6f045ff007940a9401673600d
-        CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
-        BUILD_COMMAND bash -c "make -j4 libnettle.a CFLAGS='${CMAKE_C_FLAGS} -Qunused-arguments'"
+        CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET} ${CMAKE_C_FLAGS}
+        BUILD_COMMAND bash -c "make -j4 libnettle.a"
         INSTALL_COMMAND ""
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS <SOURCE_DIR>/libnettle.a
