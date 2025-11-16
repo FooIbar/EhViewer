@@ -5,16 +5,19 @@ include(FetchContent)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     string(CONCAT CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -ffast-math -fvisibility=hidden -fvisibility-inlines-hidden -funroll-loops -flto "
-           "-mllvm -polly "
-           "-mllvm -polly-run-dce "
-           "-mllvm -polly-run-inliner "
-           "-mllvm -polly-isl-arg=--no-schedule-serialize-sccs "
-           "-mllvm -polly-ast-use-context "
-           "-mllvm -polly-detect-keep-going "
-           "-mllvm -polly-position=before-vectorizer "
-           "-mllvm -polly-vectorizer=stripmine "
-           "-mllvm -polly-detect-profitability-min-per-loop-insts=40 "
-           "-mllvm -polly-invariant-load-hoisting")
+            "-ffile-prefix-map=${ANDROID_TOOLCHAIN_ROOT}= "
+            "-ffile-prefix-map=${CMAKE_SOURCE_DIR}= "
+            "-ffile-prefix-map=${CMAKE_BINARY_DIR}= "
+            "-mllvm -polly "
+            "-mllvm -polly-run-dce "
+            "-mllvm -polly-run-inliner "
+            "-mllvm -polly-isl-arg=--no-schedule-serialize-sccs "
+            "-mllvm -polly-ast-use-context "
+            "-mllvm -polly-detect-keep-going "
+            "-mllvm -polly-position=before-vectorizer "
+            "-mllvm -polly-vectorizer=stripmine "
+            "-mllvm -polly-detect-profitability-min-per-loop-insts=40 "
+            "-mllvm -polly-invariant-load-hoisting")
 endif (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 option(BUILD_TESTING OFF)
