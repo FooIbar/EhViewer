@@ -44,7 +44,6 @@ import com.ehviewer.core.ui.util.initSETConnection
 import com.ehviewer.core.util.isAtLeastO
 import com.ehviewer.core.util.isAtLeastP
 import com.ehviewer.core.util.isAtLeastS
-import com.ehviewer.core.util.isAtLeastSExtension7
 import com.ehviewer.core.util.launchIO
 import com.ehviewer.core.util.logcat
 import com.ehviewer.core.util.withUIContext
@@ -65,6 +64,7 @@ import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.ktor.Cronet
 import com.hippo.ehviewer.ktor.configureClient
 import com.hippo.ehviewer.ktor.configureCommon
+import com.hippo.ehviewer.ktor.isCronetAvailable
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
 import com.hippo.ehviewer.ui.screen.detailCache
@@ -218,7 +218,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             private set
 
         val ktorClient by lazy {
-            if (isAtLeastSExtension7 && Settings.enableCronet.value) {
+            if (isCronetAvailable && Settings.enableCronet.value) {
                 HttpClient(Cronet) {
                     engine { configureClient(Settings.enableQuic.value) }
                     configureCommon()

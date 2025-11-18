@@ -10,9 +10,6 @@ import android.net.http.UrlRequest
 import android.net.http.UrlResponseInfo
 import android.os.Build
 import androidx.annotation.RequiresExtension
-import com.ehviewer.core.preferences.edit
-import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.util.restartApplication
 import io.ktor.client.engine.HttpClientEngineBase
 import io.ktor.client.engine.callContext
 import io.ktor.client.plugins.HttpTimeoutCapability
@@ -103,15 +100,6 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
             }
 
             override fun onFailed(request: UrlRequest, info: UrlResponseInfo?, error: HttpException) {
-                // Cronet may crash on some devices, fuck xiaomi
-                // https://github.com/FooIbar/EhViewer/issues/1826
-                val message = error.message.orEmpty()
-                if ("ERR_FILE_NOT_FOUND" in message || "ERR_PROXY_CONNECTION_FAILED" in message) {
-                    Settings.edit(true) {
-                        it[enableCronet] = false
-                    }
-                    with(config.context) { restartApplication() }
-                }
                 if (continuation.isActive) {
                     continuation.resumeWithException(error)
                 } else {

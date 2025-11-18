@@ -35,7 +35,6 @@ import com.ehviewer.core.files.sendTo
 import com.ehviewer.core.files.toOkioPath
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.util.isAtLeastO
-import com.ehviewer.core.util.isAtLeastSExtension7
 import com.ehviewer.core.util.launch
 import com.ehviewer.core.util.logcat
 import com.ehviewer.core.util.withIOContext
@@ -46,6 +45,7 @@ import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
+import com.hippo.ehviewer.ktor.isCronetAvailable
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.ui.showRestartDialog
@@ -185,7 +185,7 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                 title = { Text(stringResource(id = R.string.settings_advanced_app_language_title)) },
                 summary = { Text(languages[currentLanguage].orEmpty()) },
             )
-            if (isAtLeastSExtension7) {
+            if (isCronetAvailable) {
                 val enableCronet = Settings.enableCronet.asMutableState()
                 if (BuildConfig.DEBUG || !enableCronet.value) {
                     SwitchPreference(
