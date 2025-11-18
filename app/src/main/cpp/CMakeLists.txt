@@ -41,21 +41,25 @@ include_directories(${liblzma_SOURCE_DIR}/src/liblzma/api)
 
 # Build GNUTLS libnettle
 if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-    execute_process(
-            COMMAND wsl wslpath ${CMAKE_CURRENT_LIST_DIR}
-            OUTPUT_VARIABLE CURRENT_DIR
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+    set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}")
+    set(TOOLCHAIN "$ANDROID_HOME/ndk/${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin")
+    set(WSL wsl)
 else ()
-    set(CURRENT_DIR ${CMAKE_CURRENT_LIST_DIR})
+    set(TOOLCHAIN "${ANDROID_TOOLCHAIN_ROOT}/bin")
 endif ()
-set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}")
+set(CONFIGURE_COMMAND ./configure --disable-public-key --disable-dependency-tracking
+        "--host=${CMAKE_C_COMPILER_TARGET}"
+        "CFLAGS=${CMAKE_C_FLAGS} -Qunused-arguments"
+        "AR=${TOOLCHAIN}/llvm-ar"
+        "CC=${TOOLCHAIN}/clang --target=${CMAKE_C_COMPILER_TARGET}"
+        "RANLIB=${TOOLCHAIN}/llvm-ranlib"
+)
 ExternalProject_Add(
         nettle
         URL https://ftpmirror.gnu.org/nettle/nettle-3.10.2.tar.gz
         URL_MD5 b28bcbf6f045ff007940a9401673600d
-        CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET} ${CMAKE_C_FLAGS}
-        BUILD_COMMAND bash -c "make -j4 libnettle.a"
+        CONFIGURE_COMMAND ${WSL} ${CONFIGURE_COMMAND}
+        BUILD_COMMAND ${WSL} make -j4 libnettle.a
         INSTALL_COMMAND ""
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS <SOURCE_DIR>/libnettle.a
