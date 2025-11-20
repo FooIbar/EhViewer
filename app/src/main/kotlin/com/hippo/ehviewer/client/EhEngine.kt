@@ -31,6 +31,7 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.client.data.fillInfo
 import com.hippo.ehviewer.client.data.filterComments
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
+import com.hippo.ehviewer.client.exception.EhError
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
 import com.hippo.ehviewer.client.exception.InsufficientGpException
@@ -69,6 +70,7 @@ import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.request
 import io.ktor.http.Url
+import io.ktor.util.moveToByteArray
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import io.ktor.utils.io.readAvailable
@@ -79,6 +81,8 @@ import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.addJsonArray
 import kotlinx.serialization.json.put
@@ -127,26 +131,29 @@ private fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuff
         throw IpBannedException(message)
     }
 
-    // Check parse error thrown by rust
-    val cause = e.cause
-    if (e is ParseException && cause is RuntimeException) {
-        when (val message = cause.message) {
-            "0" -> throw NoHitsFoundException()
-            "1" -> throw EhException(R.string.gallery_list_empty_hit_subscription)
-            "2" -> throw NotLoggedInException()
-            "3" -> throw NoHathClientException()
-            "4" -> throw InsufficientFundsException()
-            is String if message.isNotEmpty() -> {
-                when (message[0]) {
-                    '5' -> throw IpBannedException(message.substring(1))
-                    '6' -> throw EhException(message.substring(1))
-                }
-            }
-        }
-    }
+    // Parse error from rust
+    val error = body.getOrNull()?.runCatching {
+        val array = moveToByteArray()
+        rewind()
+        Cbor.decodeFromByteArray<EhError>(array)
+    }?.getOrNull()
+
+    // Check Gallery Not Available - 404
+    if (error is EhError.GalleryUnavailable) throw EhException(error.message)
 
     // Check bad response code
     response.status.ensureSuccess()
+
+    when (error) {
+        EhError.NoHits -> throw NoHitsFoundException()
+        EhError.NoWatched -> throw EhException(R.string.gallery_list_empty_hit_subscription)
+        EhError.NeedLogin -> throw NotLoggedInException()
+        EhError.NoHathClient -> throw NoHathClientException()
+        EhError.InsufficientFunds -> throw InsufficientFundsException()
+        is EhError.IpBanned -> throw IpBannedException(error.message)
+        is EhError.Error -> throw EhException(error.message)
+        else -> Unit
+    }
 
     if (e is ParseException || e is SerializationException) {
         body.onLeft { if ("<" !in it) throw IpBannedException(it) }

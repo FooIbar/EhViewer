@@ -470,11 +470,11 @@ pub fn parse_pages(dom: &VDom, parser: &Parser) -> Result<i32> {
 }
 
 pub fn parse_preview_list(dom: &VDom, parser: &Parser) -> Result<Vec<GalleryPreview>> {
-    // Check Gallery Not Available
     let error = get_vdom_first_element_by_class_name(dom, "d");
     if let Some(tag) = error.and_then(|n| get_first_child(n.as_tag()?, parser)) {
         let node = tag.children().top()[0].get(parser).unwrap();
-        bail!(EhError::Error(node.inner_text(parser).to_string()));
+        let err = EhError::GalleryUnavailable(node.inner_text(parser).to_string());
+        bail!(err);
     }
 
     dom.get_element_by_id("gdt")
