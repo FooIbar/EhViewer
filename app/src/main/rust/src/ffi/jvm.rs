@@ -257,15 +257,26 @@ where
 {
     jni_throwing(env, |env| {
         let buffer = deref_mut_direct_bytebuffer(env, str)?;
-        let value = {
-            // SAFETY: ktor client ensure html content is valid utf-8.
-            let body = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
-            f(body)?
-        };
-        let mut cursor = Cursor::new(buffer);
-        serde_cbor::to_writer(&mut cursor, &value)?;
-        Ok(cursor.position() as i32)
+
+        // SAFETY: ktor client ensure html content is valid utf-8.
+        let body = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
+        match f(body) {
+            Ok(value) => serialize_to_buffer(buffer, &value),
+            Err(err) => {
+                if let Some(value) = err.downcast_ref::<EhError>() {
+                    serialize_to_buffer(buffer, value)
+                } else {
+                    Err(err)
+                }
+            }
+        }
     })
+}
+
+fn serialize_to_buffer<T: Serialize>(buffer: &mut [u8], value: &T) -> Result<i32> {
+    let mut cursor = Cursor::new(buffer);
+    serde_cbor::to_writer(&mut cursor, value)?;
+    Ok(cursor.position() as i32)
 }
 
 #[unsafe(no_mangle)]

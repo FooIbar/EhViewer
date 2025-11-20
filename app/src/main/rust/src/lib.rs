@@ -5,6 +5,7 @@ mod ffi;
 pub mod img;
 pub mod parser;
 
+use serde::{Serialize, Serializer, ser::SerializeTuple};
 use std::fmt::{Debug, Display, Formatter};
 use tl::{Bytes, HTMLTag, Node, NodeHandle, Parser, VDom};
 
@@ -74,22 +75,47 @@ enum EhError {
     NeedLogin,
     NoHathClient,
     InsufficientFunds,
+    GalleryUnavailable(String),
     IpBanned(String),
     Error(String),
 }
 
+impl EhError {
+    fn variant_name(&self) -> &'static str {
+        match self {
+            EhError::NoHits => "NoHits",
+            EhError::NoWatched => "NoWatched",
+            EhError::NeedLogin => "NeedLogin",
+            EhError::NoHathClient => "NoHathClient",
+            EhError::InsufficientFunds => "InsufficientFunds",
+            EhError::GalleryUnavailable(_) => "GalleryUnavailable",
+            EhError::IpBanned(_) => "IpBanned",
+            EhError::Error(_) => "Error",
+        }
+    }
+}
+
+impl Serialize for EhError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut tup = serializer.serialize_tuple(2)?;
+        tup.serialize_element(self.variant_name())?;
+        let payload = match self {
+            EhError::GalleryUnavailable(s) | EhError::IpBanned(s) | EhError::Error(s) => {
+                std::slice::from_ref(s)
+            }
+            _ => &[],
+        };
+        tup.serialize_element(payload)?;
+        tup.end()
+    }
+}
+
 impl Display for EhError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let msg = match self {
-            EhError::NoHits => "0",
-            EhError::NoWatched => "1",
-            EhError::NeedLogin => "2",
-            EhError::NoHathClient => "3",
-            EhError::InsufficientFunds => "4",
-            EhError::IpBanned(s) => &format!("5{s}"),
-            EhError::Error(s) => &format!("6{s}"),
-        };
-        f.write_str(msg)
+        Debug::fmt(&self, f)
     }
 }
 
