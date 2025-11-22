@@ -102,7 +102,7 @@ private fun exportDatabase(uri: Uri) {
 context(ctx: Context)
 private suspend fun importDatabase(uri: Uri) {
     ctx.grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    EhDB.importDB(ctx, uri)
+    EhDB.importDB(ctx, uri.toOkioPath())
 }
 
 @Destination<RootGraph>
