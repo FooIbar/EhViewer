@@ -56,7 +56,6 @@ import io.ktor.client.statement.request
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
-import kotlinx.coroutines.CancellationException
 import okio.Path
 
 class SpiderDen(val info: GalleryInfo) {
@@ -268,22 +267,18 @@ class SpiderDen(val info: GalleryInfo) {
         }
     }
 
-    suspend fun archive() {
-        if (saveAsCbz) {
-            downloadDir?.run {
-                resolve(archiveName).let { file ->
-                    runCatching {
-                        archiveTo(file)
-                    }.onFailure {
-                        file.delete()
-                        if (it is CancellationException) throw it
-                        logcat(it)
-                    }
-                }
-            }
+    suspend fun archive() = saveAsCbz && downloadDir?.run {
+        resolve(archiveName).let { file ->
+            runCatching {
+                archiveTo(file)
+            }.onFailure {
+                file.delete()
+                logcat(it)
+            }.isFailure
         }
-    }
+    } == true
 
+    // Postpone this to `SpiderQueen.stop` because files may still be in use by reader
     suspend fun postArchive(): Boolean {
         val dir = downloadDir
         val archived = saveAsCbz && dir?.find(archiveName) != null

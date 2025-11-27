@@ -148,7 +148,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                 mCurrentTask = info
                 with(info) {
                     archiveFile?.let {
-                        return onFinish(pages, pages, pages)
+                        return onFinish(pages, pages, pages, failed = false)
                     }
                     state = DownloadInfo.STATE_DOWNLOAD
                     speed = -1
@@ -682,7 +682,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         }
     }
 
-    override fun onFinish(finished: Int, downloaded: Int, total: Int) {
+    override fun onFinish(finished: Int, downloaded: Int, total: Int, failed: Boolean) {
         launch {
             mSpeedReminder.onFinish()
             mCurrentSpider?.let { spider ->
@@ -697,11 +697,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                 info.downloaded = downloaded
                 info.total = total
                 info.legacy = total - finished
-                if (info.legacy == 0) {
-                    info.state = DownloadInfo.STATE_FINISH
-                } else {
-                    info.state = DownloadInfo.STATE_FAILED
-                }
+                info.state = if (failed) DownloadInfo.STATE_FAILED else DownloadInfo.STATE_FINISH
                 EhDB.putDownloadInfo(info)
                 mDownloadListener?.onFinish(info)
                 mutableNotifyFlow.emit(info)

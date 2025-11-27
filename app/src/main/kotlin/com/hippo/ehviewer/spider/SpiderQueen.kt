@@ -134,13 +134,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    private fun notifyAllPageDownloaded() {
+    private fun notifyAllPageDownloaded(failed: Boolean) {
         synchronized(mSpiderListeners) {
             mSpiderListeners.forEach {
                 it.onFinish(
                     mFinishedPages.load(),
                     mDownloadedPages.load(),
                     pageStates.size,
+                    failed,
                 )
             }
         }
@@ -213,7 +214,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     private val prepareScope = CoroutineScope(coroutineContext + SupervisorJob())
     private val prepareJob = prepareScope.async { doPrepare() }
-    private val archiveJob = launch(start = CoroutineStart.LAZY) { spiderDen.archive() }
+    private val archiveJob = launch(start = CoroutineStart.LAZY) {
+        val failed = spiderDen.archive()
+        notifyAllPageDownloaded(failed)
+    }
 
     private suspend fun doPrepare() {
         spiderDen.initDownloadDirIfExist()
@@ -400,8 +404,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             notifyPageSuccess(index)
         }
         if (mDownloadedPages.load() == size) {
-            if (mFinishedPages.load() == size) archiveJob.start()
-            notifyAllPageDownloaded()
+            if (mFinishedPages.load() == size) {
+                archiveJob.start()
+            } else {
+                notifyAllPageDownloaded(failed = true)
+            }
         }
     }
 
@@ -418,7 +425,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {}
         fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {}
         fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) {}
-        fun onFinish(finished: Int, downloaded: Int, total: Int) {}
+        fun onFinish(finished: Int, downloaded: Int, total: Int, failed: Boolean) {}
         fun onPageReady(index: Int) {}
     }
 
