@@ -6,10 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import com.ehviewer.core.network.EhCookieStore
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.ui.Screen

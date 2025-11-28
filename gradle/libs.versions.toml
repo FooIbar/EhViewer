@@ -100,6 +100,7 @@ kotlinx-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "
 ktlint = "com.pinterest.ktlint:ktlint-cli:1.8.0"
 
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
 logcat = "com.squareup.logcat:logcat:0.4"

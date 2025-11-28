@@ -16,11 +16,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.network.EhCookieStore
 import com.ehviewer.core.util.launch
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewNavigator
 import com.google.accompanist.web.rememberWebViewState
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.NavigationIcon
