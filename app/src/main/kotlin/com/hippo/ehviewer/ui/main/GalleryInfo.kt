@@ -43,13 +43,16 @@ import com.ehviewer.core.model.GalleryInfo.Companion.NOT_FAVORITED
 import com.ehviewer.core.ui.component.CrystalCard
 import com.ehviewer.core.ui.component.ElevatedCard
 import com.ehviewer.core.ui.component.GalleryListCardRating
+import androidx.compose.runtime.collectAsState
 import com.ehviewer.core.ui.util.SharedElementBox
 import com.ehviewer.core.ui.util.TransitionsVisibilityScope
 import com.ehviewer.core.ui.util.listThumbGenerator
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.FavouriteStatusRouter
+import com.hippo.ehviewer.collectAsState as collectPrefAsState
 
 @Composable
 context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
@@ -126,7 +129,14 @@ fun GalleryInfoListItem(
                         Text(text = it)
                     }
                     if (info.pages != 0 && showPages) {
-                        Text(text = "${info.pages}P")
+                        val showProgress by Settings.showReadingProgress.collectPrefAsState()
+                        val readProgress by EhDB.getReadProgressFlow(info.gid).collectAsState(0)
+                        val pageText = if (showProgress && readProgress > 0) {
+                            "${readProgress + 1}/${info.pages}P"
+                        } else {
+                            "${info.pages}P"
+                        }
+                        Text(text = pageText)
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -191,7 +201,14 @@ fun GalleryInfoGridItem(
         ) {
             val shouldShowLanguage = showLanguage && info.simpleLanguage != null
             if (showPages && info.pages > 0) {
-                Text(text = "${info.pages}")
+                val showProgress by Settings.showReadingProgress.collectPrefAsState()
+                val readProgress by EhDB.getReadProgressFlow(info.gid).collectAsState(0)
+                val pageText = if (showProgress && readProgress > 0) {
+                    "${readProgress + 1}/${info.pages}"
+                } else {
+                    "${info.pages}"
+                }
+                Text(text = pageText)
                 if (shouldShowLanguage) {
                     Spacer(modifier = Modifier.width(4.dp))
                 }

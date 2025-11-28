@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.collectAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -45,10 +47,12 @@ import com.ehviewer.core.ui.component.CrystalCard
 import com.ehviewer.core.ui.component.GalleryListCardRating
 import com.ehviewer.core.ui.util.TransitionsVisibilityScope
 import com.ehviewer.core.ui.util.listThumbGenerator
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.FileUtils
+import com.hippo.ehviewer.collectAsState as collectPrefAsState
 
 @Composable
 context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
@@ -109,6 +113,17 @@ fun DownloadCard(
                             modifier = Modifier.alignByBaseline().alpha(if (info.disowned) 0.5f else 1f),
                         )
                         Spacer(modifier = Modifier.weight(1f))
+                        if (downloadState == DownloadInfo.STATE_FINISH) {
+                            val showProgress by Settings.showReadingProgress.collectPrefAsState()
+                            val readProgress by EhDB.getReadProgressFlow(info.gid).collectAsState(0)
+                            if (showProgress && readProgress > 0) {
+                                Text(
+                                    text = "${readProgress + 1}/${info.pages}P",
+                                    modifier = Modifier.alignByBaseline(),
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                            }
+                        }
                         Text(
                             text = stateText.orEmpty(),
                             modifier = Modifier.alignByBaseline(),

@@ -82,6 +82,7 @@ object Settings : DataStorePreferences(null) {
     val detailSize = intPref("detail_size_2", 0)
     val thumbColumns = intPref("thumb_columns", 3)
     val showGalleryPages = boolPref("show_gallery_pages", true)
+    val showReadingProgress = boolPref("show_reading_progress", false)
     val showVoteStatus = boolPref("show_vote_status", false)
     val showComments = boolPref("show_gallery_comments", true)
     val commentThreshold = intPref("comment_threshold", -100)

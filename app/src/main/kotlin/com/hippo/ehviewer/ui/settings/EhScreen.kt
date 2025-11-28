@@ -215,6 +215,11 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 state = Settings.showGalleryPages.asMutableState(),
             )
             SwitchPreference(
+                title = stringResource(id = R.string.settings_eh_show_reading_progress),
+                summary = stringResource(id = R.string.settings_eh_show_reading_progress_summary),
+                state = Settings.showReadingProgress.asMutableState(),
+            )
+            SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_vote_status),
                 state = Settings.showVoteStatus.asMutableState(),
             )
