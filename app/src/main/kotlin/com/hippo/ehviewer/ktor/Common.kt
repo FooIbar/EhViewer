@@ -1,8 +1,8 @@
 package com.hippo.ehviewer.ktor
 
+import com.ehviewer.core.network.EhCookieStore
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhCookieStore
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.plugins.HttpTimeout

@@ -29,6 +29,7 @@ import androidx.core.net.toUri
 import arrow.core.memoize
 import com.ehviewer.core.model.GalleryDetail
 import com.ehviewer.core.model.GalleryInfo
+import com.ehviewer.core.network.EhCookieStore
 import com.ehviewer.core.util.withUIContext
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.parser.Archive

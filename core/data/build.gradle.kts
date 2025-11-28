@@ -11,10 +11,13 @@ kotlin {
                 api(projects.core.common)
                 api(libs.androidx.datastore)
                 api(libs.androidx.room.paging)
+                implementation(libs.ktor.client.core)
             }
         }
         androidMain {
             dependencies {
+                implementation(project.dependencies.platform(libs.okhttp.bom))
+                implementation(libs.ktor.client.okhttp)
             }
         }
     }

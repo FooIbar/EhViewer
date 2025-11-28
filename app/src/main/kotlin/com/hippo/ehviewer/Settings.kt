@@ -9,10 +9,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import com.ehviewer.core.network.EhCookieStore
 import com.ehviewer.core.preferences.DataStorePreferences
 import com.ehviewer.core.preferences.PrefDelegate
 import com.ehviewer.core.preferences.edit
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
