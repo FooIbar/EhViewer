@@ -25,6 +25,7 @@ import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -43,16 +44,15 @@ import com.ehviewer.core.model.GalleryInfo.Companion.NOT_FAVORITED
 import com.ehviewer.core.ui.component.CrystalCard
 import com.ehviewer.core.ui.component.ElevatedCard
 import com.ehviewer.core.ui.component.GalleryListCardRating
-import androidx.compose.runtime.collectAsState
 import com.ehviewer.core.ui.util.SharedElementBox
 import com.ehviewer.core.ui.util.TransitionsVisibilityScope
 import com.ehviewer.core.ui.util.listThumbGenerator
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
+import com.hippo.ehviewer.collectAsState as collectPrefAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.FavouriteStatusRouter
-import com.hippo.ehviewer.collectAsState as collectPrefAsState
 
 @Composable
 context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
@@ -64,91 +64,97 @@ fun GalleryInfoListItem(
     modifier: Modifier = Modifier,
     isInFavScene: Boolean = false,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-) = CrystalCard(
-    modifier = modifier,
-    onClick = onClick,
-    onLongClick = onLongClick,
-    interactionSource = interactionSource,
 ) {
-    Row {
-        with(listThumbGenerator) {
-            EhThumbCard(
-                key = info,
-                modifier = Modifier.aspectRatio(DEFAULT_RATIO),
-            )
-        }
-        Column(modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp)) {
-            Text(
-                text = EhUtils.getSuitableTitle(info),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleSmall,
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = info.uploader.orEmpty(),
-                        modifier = Modifier.alignByBaseline().alpha(if (info.disowned) 0.5f else 1f),
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    if (isInFavScene) {
-                        info.favoriteNote?.let {
-                            Text(text = it, modifier = Modifier.alignByBaseline(), fontStyle = FontStyle.Italic)
-                        }
-                    } else {
-                        val showFav by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
-                        if (showFav) {
-                            Icon(
-                                Icons.Default.Favorite,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp).align(Alignment.CenterVertically),
-                            )
-                            info.favoriteName?.let {
-                                Text(text = it, modifier = Modifier.alignByBaseline())
+    val showProgress by Settings.showReadingProgress.collectPrefAsState()
+    CrystalCard(
+        modifier = modifier,
+        onClick = onClick,
+        onLongClick = onLongClick,
+        interactionSource = interactionSource,
+    ) {
+        Row {
+            with(listThumbGenerator) {
+                EhThumbCard(
+                    key = info,
+                    modifier = Modifier.aspectRatio(DEFAULT_RATIO),
+                )
+            }
+            Column(modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp)) {
+                Text(
+                    text = EhUtils.getSuitableTitle(info),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = info.uploader.orEmpty(),
+                            modifier = Modifier.alignByBaseline().alpha(if (info.disowned) 0.5f else 1f),
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        if (isInFavScene) {
+                            info.favoriteNote?.let {
+                                Text(text = it, modifier = Modifier.alignByBaseline(), fontStyle = FontStyle.Italic)
+                            }
+                        } else {
+                            val showFav by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
+                            if (showFav) {
+                                Icon(
+                                    Icons.Default.Favorite,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp).align(Alignment.CenterVertically),
+                                )
+                                info.favoriteName?.let {
+                                    Text(text = it, modifier = Modifier.alignByBaseline())
+                                }
                             }
                         }
                     }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    // Place the rating near the uploader text as there's more visual space
-                    GalleryListCardRating(rating = info.rating, modifier = Modifier.padding(top = 1.dp, bottom = 3.dp))
-                    Spacer(modifier = Modifier.weight(1f))
-                    val downloaded by DownloadManager.collectContainDownloadInfo(info.gid)
-                    if (downloaded) {
-                        Icon(
-                            Icons.Default.Download,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                        )
-                    }
-                    info.simpleLanguage?.let {
-                        Text(text = it)
-                    }
-                    if (info.pages != 0 && showPages) {
-                        val showProgress by Settings.showReadingProgress.collectPrefAsState()
-                        val readProgress by EhDB.getReadProgressFlow(info.gid).collectAsState(0)
-                        val pageText = if (showProgress && readProgress > 0) {
-                            "${readProgress + 1}/${info.pages}P"
-                        } else {
-                            "${info.pages}P"
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        // Place the rating near the uploader text as there's more visual space
+                        GalleryListCardRating(rating = info.rating, modifier = Modifier.padding(top = 1.dp, bottom = 3.dp))
+                        Spacer(modifier = Modifier.weight(1f))
+                        val downloaded by DownloadManager.collectContainDownloadInfo(info.gid)
+                        if (downloaded) {
+                            Icon(
+                                Icons.Default.Download,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                            )
                         }
-                        Text(text = pageText)
+                        info.simpleLanguage?.let {
+                            Text(text = it)
+                        }
+                        if (info.pages != 0 && showPages) {
+                            val pageText = if (showProgress) {
+                                val readProgress by EhDB.getReadProgressFlow(info.gid).collectAsState(0)
+                                if (readProgress > 0) {
+                                    "${readProgress + 1}/${info.pages}P"
+                                } else {
+                                    "${info.pages}P"
+                                }
+                            } else {
+                                "${info.pages}P"
+                            }
+                            Text(text = pageText)
+                        }
                     }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    val categoryColor = EhUtils.getCategoryColor(info.category)
-                    val categoryText = EhUtils.getCategory(info.category).uppercase()
-                    Text(
-                        text = categoryText,
-                        modifier = Modifier.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
-                        color = if (Settings.harmonizeCategoryColor.value) Color.Unspecified else EhUtils.categoryTextColor,
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(text = info.posted.orEmpty())
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val categoryColor = EhUtils.getCategoryColor(info.category)
+                        val categoryText = EhUtils.getCategory(info.category).uppercase()
+                        Text(
+                            text = categoryText,
+                            modifier = Modifier.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
+                            color = if (Settings.harmonizeCategoryColor.value) Color.Unspecified else EhUtils.categoryTextColor,
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = info.posted.orEmpty())
+                    }
                 }
             }
         }
@@ -166,66 +172,72 @@ fun GalleryInfoGridItem(
     showPages: Boolean = true,
     showFavoriteStatus: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-) = ElevatedCard(
-    modifier = modifier,
-    onClick = onClick,
-    onLongClick = onLongClick,
-    interactionSource = interactionSource,
 ) {
-    Box {
-        with(listThumbGenerator) {
-            SharedElementBox(key = "${info.gid}", shape = ShapeDefaults.Medium) {
-                var ratio by remember(info) {
-                    val ratio = if (info.thumbHeight != 0) {
-                        (info.thumbWidth.toFloat() / info.thumbHeight).coerceIn(MIN_RATIO, MAX_RATIO)
-                    } else {
-                        DEFAULT_RATIO
+    val showProgress by Settings.showReadingProgress.collectPrefAsState()
+    ElevatedCard(
+        modifier = modifier,
+        onClick = onClick,
+        onLongClick = onLongClick,
+        interactionSource = interactionSource,
+    ) {
+        Box {
+            with(listThumbGenerator) {
+                SharedElementBox(key = "${info.gid}", shape = ShapeDefaults.Medium) {
+                    var ratio by remember(info) {
+                        val ratio = if (info.thumbHeight != 0) {
+                            (info.thumbWidth.toFloat() / info.thumbHeight).coerceIn(MIN_RATIO, MAX_RATIO)
+                        } else {
+                            DEFAULT_RATIO
+                        }
+                        mutableFloatStateOf(ratio)
                     }
-                    mutableFloatStateOf(ratio)
+                    AsyncImage(
+                        model = requestOf(info),
+                        contentDescription = null,
+                        modifier = Modifier.aspectRatio(ratio),
+                        onSuccess = {
+                            ratio = (it.result.image.width.toFloat() / it.result.image.height).coerceIn(MIN_RATIO, MAX_RATIO)
+                        },
+                    )
                 }
-                AsyncImage(
-                    model = requestOf(info),
-                    contentDescription = null,
-                    modifier = Modifier.aspectRatio(ratio),
-                    onSuccess = {
-                        ratio = (it.result.image.width.toFloat() / it.result.image.height).coerceIn(MIN_RATIO, MAX_RATIO)
-                    },
-                )
             }
-        }
-        val categoryColor = EhUtils.getCategoryColor(info.category)
-        Badge(
-            modifier = Modifier.align(Alignment.TopEnd).widthIn(min = 32.dp).height(24.dp),
-            containerColor = categoryColor,
-            contentColor = if (Settings.harmonizeCategoryColor.value) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
-        ) {
-            val shouldShowLanguage = showLanguage && info.simpleLanguage != null
-            if (showPages && info.pages > 0) {
-                val showProgress by Settings.showReadingProgress.collectPrefAsState()
-                val readProgress by EhDB.getReadProgressFlow(info.gid).collectAsState(0)
-                val pageText = if (showProgress && readProgress > 0) {
-                    "${readProgress + 1}/${info.pages}"
-                } else {
-                    "${info.pages}"
+            val categoryColor = EhUtils.getCategoryColor(info.category)
+            Badge(
+                modifier = Modifier.align(Alignment.TopEnd).widthIn(min = 32.dp).height(24.dp),
+                containerColor = categoryColor,
+                contentColor = if (Settings.harmonizeCategoryColor.value) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
+            ) {
+                val shouldShowLanguage = showLanguage && info.simpleLanguage != null
+                if (showPages && info.pages > 0) {
+                    val pageText = if (showProgress) {
+                        val readProgress by EhDB.getReadProgressFlow(info.gid).collectAsState(0)
+                        if (readProgress > 0) {
+                            "${readProgress + 1}/${info.pages}"
+                        } else {
+                            "${info.pages}"
+                        }
+                    } else {
+                        "${info.pages}"
+                    }
+                    Text(text = pageText)
+                    if (shouldShowLanguage) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
                 }
-                Text(text = pageText)
                 if (shouldShowLanguage) {
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = info.simpleLanguage.orEmpty())
                 }
             }
-            if (shouldShowLanguage) {
-                Text(text = info.simpleLanguage.orEmpty())
-            }
-        }
-        if (showFavoriteStatus) {
-            val isFavorited by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
-            if (isFavorited) {
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = null,
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(2.dp),
-                    tint = EhUtils.favoriteIconColor,
-                )
+            if (showFavoriteStatus) {
+                val isFavorited by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
+                if (isFavorited) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = null,
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(2.dp),
+                        tint = EhUtils.favoriteIconColor,
+                    )
+                }
             }
         }
     }
