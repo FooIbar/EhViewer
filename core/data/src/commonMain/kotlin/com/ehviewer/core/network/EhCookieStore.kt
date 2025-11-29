@@ -1,17 +1,19 @@
-package com.hippo.ehviewer.client
+package com.ehviewer.core.network
 
-import android.webkit.CookieManager
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
+import io.ktor.http.URLBuilder
+import io.ktor.http.URLProtocol
 import io.ktor.http.Url
-import io.ktor.http.parseClientCookiesHeader
-import io.ktor.http.renderSetCookieHeader
 
 object EhCookieStore : CookiesStorage {
-    private val manager = CookieManager.getInstance()
-    fun removeAllCookies() = manager.removeAllCookies(null)
+    private val manager = getCookieManager()
+    private val urlE = URLBuilder(URLProtocol.HTTPS, "e-hentai.org").build()
+    private val urlEx = URLBuilder(URLProtocol.HTTPS, "exhentai.org").build()
 
-    fun hasSignedIn(): Boolean = getCookies(EhUrl.HOST_E)?.run {
+    fun removeAllCookies() = manager.removeAllCookies()
+
+    fun hasSignedIn(): Boolean = manager.getCookies(urlE)?.run {
         containsKey(KEY_IPB_MEMBER_ID) && containsKey(KEY_IPB_PASS_HASH)
     } == true
 
@@ -29,18 +31,18 @@ object EhCookieStore : CookiesStorage {
 
     fun clearIgneous() {
         manager.setCookie(
-            EhUrl.HOST_EX,
-            renderSetCookieHeader(KEY_IGNEOUS, "", maxAge = 0, domain = EhUrl.DOMAIN_EX, path = "/"),
+            urlEx,
+            Cookie(KEY_IGNEOUS, "", maxAge = 0, domain = urlEx.host, path = "/"),
         )
     }
 
-    fun getUserId() = getCookies(EhUrl.HOST_E)?.get(KEY_IPB_MEMBER_ID)
+    fun getUserId() = manager.getCookies(urlE)?.get(KEY_IPB_MEMBER_ID)
 
-    fun getHathPerks() = getCookies(EhUrl.HOST_E)?.get(KEY_HATH_PERKS)?.substringBefore('-')
+    fun getHathPerks() = manager.getCookies(urlE)?.get(KEY_HATH_PERKS)?.substringBefore('-')
 
     fun getIdentityCookies(): List<Pair<String, String?>> {
-        val eCookies = getCookies(EhUrl.HOST_E)
-        val exCookies = getCookies(EhUrl.HOST_EX)
+        val eCookies = manager.getCookies(urlE)
+        val exCookies = manager.getCookies(urlEx)
         val ipbMemberId = eCookies?.get(KEY_IPB_MEMBER_ID)
         val ipbPassHash = eCookies?.get(KEY_IPB_PASS_HASH)
         val igneous = exCookies?.get(KEY_IGNEOUS)
@@ -51,24 +53,22 @@ object EhCookieStore : CookiesStorage {
         )
     }
 
-    fun isCloudflareBypassed() = getCookies(EhUrl.HOST_E)?.containsKey("cf_clearance") == true
+    fun isCloudflareBypassed() = manager.getCookies(urlE)?.containsKey("cf_clearance") == true
 
     fun flush() = manager.flush()
 
     // See https://github.com/Ehviewer-Overhauled/Ehviewer/issues/873
     override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
         if (cookie.name != KEY_UTMP_NAME) {
-            manager.setCookie(requestUrl.toString(), renderSetCookieHeader(cookie))
+            manager.setCookie(requestUrl, cookie)
         }
     }
 
     override fun close() = Unit
 
-    private fun getCookies(url: String) = manager.getCookie(url)?.let { parseClientCookiesHeader(it) }
-
-    fun load(url: Url): List<Cookie> {
-        val checkTips = EhUrl.DOMAIN_E in url.host
-        return getCookies(url.toString())?.mapTo(mutableListOf()) {
+    override suspend fun get(requestUrl: Url): List<Cookie> {
+        val checkTips = requestUrl.host == urlE.host
+        return manager.getCookies(requestUrl)?.mapTo(mutableListOf()) {
             Cookie(it.key, it.value)
         }?.apply {
             if (checkTips) {
@@ -76,6 +76,4 @@ object EhCookieStore : CookiesStorage {
             }
         } ?: if (checkTips) listOf(sTipsCookie) else emptyList()
     }
-
-    override suspend fun get(requestUrl: Url) = load(requestUrl)
 }
