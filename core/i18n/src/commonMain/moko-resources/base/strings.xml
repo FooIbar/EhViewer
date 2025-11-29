@@ -317,6 +317,8 @@
     <string name="settings_eh_show_jpn_title_summary">Require enabling Japanese Title in Settings on EHentai website</string>
     <string name="settings_eh_show_gallery_pages">Show gallery pages</string>
     <string name="settings_eh_show_gallery_pages_summary">Display the number of pages in the gallery list</string>
+    <string name="settings_eh_show_reading_progress">Show reading progress</string>
+    <string name="settings_eh_show_reading_progress_summary">Display reading progress in gallery list</string>
     <string name="settings_eh_show_vote_status">Show tag vote status</string>
     <string name="settings_eh_show_gallery_comments">Show gallery comments</string>
     <string name="settings_eh_show_gallery_comments_summary">Show comments on the gallery details page</string>
