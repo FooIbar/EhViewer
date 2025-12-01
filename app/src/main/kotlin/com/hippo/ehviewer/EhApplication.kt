@@ -39,6 +39,7 @@ import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
 import com.ehviewer.core.database.SearchDatabase
+import com.ehviewer.core.database.roomDb
 import com.ehviewer.core.files.deleteContent
 import com.ehviewer.core.ui.util.initSETConnection
 import com.ehviewer.core.util.isAtLeastO
@@ -83,7 +84,6 @@ import logcat.LogPriority
 import logcat.LogcatLogger
 import logcat.asLog
 import okio.Path.Companion.toOkioPath
-import splitties.arch.room.roomDb
 import splitties.init.appCtx
 
 private val lifecycle = ProcessLifecycleOwner.get().lifecycle

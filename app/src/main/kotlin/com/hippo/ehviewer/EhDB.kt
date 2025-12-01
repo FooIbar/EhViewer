@@ -15,13 +15,12 @@
  */
 package com.hippo.ehviewer
 
-import android.content.Context
-import android.net.Uri
 import arrow.fx.coroutines.resource
 import arrow.fx.coroutines.resourceScope
 import com.ehviewer.core.data.model.asEntity
 import com.ehviewer.core.database.EhDatabase
 import com.ehviewer.core.database.Schema17to18
+import com.ehviewer.core.database.getDatabasePath
 import com.ehviewer.core.database.model.DownloadArtist
 import com.ehviewer.core.database.model.DownloadDirname
 import com.ehviewer.core.database.model.DownloadInfo
@@ -32,13 +31,13 @@ import com.ehviewer.core.database.model.HistoryInfo
 import com.ehviewer.core.database.model.LocalFavoriteInfo
 import com.ehviewer.core.database.model.ProgressInfo
 import com.ehviewer.core.database.model.QuickSearch
+import com.ehviewer.core.database.roomDb
+import com.ehviewer.core.files.delete
 import com.ehviewer.core.files.sendTo
 import com.ehviewer.core.model.GalleryInfo
 import com.hippo.ehviewer.download.DownloadManager
 import kotlinx.coroutines.flow.Flow
 import okio.Path
-import okio.Path.Companion.toOkioPath
-import splitties.arch.room.roomDb
 
 object EhDB {
     private const val DB_NAME = "eh.db"
@@ -277,23 +276,23 @@ object EhDB {
         db.filterDao().update(filter)
     }
 
-    fun exportDB(context: Context, file: Path) {
+    fun exportDB(file: Path) {
         db.query("PRAGMA wal_checkpoint(FULL)", null).use { it.moveToNext() }
-        val dbFile = context.getDatabasePath(DB_NAME)
-        dbFile.toOkioPath() sendTo file
+        val dbFile = getDatabasePath(DB_NAME)
+        dbFile sendTo file
     }
 
-    suspend fun importDB(context: Context, uri: Uri) = resourceScope {
+    suspend fun importDB(file: Path) = resourceScope {
         val tempDBName = "tmp.db"
+        val dbFile = getDatabasePath(tempDBName)
+        file sendTo dbFile
         val oldDB = resource {
-            context.deleteDatabase(tempDBName)
             roomDb<EhDatabase>(tempDBName) {
-                createFromInputStream { context.contentResolver.openInputStream(uri) }
                 addMigrations(Schema17to18())
             }
         } release { db ->
             db.close()
-            context.deleteDatabase(tempDBName)
+            dbFile.delete()
         }
 
         db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
