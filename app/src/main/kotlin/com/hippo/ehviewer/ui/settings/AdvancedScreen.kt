@@ -94,7 +94,7 @@ private fun dumplog(uri: Uri): Unit = with(ctx) {
 }
 
 context(ctx: Context)
-private fun exportDatabase(uri: Uri) {
+private suspend fun exportDatabase(uri: Uri) {
     ctx.grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
     EhDB.exportDB(uri.toOkioPath())
 }
