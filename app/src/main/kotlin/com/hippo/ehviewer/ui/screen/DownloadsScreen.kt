@@ -147,7 +147,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
     val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
-    val showPages by Settings.showGalleryPages.collectAsState()
     val showProgress by Settings.showReadingProgress.collectAsState()
     var filterState by rememberSerializable { mutableStateOf(DownloadsFilterState(filterMode, Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
@@ -638,7 +637,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                 onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
                                 info = info,
                                 selectMode = selectMode,
-                                showPages = showPages,
                                 showProgress = showProgress,
                                 modifier = Modifier.height(height),
                                 interactionSource = interactionSource,

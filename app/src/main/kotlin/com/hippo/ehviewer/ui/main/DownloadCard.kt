@@ -63,7 +63,6 @@ fun DownloadCard(
     onStop: () -> Unit,
     info: DownloadInfo,
     selectMode: Boolean,
-    showPages: Boolean,
     showProgress: Boolean,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -104,7 +103,14 @@ fun DownloadCard(
                     DownloadInfo.STATE_NONE -> stringResource(R.string.download_state_none)
                     DownloadInfo.STATE_WAIT -> stringResource(R.string.download_state_wait)
                     DownloadInfo.STATE_FAILED -> if (info.legacy <= 0) stateFailed else stateFailed2
-                    DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_finish)
+                    DownloadInfo.STATE_FINISH -> {
+                        if (showProgress) {
+                            val readProgress by EhDB.getReadProgressFlow(info.gid).collectAsState(0)
+                            if (readProgress > 0) "${readProgress + 1}/${info.pages}P" else "${info.pages}P"
+                        } else {
+                            "${info.pages}P"
+                        }
+                    }
                     else -> null // The item has been removed and this will be disposed soon
                 }
                 ProvideTextStyle(MaterialTheme.typography.labelLarge) {
@@ -114,15 +120,6 @@ fun DownloadCard(
                             modifier = Modifier.alignByBaseline().alpha(if (info.disowned) 0.5f else 1f),
                         )
                         Spacer(modifier = Modifier.weight(1f))
-                        if (showPages) {
-                            val readProgress = if (showProgress) {
-                                EhDB.getReadProgressFlow(info.gid).collectAsState(0).value
-                            } else 0
-                            Text(
-                                text = if (readProgress > 0) "${readProgress + 1}/${info.pages}P" else "${info.pages}P",
-                                modifier = Modifier.alignByBaseline(),
-                            )
-                        }
                         Text(
                             text = stateText.orEmpty(),
                             modifier = Modifier.alignByBaseline(),

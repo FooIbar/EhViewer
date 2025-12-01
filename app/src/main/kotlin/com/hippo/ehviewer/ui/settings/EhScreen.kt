@@ -209,19 +209,16 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 title = stringResource(id = R.string.settings_eh_thumb_columns),
                 state = Settings.thumbColumns.asMutableState(),
             )
-            val showPages = Settings.showGalleryPages.asMutableState()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_gallery_pages),
                 summary = stringResource(id = R.string.settings_eh_show_gallery_pages_summary),
-                state = showPages,
+                state = Settings.showGalleryPages.asMutableState(),
             )
-            if (showPages.value) {
-                SwitchPreference(
-                    title = stringResource(id = R.string.settings_eh_show_reading_progress),
-                    summary = stringResource(id = R.string.settings_eh_show_reading_progress_summary),
-                    state = Settings.showReadingProgress.asMutableState(),
-                )
-            }
+            SwitchPreference(
+                title = stringResource(id = R.string.settings_eh_show_reading_progress),
+                summary = stringResource(id = R.string.settings_eh_show_reading_progress_summary),
+                state = Settings.showReadingProgress.asMutableState(),
+            )
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_vote_status),
                 state = Settings.showVoteStatus.asMutableState(),

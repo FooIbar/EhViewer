@@ -131,7 +131,9 @@ fun GalleryInfoListItem(
                     if (info.pages != 0 && showPages) {
                         val readProgress = if (showProgress) {
                             EhDB.getReadProgressFlow(info.gid).collectAsState(0).value
-                        } else 0
+                        } else {
+                            0
+                        }
                         Text(text = if (readProgress > 0) "${readProgress + 1}/${info.pages}P" else "${info.pages}P")
                     }
                 }
@@ -200,7 +202,9 @@ fun GalleryInfoGridItem(
             if (showPages && info.pages > 0) {
                 val readProgress = if (showProgress) {
                     EhDB.getReadProgressFlow(info.gid).collectAsState(0).value
-                } else 0
+                } else {
+                    0
+                }
                 Text(text = if (readProgress > 0) "${readProgress + 1}/${info.pages}" else "${info.pages}")
                 if (shouldShowLanguage) {
                     Spacer(modifier = Modifier.width(4.dp))
