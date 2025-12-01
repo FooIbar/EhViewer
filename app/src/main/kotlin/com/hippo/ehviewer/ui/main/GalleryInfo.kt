@@ -86,7 +86,7 @@ fun GalleryInfoListItem(
             )
             Spacer(modifier = Modifier.weight(1f))
             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                Row {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
                         text = info.uploader.orEmpty(),
                         modifier = Modifier.alignByBaseline().alpha(if (info.disowned) 0.5f else 1f),

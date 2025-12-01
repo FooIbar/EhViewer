@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ui.main
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -114,7 +113,7 @@ fun DownloadCard(
                     else -> null // The item has been removed and this will be disposed soon
                 }
                 ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row {
                         Text(
                             text = info.uploader.orEmpty(),
                             modifier = Modifier.alignByBaseline().alpha(if (info.disowned) 0.5f else 1f),
