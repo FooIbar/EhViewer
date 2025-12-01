@@ -136,6 +136,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
         val marginH = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h)
         val cardHeight by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
+        val showProgress by Settings.showReadingProgress.collectAsState()
         FastScrollLazyColumn(
             modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
             contentPadding = paddingValues,
@@ -161,6 +162,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
                             onLongClick = { launch { doGalleryInfoAction(info) } },
                             info = info,
                             showPages = showPages,
+                            showProgress = showProgress,
                             modifier = Modifier.height(cardHeight).padding(horizontal = marginH),
                         )
                     }
