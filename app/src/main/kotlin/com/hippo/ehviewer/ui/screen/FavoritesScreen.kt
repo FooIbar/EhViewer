@@ -201,6 +201,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         val listMode by Settings.listMode.collectAsState()
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
+        val showProgress by Settings.showReadingProgress.collectAsState()
         val searchBarConnection = remember {
             val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
@@ -245,6 +246,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
                         },
                         info = info,
                         showPages = showPages,
+                        showProgress = showProgress,
                         modifier = Modifier.height(height),
                         isInFavScene = true,
                         interactionSource = interactionSource,
@@ -274,6 +276,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
                         },
                         info = info,
                         showPages = showPages,
+                        showProgress = showProgress,
                         showFavoriteStatus = false,
                         interactionSource = interactionSource,
                     )

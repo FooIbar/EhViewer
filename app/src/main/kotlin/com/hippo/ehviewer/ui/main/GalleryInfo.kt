@@ -25,6 +25,7 @@ import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +47,7 @@ import com.ehviewer.core.ui.component.GalleryListCardRating
 import com.ehviewer.core.ui.util.SharedElementBox
 import com.ehviewer.core.ui.util.TransitionsVisibilityScope
 import com.ehviewer.core.ui.util.listThumbGenerator
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.download.DownloadManager
@@ -58,6 +60,7 @@ fun GalleryInfoListItem(
     onLongClick: () -> Unit,
     info: GalleryInfo,
     showPages: Boolean,
+    showProgress: Boolean,
     modifier: Modifier = Modifier,
     isInFavScene: Boolean = false,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -126,7 +129,12 @@ fun GalleryInfoListItem(
                         Text(text = it)
                     }
                     if (info.pages != 0 && showPages) {
-                        Text(text = "${info.pages}P")
+                        val readProgress = if (showProgress) {
+                            remember { EhDB.getReadProgressFlow(info.gid) }.collectAsState(0).value
+                        } else {
+                            0
+                        }
+                        Text(text = if (readProgress > 0) "${readProgress + 1}/${info.pages}P" else "${info.pages}P")
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -154,6 +162,7 @@ fun GalleryInfoGridItem(
     modifier: Modifier = Modifier,
     showLanguage: Boolean = true,
     showPages: Boolean = true,
+    showProgress: Boolean = true,
     showFavoriteStatus: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) = ElevatedCard(
@@ -191,7 +200,12 @@ fun GalleryInfoGridItem(
         ) {
             val shouldShowLanguage = showLanguage && info.simpleLanguage != null
             if (showPages && info.pages > 0) {
-                Text(text = "${info.pages}")
+                val readProgress = if (showProgress) {
+                    remember { EhDB.getReadProgressFlow(info.gid) }.collectAsState(0).value
+                } else {
+                    0
+                }
+                Text(text = if (readProgress > 0) "${readProgress + 1}/${info.pages}" else "${info.pages}")
                 if (shouldShowLanguage) {
                     Spacer(modifier = Modifier.width(4.dp))
                 }

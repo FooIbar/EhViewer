@@ -26,6 +26,7 @@ import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,6 +46,7 @@ import com.ehviewer.core.ui.component.CrystalCard
 import com.ehviewer.core.ui.component.GalleryListCardRating
 import com.ehviewer.core.ui.util.TransitionsVisibilityScope
 import com.ehviewer.core.ui.util.listThumbGenerator
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.download.DownloadManager
@@ -60,6 +62,7 @@ fun DownloadCard(
     onStop: () -> Unit,
     info: DownloadInfo,
     selectMode: Boolean,
+    showProgress: Boolean,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) = CrystalCard(modifier = modifier, onClick = onClick, onLongClick = onLongClick, interactionSource = interactionSource) {
@@ -99,7 +102,14 @@ fun DownloadCard(
                     DownloadInfo.STATE_NONE -> stringResource(R.string.download_state_none)
                     DownloadInfo.STATE_WAIT -> stringResource(R.string.download_state_wait)
                     DownloadInfo.STATE_FAILED -> if (info.legacy <= 0) stateFailed else stateFailed2
-                    DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_finish)
+                    DownloadInfo.STATE_FINISH -> {
+                        if (showProgress) {
+                            val readProgress by remember { EhDB.getReadProgressFlow(info.gid) }.collectAsState(0)
+                            if (readProgress > 0) "${readProgress + 1}/${info.pages}P" else "${info.pages}P"
+                        } else {
+                            "${info.pages}P"
+                        }
+                    }
                     else -> null // The item has been removed and this will be disposed soon
                 }
                 ProvideTextStyle(MaterialTheme.typography.labelLarge) {
