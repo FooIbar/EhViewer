@@ -86,7 +86,7 @@ fun GalleryInfoListItem(
             )
             Spacer(modifier = Modifier.weight(1f))
             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row {
                     Text(
                         text = info.uploader.orEmpty(),
                         modifier = Modifier.alignByBaseline().alpha(if (info.disowned) 0.5f else 1f),
@@ -130,7 +130,7 @@ fun GalleryInfoListItem(
                     }
                     if (info.pages != 0 && showPages) {
                         val readProgress = if (showProgress) {
-                            EhDB.getReadProgressFlow(info.gid).collectAsState(0).value
+                            remember { EhDB.getReadProgressFlow(info.gid) }.collectAsState(0).value
                         } else {
                             0
                         }
@@ -201,7 +201,7 @@ fun GalleryInfoGridItem(
             val shouldShowLanguage = showLanguage && info.simpleLanguage != null
             if (showPages && info.pages > 0) {
                 val readProgress = if (showProgress) {
-                    EhDB.getReadProgressFlow(info.gid).collectAsState(0).value
+                    remember { EhDB.getReadProgressFlow(info.gid) }.collectAsState(0).value
                 } else {
                     0
                 }

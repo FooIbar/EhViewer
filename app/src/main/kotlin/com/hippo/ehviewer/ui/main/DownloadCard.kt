@@ -105,7 +105,7 @@ fun DownloadCard(
                     DownloadInfo.STATE_FAILED -> if (info.legacy <= 0) stateFailed else stateFailed2
                     DownloadInfo.STATE_FINISH -> {
                         if (showProgress) {
-                            val readProgress by EhDB.getReadProgressFlow(info.gid).collectAsState(0)
+                            val readProgress by remember { EhDB.getReadProgressFlow(info.gid) }.collectAsState(0)
                             if (readProgress > 0) "${readProgress + 1}/${info.pages}P" else "${info.pages}P"
                         } else {
                             "${info.pages}P"
