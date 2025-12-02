@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
@@ -165,18 +166,18 @@ fun DownloadCard(
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 val running = downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
-                val icon = remember {
-                    movableContentOf<Boolean> {
-                        Icon(imageVector = if (it) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = null)
-                    }
+                val icon = when (downloadState) {
+                    DownloadInfo.STATE_WAIT, DownloadInfo.STATE_DOWNLOAD -> Icons.Default.Pause
+                    DownloadInfo.STATE_FINISH -> Icons.Default.DownloadDone
+                    else -> Icons.Default.PlayArrow
                 }
                 if (selectMode) {
                     Box(modifier = Modifier.offset(4.dp).minimumInteractiveComponentSize()) {
-                        icon(running)
+                        Icon(imageVector = icon, contentDescription = null)
                     }
                 } else {
                     IconButton(onClick = if (running) onStop else onStart, shapes = IconButtonDefaults.shapes(), modifier = Modifier.offset(4.dp)) {
-                        icon(running)
+                        Icon(imageVector = icon, contentDescription = null)
                     }
                 }
             }
