@@ -34,7 +34,7 @@ spotless = "8.1.0"
 telephoto = "0.18.0"
 xmlutil = "0.91.3"
 junit = "1.3.0"
-uiautomator = "2.4.0-alpha06"
+uiautomator = "2.4.0-alpha07"
 benchmark = "1.4.1"
 profileinstaller = "1.4.1"
 
