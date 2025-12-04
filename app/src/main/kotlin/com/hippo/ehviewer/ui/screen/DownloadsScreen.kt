@@ -53,12 +53,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.fork.SwipeToDismissBox
 import androidx.compose.material3.fork.SwipeToDismissBoxState
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -76,11 +78,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -135,7 +133,6 @@ import com.hippo.ehviewer.ui.tools.awaitSingleChoice
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import moe.tarsin.navigate
 import sh.calvin.reorderable.ReorderableItem
@@ -151,17 +148,16 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     var filterState by rememberSerializable { mutableStateOf(DownloadsFilterState(filterMode, Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
     var isLoading by rememberSaveable { mutableStateOf(true) }
-    var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
-    var searchBarOffsetY by remember { mutableIntStateOf(0) }
+    val searchBarState = rememberSearchBarState()
+    val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
     val animateItems by Settings.animateItems.collectAsState()
 
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, DownloadInfo>() }
     val selectMode by rememberUpdatedState(checkedInfoMap.isNotEmpty())
-    DrawerHandle(!selectMode && !searchBarExpanded)
+    DrawerHandle(!selectMode && !searchBarState.expanded)
 
-    val density = LocalDensity.current
     val canTranslate = Settings.showTagTranslations.value && EhTagDatabase.translatable && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun getTranslation(tag: String) = ehTags?.run {
@@ -234,7 +230,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     }
 
     LaunchedEffect(filterState) {
-        searchBarOffsetY = 0
+        scrollBehavior.reset()
     }
 
     ProvideSideSheetContent { drawerState ->
@@ -471,18 +467,18 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         override val keyword = LABEL_PREFIX + label
         override fun onClick() {
             searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
-            searchBarExpanded = false
+            launch { searchBarState.animateToCollapsed() }
             switchLabel(label)
         }
     }
+    searchBarState.CollectExpanded {
+        fabHidden = it
+        if (it) checkedInfoMap.clear()
+    }
     SearchBarScreen(
         onApplySearch = { filterState = filterState.copy(keyword = it) },
-        expanded = searchBarExpanded,
-        onExpandedChange = {
-            searchBarExpanded = it
-            fabHidden = it
-            if (it) checkedInfoMap.clear()
-        },
+        searchBarState = searchBarState,
+        scrollBehavior = scrollBehavior,
         title = title,
         searchFieldHint = hint,
         searchFieldState = searchFieldState,
@@ -494,7 +490,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 EhDB.searchDownloadLabel(label, 10).map(::DownloadLabelSuggestion)
             }
         },
-        searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }
             val sideSheetState = LocalSideSheetState.current
@@ -557,19 +552,13 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     ) { contentPadding ->
         val height by collectListThumbSizeAsState()
         val realPadding = contentPadding + PaddingValues(dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h), dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_v))
-        val searchBarConnection = remember {
+        val connection = remember {
             val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
-            val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
-            object : NestedScrollConnection {
-                override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                    val dy = -consumed.y
-                    if (dy >= slop) {
-                        fabHidden = true
-                    } else if (dy <= -slop / 2) {
-                        fabHidden = false
-                    }
-                    searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
-                    return Offset.Zero // We never consume it
+            scrollBehavior.nestedScrollConnection.watchPostScroll { (_, y) ->
+                if (-y >= slop) {
+                    fabHidden = true
+                } else if (-y <= -slop / 2) {
+                    fabHidden = false
                 }
             }
         }
@@ -585,7 +574,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 val thumbColumns by Settings.thumbColumns.collectAsState()
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Fixed(thumbColumns),
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    modifier = Modifier.nestedScroll(connection).fillMaxSize(),
                     contentPadding = realPadding,
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
@@ -603,7 +592,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 }
             } else {
                 FastScrollLazyColumn(
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    modifier = Modifier.nestedScroll(connection).fillMaxSize(),
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(com.hippo.ehviewer.R.dimen.gallery_list_interval)),
                 ) {

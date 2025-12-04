@@ -14,23 +14,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.fork.SwipeToDismissBox
 import androidx.compose.material3.fork.rememberSwipeToDismissBoxState
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -62,7 +58,6 @@ import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import moe.tarsin.navigate
@@ -74,13 +69,12 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
     val hint = stringResource(R.string.search_bar_hint, title)
     val animateItems by Settings.animateItems.collectAsState()
 
-    var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
-    var searchBarOffsetY by remember { mutableIntStateOf(0) }
+    val searchBarState = rememberSearchBarState()
+    val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
     var keyword by rememberSaveable { mutableStateOf("") }
 
-    DrawerHandle(!searchBarExpanded)
+    DrawerHandle(!searchBarState.expanded)
 
-    val density = LocalDensity.current
     val historyData = rememberInVM {
         Pager(config = PagingConfig(pageSize = 20, jumpThreshold = 40)) {
             if (keyword.isNotEmpty()) {
@@ -101,11 +95,9 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
             keyword = it
             historyData.refresh()
         },
-        expanded = searchBarExpanded,
-        onExpandedChange = { searchBarExpanded = it },
         title = title,
         searchFieldHint = hint,
-        searchBarOffsetY = { searchBarOffsetY },
+        scrollBehavior = scrollBehavior,
         trailingIcon = {
             IconButton(
                 onClick = {
@@ -123,22 +115,12 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
             }
         },
     ) { paddingValues ->
-        val searchBarConnection = remember {
-            val topPaddingPx = with(density) { paddingValues.calculateTopPadding().roundToPx() }
-            object : NestedScrollConnection {
-                override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                    val dy = -consumed.y
-                    searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
-                    return Offset.Zero // We never consume it
-                }
-            }
-        }
         val marginH = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h)
         val cardHeight by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val showProgress by Settings.showReadingProgress.collectAsState()
         FastScrollLazyColumn(
-            modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).fillMaxSize(),
             contentPadding = paddingValues,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(com.hippo.ehviewer.R.dimen.gallery_list_interval)),
         ) {
