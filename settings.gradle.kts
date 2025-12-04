@@ -24,8 +24,6 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
-        // https://issuetracker.google.com/454527215
-        maven("https://androidx.dev/snapshots/builds/14467007/artifacts/repository")
     }
 }
 
