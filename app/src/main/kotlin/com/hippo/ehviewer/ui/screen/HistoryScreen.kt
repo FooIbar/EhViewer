@@ -97,6 +97,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
         },
         title = title,
         searchFieldHint = hint,
+        searchBarState = searchBarState,
         scrollBehavior = scrollBehavior,
         trailingIcon = {
             IconButton(
