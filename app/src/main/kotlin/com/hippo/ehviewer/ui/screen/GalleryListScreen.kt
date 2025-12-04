@@ -34,12 +34,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.fork.SwipeToDismissBox
 import androidx.compose.material3.fork.SwipeToDismissBoxState
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -49,16 +51,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -124,7 +121,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
-import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 import moe.tarsin.navigate
@@ -158,8 +154,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(
 ) = Screen(navigator) {
     val searchFieldState = rememberTextFieldState()
     var urlBuilder by viewModel.urlBuilder
-    var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
-    var searchBarOffsetY by remember { mutableIntStateOf(0) }
+    val searchBarState = rememberSearchBarState()
+    val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
 
@@ -168,7 +164,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
     var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
     var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
 
-    DrawerHandle(!searchBarExpanded)
+    DrawerHandle(!searchBarState.expanded)
 
     LaunchedEffect(urlBuilder) {
         if (urlBuilder.category != EhUtils.NONE) category = urlBuilder.category
@@ -179,7 +175,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
     }
 
-    val density = LocalDensity.current
     val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
@@ -468,13 +463,11 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         }
     }
 
+    searchBarState.CollectExpanded { fabHidden = it }
+
     SearchBarScreen(
         onApplySearch = ::onApplySearch,
-        expanded = searchBarExpanded,
-        onExpandedChange = {
-            searchBarExpanded = it
-            fabHidden = it
-        },
+        searchBarState = searchBarState,
         title = suitableTitle,
         searchFieldHint = searchBarHint,
         searchFieldState = searchFieldState,
@@ -486,7 +479,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
             }.orEmpty()
         },
         localSearch = false,
-        searchBarOffsetY = { searchBarOffsetY },
+        scrollBehavior = scrollBehavior,
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
             IconButton(onClick = { launch { sheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
@@ -508,25 +501,20 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val showProgress by Settings.showReadingProgress.collectAsState()
-        val searchBarConnection = remember {
+        val connection = remember {
             val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
-            val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
-            object : NestedScrollConnection {
-                override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                    val dy = -consumed.y
-                    if (dy >= slop) {
-                        fabHidden = true
-                    } else if (dy <= -slop / 2) {
-                        fabHidden = false
-                    }
-                    searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
-                    return Offset.Zero // We never consume it
+            scrollBehavior.nestedScrollConnection.watchPostScroll { (_, y) ->
+                val dy = -y
+                if (dy >= slop) {
+                    fabHidden = true
+                } else if (dy <= -slop / 2) {
+                    fabHidden = false
                 }
             }
         }
         GalleryList(
             data = data,
-            contentModifier = Modifier.nestedScroll(searchBarConnection),
+            contentModifier = Modifier.nestedScroll(connection),
             contentPadding = contentPadding,
             listMode = listMode,
             detailListState = listState,
@@ -550,12 +538,11 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                     showProgress = showProgress,
                 )
             },
-            searchBarOffsetY = { searchBarOffsetY },
             onRefresh = {
                 urlBuilder.setRange(0)
                 data.refresh()
             },
-            onLoading = { searchBarOffsetY = 0 },
+            onLoading = { scrollBehavior.reset() },
         )
     }
 

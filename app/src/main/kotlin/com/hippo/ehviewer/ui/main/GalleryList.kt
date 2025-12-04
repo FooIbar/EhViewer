@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -44,7 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -90,7 +88,6 @@ fun GalleryList(
     detailItemContent: @Composable (LazyGridItemScope.(BaseGalleryInfo) -> Unit),
     thumbListState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit),
-    searchBarOffsetY: () -> Int,
     scrollToTopOnRefresh: Boolean = true,
     onRefresh: () -> Unit,
     onLoading: () -> Unit,
@@ -220,12 +217,10 @@ fun GalleryList(
                 ErrorTip(modifier = Modifier.widthIn(max = 228.dp), text = stringResource(id = R.string.gallery_list_empty_hit))
             }
         }
-
         PullToRefreshDefaults.LoadingIndicator(
             state = refreshState,
             isRefreshing = isRefreshing,
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding())
-                .offset { IntOffset(0, searchBarOffsetY()) },
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding()),
         )
     }
 }

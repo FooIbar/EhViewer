@@ -29,26 +29,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -86,7 +82,6 @@ import com.hippo.ehviewer.ui.tools.awaitSelectItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import moe.tarsin.coroutines.runSwallowingWithUI
 import moe.tarsin.navigate
@@ -102,8 +97,8 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
 
     // Meta State
     var urlBuilder by viewModel.urlBuilder
-    var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
-    var searchBarOffsetY by remember { mutableIntStateOf(0) }
+    val searchBarState = rememberSearchBarState()
+    val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
 
@@ -112,7 +107,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
     val favCatName = remember(urlBuilder) {
         when (val favCat = urlBuilder.favCat) {
             in 0..9 -> Settings.favCat[favCat]
-            FavListUrlBuilder.FAV_CAT_LOCAL -> localFavName.also { searchBarOffsetY = 0 }
+            FavListUrlBuilder.FAV_CAT_LOCAL -> localFavName.also { scrollBehavior.reset() }
             else -> cloudFavName
         }
     }
@@ -121,7 +116,6 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
     } else {
         stringResource(R.string.favorites_title_2, favCatName, keyword)
     }
-    val density = LocalDensity.current
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
     val data = viewModel.data.collectAsLazyPagingItems()
 
@@ -176,20 +170,20 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
 
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
     val selectMode = checkedInfoMap.isNotEmpty()
-    DrawerHandle(!selectMode && !searchBarExpanded)
+    DrawerHandle(!selectMode && !searchBarState.expanded)
+
+    searchBarState.CollectExpanded {
+        fabHidden = it
+        if (it) checkedInfoMap.clear()
+    }
 
     SearchBarScreen(
         onApplySearch = { refresh(FavListUrlBuilder(urlBuilder.favCat, it)) },
-        expanded = searchBarExpanded,
-        onExpandedChange = {
-            searchBarExpanded = it
-            fabHidden = it
-            if (it) checkedInfoMap.clear()
-        },
+        searchBarState = searchBarState,
+        scrollBehavior = scrollBehavior,
         title = title,
         searchFieldHint = searchBarHint,
         localSearch = urlBuilder.isLocal,
-        searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
             IconButton(onClick = { launch { sheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
@@ -202,25 +196,19 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val showProgress by Settings.showReadingProgress.collectAsState()
-        val searchBarConnection = remember {
+        val connection = remember {
             val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
-            val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
-            object : NestedScrollConnection {
-                override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                    val dy = -consumed.y
-                    if (dy >= slop) {
-                        fabHidden = true
-                    } else if (dy <= -slop / 2) {
-                        fabHidden = false
-                    }
-                    searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
-                    return Offset.Zero // We never consume it
+            scrollBehavior.nestedScrollConnection.watchPostScroll { (_, y) ->
+                if (-y >= slop) {
+                    fabHidden = true
+                } else if (-y <= -slop / 2) {
+                    fabHidden = false
                 }
             }
         }
         GalleryList(
             data = data,
-            contentModifier = Modifier.nestedScroll(searchBarConnection),
+            contentModifier = Modifier.nestedScroll(connection),
             contentPadding = contentPadding,
             listMode = listMode,
             detailItemContent = { info ->
@@ -282,10 +270,9 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
                     )
                 }
             },
-            searchBarOffsetY = { searchBarOffsetY },
             scrollToTopOnRefresh = urlBuilder.favCat != FavListUrlBuilder.FAV_CAT_LOCAL,
             onRefresh = { refresh() },
-            onLoading = { searchBarOffsetY = 0 },
+            onLoading = { scrollBehavior.reset() },
         )
     }
 
