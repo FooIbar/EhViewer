@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ElevatedCard
@@ -37,7 +38,6 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.ImageSearch
-import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.hippo.ehviewer.util.sha1
 import com.ramcosta.composedestinations.annotation.Destination
