@@ -37,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,7 +47,6 @@ import com.ehviewer.core.ui.component.GalleryListCardRating
 import com.ehviewer.core.ui.util.TransitionsVisibilityScope
 import com.ehviewer.core.ui.util.listThumbGenerator
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.FileUtils
@@ -160,7 +158,7 @@ fun DownloadCard(
                     Text(
                         text = categoryText,
                         modifier = Modifier.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
-                        color = if (Settings.harmonizeCategoryColor.value) Color.Unspecified else EhUtils.categoryTextColor,
+                        color = EhUtils.getCategoryTextColor(categoryColor),
                         style = MaterialTheme.typography.labelLarge,
                     )
                 }

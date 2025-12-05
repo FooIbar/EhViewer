@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,7 +46,6 @@ import com.ehviewer.core.ui.util.SharedElementBox
 import com.ehviewer.core.ui.util.TransitionsVisibilityScope
 import com.ehviewer.core.ui.util.listThumbGenerator
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -143,7 +140,7 @@ fun GalleryInfoListItem(
                     Text(
                         text = categoryText,
                         modifier = Modifier.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
-                        color = if (Settings.harmonizeCategoryColor.value) Color.Unspecified else EhUtils.categoryTextColor,
+                        color = EhUtils.getCategoryTextColor(categoryColor),
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     Text(text = info.posted.orEmpty())
@@ -196,7 +193,7 @@ fun GalleryInfoGridItem(
         Badge(
             modifier = Modifier.align(Alignment.TopEnd).widthIn(min = 32.dp).height(24.dp),
             containerColor = categoryColor,
-            contentColor = if (Settings.harmonizeCategoryColor.value) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
+            contentColor = EhUtils.getCategoryTextColor(categoryColor),
         ) {
             val shouldShowLanguage = showLanguage && info.simpleLanguage != null
             if (showPages && info.pages > 0) {
