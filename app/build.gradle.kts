@@ -1,6 +1,7 @@
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule
 import java.util.regex.Pattern
+import org.jetbrains.kotlin.gradle.tooling.BuildKotlinToolingMetadataTask
 
 val isRelease: Boolean
     get() = gradle.startParameter.taskNames.any { it.contains("Release") }
@@ -163,6 +164,18 @@ android {
     }
 
     namespace = "com.hippo.ehviewer"
+}
+
+// https://issuetracker.google.com/457709123
+val buildKotlinToolingMetadataTask: TaskProvider<BuildKotlinToolingMetadataTask.FromKotlinExtension> =
+    tasks.register<_>(BuildKotlinToolingMetadataTask.defaultTaskName)
+
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.sources.resources!!.addGeneratedSourceDirectory(buildKotlinToolingMetadataTask) { _ ->
+            objects.directoryProperty().fileProvider(buildKotlinToolingMetadataTask.map { it.outputDirectory })
+        }
+    }
 }
 
 baselineProfile {
