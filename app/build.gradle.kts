@@ -163,6 +163,10 @@ android {
         compose = true
     }
 
+    sourceSets.named("main") {
+        java.directories += "src/main/kotlin"
+    }
+
     namespace = "com.hippo.ehviewer"
 }
 
