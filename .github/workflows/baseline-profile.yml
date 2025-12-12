@@ -42,7 +42,7 @@ jobs:
           workspaces: "./app/src/main/rust"
 
       - name: CMake Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: app/.cxx
           key: cmake-
