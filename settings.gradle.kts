@@ -9,6 +9,7 @@ pluginManagement {
             }
         }
         mavenCentral()
+        maven("https://central.sonatype.com/repository/maven-snapshots/")
         gradlePluginPortal()
     }
 }
@@ -24,6 +25,7 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven("https://central.sonatype.com/repository/maven-snapshots/")
     }
 }
 
