@@ -9,6 +9,7 @@ pluginManagement {
             }
         }
         mavenCentral()
+        maven("https://central.sonatype.com/repository/maven-snapshots/")
         gradlePluginPortal()
     }
 }
@@ -24,11 +25,12 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven("https://central.sonatype.com/repository/maven-snapshots/")
     }
 }
 
 plugins {
-    id("com.android.settings") version "8.13.2"
+    id("com.android.settings") version "9.0.0-beta05"
 }
 
 android {
