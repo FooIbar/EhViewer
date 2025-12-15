@@ -12,6 +12,7 @@ androidx-datastore = "1.2.0"
 androidx-lifecycle = "2.10.0"
 androidx-paging = "3.3.6"
 androidx-room = "2.8.4"
+androidx-webkit = "1.14.0"
 androidx-work = "2.11.0"
 arrow = "2.2.0"
 coil = "3.3.0"
@@ -59,6 +60,7 @@ androidx-paging-compose = { module = "androidx.paging:paging-compose", version.r
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
 androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "androidx-room" }
 
+androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidx-webkit" }
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "androidx-work" }
 
 arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines" }
