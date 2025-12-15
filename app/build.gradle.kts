@@ -52,8 +52,6 @@ android {
     }.standardOutput.asText.get().trim().removePrefix("https://github.com/").removePrefix("git@github.com:")
         .removeSuffix(".git")
 
-    val chromeVersion = rootProject.layout.projectDirectory.file("chrome.version").asFile.readText().trim()
-
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
         versionCode = 180063
@@ -63,7 +61,6 @@ android {
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("long", "COMMIT_TIME", commitTime)
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
-        buildConfigField("String", "CHROME_VERSION", "\"$chromeVersion\"")
         ndk {
             if (isRelease) {
                 abiFilters.addAll(supportedAbis)
@@ -179,6 +176,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.webkit)
 
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.compiler)
