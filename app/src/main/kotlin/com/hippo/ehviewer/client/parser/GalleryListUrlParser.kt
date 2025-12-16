@@ -26,7 +26,7 @@ object GalleryListUrlParser {
     fun parse(urlStr: String) = Either.catch {
         val url = Url(urlStr)
         if (url.host != EhUrl.DOMAIN_E && url.host != EhUrl.DOMAIN_EX) {
-            return null
+            return@catch null
         }
         val segments = url.segments
         if (segments.isEmpty()) {
