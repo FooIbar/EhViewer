@@ -146,6 +146,8 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         if (BuildConfig.DEBUG) {
             StrictMode.enableDefaults()
             Composer.setDiagnosticStackTraceMode(ComposeStackTraceMode.SourceInformation)
+        } else {
+            Composer.setDiagnosticStackTraceMode(ComposeStackTraceMode.Auto)
         }
     }
 
