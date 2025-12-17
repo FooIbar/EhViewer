@@ -1,5 +1,26 @@
 # 变更日志
 
+## [1.14.6] - 2025-12-17
+
+### 新功能
+
+* 支持显示画廊阅读进度（于 EH 设置中开启） [#2277](https://github.com/FooIbar/EhViewer/issues/2277)
+
+### 改进
+
+* 画廊列表变化时重新显示悬浮操作按钮 [#2681](https://github.com/FooIbar/EhViewer/issues/2681)
+* 移除文件名中的尾随空格和点以兼容 Windows [#2727](https://github.com/FooIbar/EhViewer/issues/2727)
+* 长按画廊详情中的标签时显示标签名称 [#2769](https://github.com/FooIbar/EhViewer/issues/2769)
+* 杂项优化
+
+### Bug 修复
+
+* 对话框中的下拉菜单显示错位
+* HTTP 状态错误显示为“什么都没有找到”
+* 某些老设备无法通过 Cloudflare 验证 [#2794](https://github.com/FooIbar/EhViewer/issues/2794)
+* 杂项修复
+
+
 ## [1.14.5] - 2025-10-19
 
 ### 改进
