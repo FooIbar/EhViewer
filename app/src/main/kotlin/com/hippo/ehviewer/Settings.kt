@@ -16,7 +16,6 @@ import com.ehviewer.core.preferences.edit
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
-import com.hippo.ehviewer.util.AppConfig
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import java.util.Locale
@@ -120,7 +119,7 @@ object Settings : DataStorePreferences(null) {
 
     // About
     val backupBeforeUpdate = boolPref("backup_before_update", false)
-    val useCIUpdateChannel = boolPref("ci_update_channel", AppConfig.isSnapshot)
+    val useCIUpdateChannel = boolPref("ci_update_channel", BuildConfig.SNAPSHOT)
     val updateIntervalDays = intPref("update_interval_days", 7)
 
     // Misc

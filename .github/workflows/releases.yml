@@ -50,15 +50,18 @@ jobs:
       - name: Generate Baseline Profile
         run: ./gradlew generateBaselineProfile
           -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect"
+          -Prelease
 
       # https://github.com/mikepenz/AboutLibraries/issues/1225
       - name: Generate aboutlibraries.json
         run: ./gradlew
           :app:prepareLibraryDefinitionsDefaultRelease --rerun
           :app:prepareLibraryDefinitionsMarshmallowRelease --rerun
+          -Prelease
 
       - name: Build
         run: ./gradlew assembleRelease
+          -Prelease
 
       - name: Rename Apks
         run: |

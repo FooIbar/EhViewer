@@ -52,12 +52,18 @@ android {
     }.standardOutput.asText.get().trim().removePrefix("https://github.com/").removePrefix("git@github.com:")
         .removeSuffix(".git")
 
+    val snapshot = !hasProperty("release")
+
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
         versionCode = 180063
-        versionName = "1.15.0"
-        versionNameSuffix = "-SNAPSHOT"
-        buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
+        versionName = if (snapshot) {
+            "1.15.0-SNAPSHOT"
+        } else {
+            "1.14.6"
+        }
+        buildConfigField("boolean", "SNAPSHOT", "$snapshot")
+        buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("long", "COMMIT_TIME", commitTime)
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
