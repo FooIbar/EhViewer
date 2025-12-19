@@ -67,7 +67,6 @@ import com.hippo.ehviewer.ktor.configureClient
 import com.hippo.ehviewer.ktor.configureCommon
 import com.hippo.ehviewer.ktor.isCronetAvailable
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
-import com.hippo.ehviewer.ui.lockObserver
 import com.hippo.ehviewer.ui.screen.detailCache
 import com.hippo.ehviewer.ui.tools.dataStateFlow
 import com.hippo.ehviewer.util.AppConfig
@@ -109,7 +108,6 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
                 }
             }
         }
-        lifecycle.addObserver(lockObserver)
         CrashHandler.install()
         super.onCreate()
         System.loadLibrary("ehviewer")

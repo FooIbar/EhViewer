@@ -24,7 +24,10 @@ import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
@@ -98,6 +101,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -113,6 +117,7 @@ import com.ehviewer.core.ui.icons.filled.Subscriptions
 import com.ehviewer.core.ui.util.LocalSnackBarFabPadding
 import com.ehviewer.core.ui.util.LocalWindowSizeClass
 import com.ehviewer.core.util.isAtLeastQ
+import com.ehviewer.core.util.isAtLeastR
 import com.ehviewer.core.util.isAtLeastS
 import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.EhApplication.Companion.initialized
@@ -153,6 +158,7 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.spec.Direction
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
+import eu.kanade.tachiyomi.util.view.setSecureScreen
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -175,7 +181,7 @@ private val navItems = arrayOf<Triple<Direction, Int, ImageVector>>(
     Triple(SettingsScreenDestination, R.string.settings, Icons.Default.Settings),
 )
 
-class MainActivity : EhActivity() {
+class MainActivity : AppCompatActivity() {
 
     private var shareUrl: String? = null
 
@@ -203,6 +209,15 @@ class MainActivity : EhActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setKeepOnScreenCondition { !initialized }
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        // https://issuetracker.google.com/204791558
+        // Fix system bars insets still exist in fullscreen mode on API < 30
+        @Suppress("DEPRECATION")
+        if (!isAtLeastR) {
+            with(window.decorView) {
+                systemUiVisibility = systemUiVisibility and View.SYSTEM_UI_FLAG_LAYOUT_STABLE.inv()
+            }
+        }
         setMD3Content {
             val configuration = LocalConfiguration.current
             val navDrawerState = rememberDrawerState(DrawerValue.Closed)
@@ -251,6 +266,15 @@ class MainActivity : EhActivity() {
                         snackbarState.showSnackbar(noNetwork)
                     }
                 }
+            }
+
+            LaunchedEffect(Unit) {
+                Settings.enabledSecurity.valueFlow().collect {
+                    window.setSecureScreen(it)
+                }
+            }
+            if (isAuthenticationSupported()) {
+                SecurityScreen(onError = { moveTaskToBack(true) }, modifier = Modifier.zIndex(1f))
             }
 
             val cannotParse = stringResource(R.string.error_cannot_parse_the_url)
