@@ -119,10 +119,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.SecurityActivity"
-            android:configChanges="screenSize"
-            android:label="@string/settings" />
-        <activity
             android:name=".shortcuts.ShortcutsActivity"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
