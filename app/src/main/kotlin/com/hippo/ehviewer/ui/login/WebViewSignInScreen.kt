@@ -31,6 +31,7 @@ fun AnimatedVisibilityScope.WebViewSignInScreen(navigator: DestinationsNavigator
                     Settings.desktopSite.value = false
                 }
                 if (EhCookieStore.hasSignedIn()) {
+                    EhCookieStore.flush()
                     postLogin()
                     state.webView?.destroy()
                     bgWork { awaitCancellation() }

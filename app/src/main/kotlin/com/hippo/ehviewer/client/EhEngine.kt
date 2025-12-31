@@ -124,7 +124,7 @@ private fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuff
         { !it.hasRemaining() },
     )
     if (empty) {
-        val message = if (EhUtils.isExHentai) {
+        val message = if (response.request.url.host == EhUrl.DOMAIN_EX) {
             "Sad Panda\n(without panda)"
         } else {
             appCtx.getString(R.string.error_ip_banned)

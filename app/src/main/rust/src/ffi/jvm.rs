@@ -256,6 +256,7 @@ where
     R: Serialize,
 {
     jni_throwing(env, |env| {
+        ensure!(limit > 0, "Empty response");
         let buffer = deref_mut_direct_bytebuffer(env, str)?;
 
         // SAFETY: ktor client ensure html content is valid utf-8.
