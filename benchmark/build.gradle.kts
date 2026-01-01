@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.test)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.android.builtInKotlin)
     alias(libs.plugins.baselineprofile)
 }
 

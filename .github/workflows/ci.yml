@@ -115,7 +115,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: default-mapping-${{ github.sha }}
-          path: app/build/outputs/mapping/defaultRelease
+          path: app/build/outputs/mapping/defaultRelease/*.txt
 
       - name: Upload native debug symbols
         uses: actions/upload-artifact@v6
@@ -187,7 +187,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: marshmallow-mapping-${{ github.sha }}
-          path: app/build/outputs/mapping/marshmallowRelease
+          path: app/build/outputs/mapping/marshmallowRelease/*.txt
 
       - name: Upload native debug symbols
         uses: actions/upload-artifact@v6
