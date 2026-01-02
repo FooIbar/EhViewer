@@ -52,8 +52,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 
 class DownloadService :
@@ -375,8 +373,8 @@ class DownloadService :
         }
 
         suspend fun run() {
-            channel.receiveAsFlow().sample(DELAY).collect {
-                when (it) {
+            while (true) {
+                when (channel.receive()) {
                     Ops.Notify -> {
                         if (ActivityCompat.checkSelfPermission(
                                 service,
@@ -389,6 +387,7 @@ class DownloadService :
                     Ops.Cancel -> notifyManager.cancel(id)
                     Ops.StartForeground -> service.startForeground(id, builder.build())
                 }
+                delay(DELAY)
             }
         }
 
