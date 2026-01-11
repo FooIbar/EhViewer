@@ -16,7 +16,7 @@ regex-lite = "0.1"
 jni = { version = "0.21", optional = true }
 jni_fn = { version = "0.1", optional = true }
 chrono = { version = "0.4", default-features = false, features = ["std"] }
-quick-xml = { default-features = false, version = "0.38" }
+quick-xml = { default-features = false, version = "0.39" }
 tl = { git = "https://github.com/FooIbar/tl.git", features = ["simd"] }
 log = "0.4"
 android_logger = { default-features = false, version = "0.15" }
