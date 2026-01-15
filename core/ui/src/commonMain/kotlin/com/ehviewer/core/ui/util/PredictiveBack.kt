@@ -68,6 +68,7 @@ fun animateFloatMergePredictiveBackAsState(
         }
     }
 
+    @Suppress("DEPRECATION")
     PredictiveBackHandler(enable) { progress ->
         try {
             progress.collect {
@@ -91,6 +92,8 @@ fun animateFloatMergeOneWayPredictiveBackAsState(
 ): State<Float> {
     val animatable = remember { Animatable(0f, Float.VectorConverter) }
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+
+    @Suppress("DEPRECATION")
     PredictiveBackHandler(enable) { progress ->
         try {
             progress.collect {
