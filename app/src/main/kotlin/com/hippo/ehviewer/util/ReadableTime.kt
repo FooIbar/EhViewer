@@ -16,11 +16,11 @@
 package com.hippo.ehviewer.util
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.util.toLocalDateTime
+import java.util.Locale
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
@@ -127,7 +127,7 @@ object ReadableTime {
                 val timeDate = time.toLocalDateTime(timeZone).date
                 val nowYear = nowDate.year
                 val timeYear = timeDate.year
-                val isZh = LocalLocale.current.language == "zh"
+                val isZh = Locale.getDefault().language == "zh"
                 if (nowYear == timeYear) {
                     if (isZh) DATE_FORMAT_WITHOUT_YEAR_ZH else DATE_FORMAT_WITHOUT_YEAR
                 } else {
