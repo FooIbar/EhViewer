@@ -34,11 +34,15 @@ plugins {
 }
 
 android {
-    compileSdk = 36
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
     minSdk = 23
     targetSdk = 36
     ndkVersion = "29.0.14206865"
-    buildToolsVersion = "36.0.0"
+    buildToolsVersion = "36.1.0"
 }
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
