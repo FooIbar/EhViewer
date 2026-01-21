@@ -16,7 +16,7 @@ androidx-webkit = "1.15.0"
 androidx-work = "2.11.0"
 arrow = "2.2.1.1"
 coil = "3.3.0"
-compose-bom = "2025.12.01"
+compose-bom = "2026.01.00"
 compose-multiplatform = "1.10.0"
 compose-destinations = "2.3.0"
 compose-preference = "2.1.1"
@@ -74,7 +74,7 @@ coil-gif = { module = "io.coil-kt.coil3:coil-gif" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3" }
 
 compose-bom = { module = "androidx.compose:compose-bom-alpha", version.ref = "compose-bom" }
-compose-foundation = { module = "androidx.compose.foundation:foundation" }
+compose-foundation = { module = "androidx.compose.foundation:foundation", version = "1.11.0-SNAPSHOT"  }
 compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version = "1.7.3" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version = "1.9.0" }
 compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version = "1.2.0" }
