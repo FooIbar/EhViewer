@@ -94,12 +94,12 @@ fun PagerItem(
                     transitionSpec = { fadeIn() togetherWith fadeOut() },
                     label = "progressState",
                 ) { determinate ->
+                    val animatedProgress by animateFloatAsState(
+                        targetValue = state.progressObserved,
+                        animationSpec = WavyProgressIndicatorDefaults.ProgressAnimationSpec,
+                        label = "progress",
+                    )
                     if (determinate) {
-                        val animatedProgress by animateFloatAsState(
-                            targetValue = state.progressObserved,
-                            animationSpec = WavyProgressIndicatorDefaults.ProgressAnimationSpec,
-                            label = "progress",
-                        )
                         CircularWavyProgressIndicator(
                             progress = { animatedProgress },
                         )
