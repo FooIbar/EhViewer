@@ -100,9 +100,7 @@ fun PagerItem(
                         label = "progress",
                     )
                     if (determinate) {
-                        CircularWavyProgressIndicator(
-                            progress = { animatedProgress },
-                        )
+                        CircularWavyProgressIndicator(progress = { animatedProgress })
                     } else {
                         CircularWavyProgressIndicator()
                     }
