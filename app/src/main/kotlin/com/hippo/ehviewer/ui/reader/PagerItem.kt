@@ -1,6 +1,11 @@
 package com.hippo.ehviewer.ui.reader
 
 import android.graphics.drawable.Animatable
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,8 +16,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.WavyProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +57,6 @@ import com.hippo.ehviewer.gallery.progressObserved
 import com.hippo.ehviewer.gallery.statusObserved
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.AdsPlaceholderFile
-import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.drop
 
@@ -83,7 +89,24 @@ fun PagerItem(
                 modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
                 contentAlignment = Alignment.Center,
             ) {
-                CombinedCircularProgressIndicator(progress = state.progressObserved)
+                AnimatedContent(
+                    targetState = state is PageStatus.Loading,
+                    transitionSpec = { fadeIn() togetherWith fadeOut() },
+                    label = "progressState",
+                ) { determinate ->
+                    if (determinate) {
+                        val animatedProgress by animateFloatAsState(
+                            targetValue = state.progressObserved,
+                            animationSpec = WavyProgressIndicatorDefaults.ProgressAnimationSpec,
+                            label = "progress",
+                        )
+                        CircularWavyProgressIndicator(
+                            progress = { animatedProgress },
+                        )
+                    } else {
+                        CircularWavyProgressIndicator()
+                    }
+                }
             }
         }
         is PageStatus.Ready -> {
