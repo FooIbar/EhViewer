@@ -409,7 +409,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                             navigate(
                                 ListUrlBuilder(
                                     mode = ListUrlBuilder.MODE_UPLOADER,
-                                    mKeyword = item.user,
+                                    keyword = item.user,
                                 ).asDst(),
                             )
                         },

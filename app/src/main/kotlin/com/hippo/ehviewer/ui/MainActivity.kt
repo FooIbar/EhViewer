@@ -300,7 +300,7 @@ class MainActivity : AppCompatActivity() {
                             if ("text/plain" == type) {
                                 val keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
                                 if (keyword != null && !navWithUrl(keyword)) {
-                                    navigate(ListUrlBuilder(mKeyword = keyword).asDst())
+                                    navigate(ListUrlBuilder(keyword = keyword).asDst())
                                 }
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)

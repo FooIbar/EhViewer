@@ -48,7 +48,7 @@ object GalleryListUrlParser {
                         ListUrlBuilder(
                             mode = ListUrlBuilder.MODE_TOPLIST,
                             jumpTo = url.parameters["p"],
-                            mKeyword = tl,
+                            keyword = tl,
                         )
                     } else {
                         null
