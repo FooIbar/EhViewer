@@ -32,20 +32,21 @@ import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.job
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cronet") {
     // Limit thread to 1 since we are async & non-blocking
-    override val dispatcher = Dispatchers.Default.limitedParallelism(1)
+    // TODO: Investigate https://github.com/FooIbar/EhViewer/issues/2854
+    // override val dispatcher = Dispatchers.Default.limitedParallelism(1)
 
     override val supportedCapabilities = setOf(HttpTimeoutCapability)
 
-    private val executor = dispatcher.asExecutor()
+    private val executor = dispatcher.limitedParallelism(1).asExecutor()
     private val pool = DirectByteBufferPool(32)
     private val client by lazy {
         with(config) { HttpEngine.Builder(context).apply(config).build() }
@@ -92,7 +93,7 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
             }
 
             override fun onReadCompleted(request: UrlRequest, info: UrlResponseInfo, byteBuffer: ByteBuffer) {
-                chunkChan.trySend(byteBuffer).getOrThrow()
+                chunkChan.trySendBlocking(byteBuffer).getOrThrow()
             }
 
             override fun onSucceeded(request: UrlRequest, info: UrlResponseInfo) {
