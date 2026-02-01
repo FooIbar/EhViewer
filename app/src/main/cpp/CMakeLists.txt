@@ -138,7 +138,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ../../../../rust-
 unset(Rust_TOOLCHAIN CACHE)
 FetchContent_Declare(
         Corrosion
-        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+        GIT_REPOSITORY https://github.com/FooIbar/corrosion.git
         GIT_TAG v0.6.1
         GIT_SHALLOW 1
 )
