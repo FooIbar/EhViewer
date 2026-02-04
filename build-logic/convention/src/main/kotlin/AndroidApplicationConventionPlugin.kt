@@ -17,14 +17,13 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         apply(plugin = libs.plugins.android.application.get().pluginId)
-        apply(plugin = libs.plugins.android.builtInKotlin.get().pluginId)
         apply(plugin = libs.plugins.compose.compiler.get().pluginId)
         apply(plugin = libs.plugins.composeCompilerReportGenerator.get().pluginId)
 
         configure<KotlinAndroidExtension> {
             jvmToolchain(21)
             compilerOptions {
-                configureKotlin()
+                configureKotlin(includeKotlinX = true)
                 configureKotlinCompose()
                 jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
             }
