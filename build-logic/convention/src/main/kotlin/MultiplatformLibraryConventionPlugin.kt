@@ -24,7 +24,7 @@ class MultiplatformLibraryConventionPlugin : Plugin<Project> {
         configure<KotlinMultiplatformExtension> {
             jvmToolchain(21)
             compilerOptions {
-                configureKotlin()
+                configureKotlin(includeKotlinX = path != ":core:i18n")
             }
 
             applyHierarchyTemplate {
@@ -44,10 +44,6 @@ class MultiplatformLibraryConventionPlugin : Plugin<Project> {
 
             configure<KotlinMultiplatformAndroidLibraryTarget> {
                 namespace = "com.ehviewer${path.replace(':', '.')}"
-
-                withHostTestBuilder {
-                }
-
                 enableCoreLibraryDesugaring = true
 
                 compilerOptions {

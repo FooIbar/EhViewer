@@ -1,5 +1,5 @@
 [versions]
-aboutlibraries = "13.2.1"
+aboutlibraries = "14.0.0-b02"
 accompanist = "0.37.3"
 agp = "9.0.0"
 androidx-activity = "1.12.3"
@@ -144,7 +144,6 @@ splitties = ["splitties-appctx", "splitties-systemservices"]
 aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
 aboutlibrariesAndroid = { id = "com.mikepenz.aboutlibraries.plugin.android", version.ref = "aboutlibraries" }
 android-application = { id = "com.android.application", version.ref = "agp" }
-android-builtInKotlin = { id = "com.android.built-in-kotlin", version.ref = "agp" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }

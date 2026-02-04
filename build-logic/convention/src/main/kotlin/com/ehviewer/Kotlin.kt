@@ -4,7 +4,7 @@ import org.gradle.kotlin.dsl.assign
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
 
 // https://kotlinlang.org/docs/gradle-compiler-options.html#all-compiler-options
-internal fun KotlinCommonCompilerOptions.configureKotlin() {
+internal fun KotlinCommonCompilerOptions.configureKotlin(includeKotlinX: Boolean) {
     progressiveMode = true
     allWarningsAsErrors = true
     optIn.addAll(
@@ -12,10 +12,14 @@ internal fun KotlinCommonCompilerOptions.configureKotlin() {
         "kotlin.concurrent.atomics.ExperimentalAtomicApi",
         "kotlin.contracts.ExperimentalContracts",
         "kotlin.time.ExperimentalTime",
-        "kotlinx.coroutines.ExperimentalCoroutinesApi",
-        "kotlinx.coroutines.FlowPreview",
-        "kotlinx.serialization.ExperimentalSerializationApi",
     )
+    if (includeKotlinX) {
+        optIn.addAll(
+            "kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "kotlinx.coroutines.FlowPreview",
+            "kotlinx.serialization.ExperimentalSerializationApi",
+        )
+    }
     freeCompilerArgs.addAll(
         "-Xcontext-parameters",
         "-Xwhen-expressions=indy",
