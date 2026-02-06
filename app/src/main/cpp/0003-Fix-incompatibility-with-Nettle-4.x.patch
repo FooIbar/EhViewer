@@ -1,0 +1,53 @@
+From 6a3d059507dd23e981090909e6f42f79f6de2a39 Mon Sep 17 00:00:00 2001
+From: FooIbar <118464521+FooIbar@users.noreply.github.com>
+Date: Fri, 6 Feb 2026 20:52:25 +0800
+Subject: [PATCH] Fix incompatibility with Nettle 4.x
+
+---
+ libarchive/archive_cryptor_private.h | 4 ++++
+ libarchive/archive_hmac.c            | 6 ++++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/libarchive/archive_cryptor_private.h b/libarchive/archive_cryptor_private.h
+index 367d7c3b..069eccd9 100644
+--- a/libarchive/archive_cryptor_private.h
++++ b/libarchive/archive_cryptor_private.h
+@@ -109,6 +109,10 @@ typedef struct {
+ #include <nettle/version.h>
+ #define	ARCHIVE_CRYPTOR_USE_NETTLE 1
+ 
++#ifndef AES_MAX_KEY_SIZE
++#define AES_MAX_KEY_SIZE AES256_KEY_SIZE
++#endif
++
+ typedef struct {
+ #if NETTLE_VERSION_MAJOR < 3
+ 	struct aes_ctx	ctx;
+diff --git a/libarchive/archive_hmac.c b/libarchive/archive_hmac.c
+index edb3bf5a..e1e8f05f 100644
+--- a/libarchive/archive_hmac.c
++++ b/libarchive/archive_hmac.c
+@@ -198,6 +198,7 @@ static void __hmac_sha1_cleanup(archive_hmac_sha1_ctx *ctx)
+ }
+ 
+ #elif defined(HAVE_LIBNETTLE) && defined(HAVE_NETTLE_HMAC_H)
++#include <nettle/version.h>
+ 
+ static int
+ __hmac_sha1_init(archive_hmac_sha1_ctx *ctx, const uint8_t *key, size_t key_len)
+@@ -216,7 +217,12 @@ __hmac_sha1_update(archive_hmac_sha1_ctx *ctx, const uint8_t *data,
+ static void
+ __hmac_sha1_final(archive_hmac_sha1_ctx *ctx, uint8_t *out, size_t *out_len)
+ {
++#if NETTLE_VERSION_MAJOR < 4
+ 	hmac_sha1_digest(ctx, (unsigned)*out_len, out);
++#else
++	hmac_sha1_digest(ctx, out);
++	*out_len = SHA1_DIGEST_SIZE;
++#endif
+ }
+ 
+ static void
+-- 
+2.51.0
+
