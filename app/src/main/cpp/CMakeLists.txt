@@ -57,7 +57,7 @@ set(CONFIGURE_COMMAND ./.bootstrap && ./configure --disable-public-key --disable
 ExternalProject_Add(
         nettle
         GIT_REPOSITORY https://gitlab.com/gnutls/nettle.git
-        GIT_TAG nettle_3.10.2_release_20250626
+        GIT_TAG nettle_4.0_release_20260205
         GIT_SHALLOW 1
         GIT_CONFIG core.autocrlf=input
         CONFIGURE_COMMAND ${WSL} ${CONFIGURE_COMMAND}
