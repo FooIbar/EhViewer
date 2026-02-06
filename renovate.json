@@ -20,17 +20,6 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/(^|/)CMakeLists\\.txt$/"
-      ],
-      "matchStrings": [
-        "(/(?<depName>[^/]+)){2}-(?<currentValue>.+)\\.tar\\.gz"
-      ],
-      "datasourceTemplate": "custom.gnu",
-      "extractVersionTemplate": "{{depName}}-(?<version>.+)\\.tar\\.gz$"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
         "rust-toolchain.toml"
       ],
       "matchStrings": [
@@ -62,10 +51,6 @@
       "transformTemplates": [
         "{\"releases\":[{\"version\":$match(body,/ndkVersion \"([^\"]+)\"/).groups[0]}],\"changelogUrl\":html_url}"
       ]
-    },
-    "gnu": {
-      "defaultRegistryUrlTemplate": "https://ftpmirror.gnu.org/{{packageName}}/",
-      "format": "html"
     }
   },
   "packageRules": [
@@ -90,6 +75,12 @@
         "org.jetbrains.kotlinx:kotlinx-datetime"
       ],
       "allowedVersions": "!/compat$/"
+    },
+    {
+      "matchDepNames": [
+        "nettle"
+      ],
+      "versioning": "regex:^nettle_(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?(?<prerelease>rc\\d+)?"
     },
     {
       "matchDepNames": [
