@@ -24,7 +24,7 @@ Java_com_hippo_ehviewer_jni_HashKt_sha1(JNIEnv *env, jclass clazz, jint fd) {
     }
 
     byte digest[SHA1_DIGEST_SIZE];
-    sha1_digest(&ctx, SHA1_DIGEST_SIZE, digest);
+    sha1_digest(&ctx, digest);
 
     byte byte;
     char hex_digest[2 * SHA1_DIGEST_SIZE + 1];

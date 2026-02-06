@@ -47,7 +47,7 @@ if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 else ()
     set(TOOLCHAIN "${ANDROID_TOOLCHAIN_ROOT}/bin")
 endif ()
-set(CONFIGURE_COMMAND ./.bootstrap && ./configure --disable-public-key --disable-dependency-tracking
+set(CONFIGURE_COMMAND ${WSL} ./.bootstrap && ${WSL} ./configure --disable-public-key --disable-dependency-tracking
         "--host=${CMAKE_C_COMPILER_TARGET}"
         "CFLAGS=${CMAKE_C_FLAGS} -Qunused-arguments"
         "AR=${TOOLCHAIN}/llvm-ar"
@@ -57,10 +57,10 @@ set(CONFIGURE_COMMAND ./.bootstrap && ./configure --disable-public-key --disable
 ExternalProject_Add(
         nettle
         GIT_REPOSITORY https://gitlab.com/gnutls/nettle.git
-        GIT_TAG nettle_3.10.2_release_20250626
+        GIT_TAG nettle_4.0_release_20260205
         GIT_SHALLOW 1
         GIT_CONFIG core.autocrlf=input
-        CONFIGURE_COMMAND ${WSL} ${CONFIGURE_COMMAND}
+        CONFIGURE_COMMAND ${CONFIGURE_COMMAND}
         BUILD_COMMAND ${WSL} make -j4 libnettle.a
         INSTALL_COMMAND ""
         BUILD_IN_SOURCE 1
@@ -99,6 +99,7 @@ option(ENABLE_TEST OFF)
 set(LIBARCHIVE_PATCH
         ${CMAKE_CURRENT_LIST_DIR}/0001-Fix-zip_time-performance.patch
         ${CMAKE_CURRENT_LIST_DIR}/0002-Use-UTF-8-as-default-charset-on-bionic.patch
+        ${CMAKE_CURRENT_LIST_DIR}/0003-Fix-incompatibility-with-Nettle-4.x.patch
 )
 FetchContent_Declare(
         libarchive
