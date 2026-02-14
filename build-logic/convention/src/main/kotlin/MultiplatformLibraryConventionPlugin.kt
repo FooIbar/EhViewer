@@ -45,6 +45,8 @@ class MultiplatformLibraryConventionPlugin : Plugin<Project> {
             configure<KotlinMultiplatformAndroidLibraryTarget> {
                 namespace = "com.ehviewer${path.replace(':', '.')}"
                 enableCoreLibraryDesugaring = true
+                compileSdk = 36
+                minSdk = 23
 
                 compilerOptions {
                     jvmDefault = JvmDefaultMode.NO_COMPATIBILITY

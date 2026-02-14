@@ -5,6 +5,7 @@ plugins {
 
 android {
     namespace = "com.ehviewer.baselineprofile"
+    compileSdk = 36
 
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

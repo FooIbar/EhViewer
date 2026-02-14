@@ -17,6 +17,10 @@ plugins {
 val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
 
 android {
+    compileSdk = 36
+    buildToolsVersion = "36.1.0"
+    ndkVersion = "29.0.14206865"
+    
     splits {
         abi {
             isEnable = true
@@ -56,6 +60,7 @@ android {
 
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
+        targetSdk = 36
         versionCode = 180063
         versionName = if (snapshot) {
             "1.15.0-SNAPSHOT"
