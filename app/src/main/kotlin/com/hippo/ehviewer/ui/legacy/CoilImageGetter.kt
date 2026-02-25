@@ -7,6 +7,7 @@ import coil3.decode.DecodeUtils
 import coil3.imageLoader
 import coil3.request.crossfade
 import coil3.size.Scale
+import coil3.size.Size
 import com.ehviewer.core.util.toIntOrDefault
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import kotlin.math.roundToInt
@@ -21,7 +22,7 @@ class CoilImageGetter(private val onSuccess: () -> Unit) : Html.ImageGetter {
             val srcHeight = groupValues[2].toInt()
             val dstWidth = groupValues[3].toIntOrDefault(200)
             val dstHeight = dstWidth / 2 * 3
-            val multiplier = DecodeUtils.computeSizeMultiplier(srcWidth, srcHeight, dstWidth, dstHeight, Scale.FIT)
+            val multiplier = DecodeUtils.computeSizeMultiplier(srcWidth, srcHeight, dstWidth, dstHeight, Scale.FIT, Size.ORIGINAL)
             setBounds(0, 0, (srcWidth * multiplier).roundToInt(), (srcHeight * multiplier).roundToInt())
         } ?: setBounds(0, 0, 200, 300)
         with(appCtx) {
