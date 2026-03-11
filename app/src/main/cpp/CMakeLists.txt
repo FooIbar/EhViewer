@@ -99,7 +99,6 @@ option(ENABLE_TEST OFF)
 set(LIBARCHIVE_PATCH
         ${CMAKE_CURRENT_LIST_DIR}/0001-Fix-zip_time-performance.patch
         ${CMAKE_CURRENT_LIST_DIR}/0002-Use-UTF-8-as-default-charset-on-bionic.patch
-        ${CMAKE_CURRENT_LIST_DIR}/0003-Fix-incompatibility-with-Nettle-4.x.patch
 )
 FetchContent_Declare(
         libarchive
