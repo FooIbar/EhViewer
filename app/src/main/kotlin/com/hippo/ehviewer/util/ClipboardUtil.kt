@@ -22,8 +22,8 @@ import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
+import android.os.PersistableBundle
 import android.view.textclassifier.TextClassifier
-import androidx.core.os.persistableBundleOf
 import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.ui.MainActivity
 import moe.tarsin.tip
@@ -33,7 +33,9 @@ fun copyTextToClipboard(text: CharSequence?, isSensitive: Boolean) {
     clipboardManager.setPrimaryClip(
         ClipData.newPlainText(null, text).apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isSensitive) {
-                description.extras = persistableBundleOf(ClipDescription.EXTRA_IS_SENSITIVE to true)
+                description.extras = PersistableBundle().apply {
+                    putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true)
+                }
             }
         },
     )
