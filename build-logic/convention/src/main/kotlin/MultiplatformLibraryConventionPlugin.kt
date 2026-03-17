@@ -44,6 +44,11 @@ class MultiplatformLibraryConventionPlugin : Plugin<Project> {
 
             configure<KotlinMultiplatformAndroidLibraryTarget> {
                 namespace = "com.ehviewer${path.replace(':', '.')}"
+
+                // https://youtrack.jetbrains.com/issue/KT-83319
+                withHostTestBuilder {
+                }
+
                 enableCoreLibraryDesugaring = true
 
                 compilerOptions {
