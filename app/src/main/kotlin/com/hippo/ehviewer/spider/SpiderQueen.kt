@@ -594,6 +594,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                                 previousPToken,
                             )
                         }.getOrElse {
+                            if (it is FatalException) throw it
                             forceHtml = true
                             return@repeat
                         }.let {

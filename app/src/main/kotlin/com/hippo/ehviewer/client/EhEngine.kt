@@ -194,7 +194,12 @@ private suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline 
 
 object EhEngine {
     suspend fun getOriginalImageUrl(url: String, referer: String?) = noRedirectEhRequest(url, referer).executeSafely { response ->
-        response.headers["Location"]?.takeUnless { Url(it).isLogin } ?: throw InsufficientGpException()
+        val location = response.headers["Location"] ?: run {
+            val body = response.bodyAsUtf8Text()
+            rethrowExactly(response, body.left(), InsufficientGpException())
+        }
+        if (Url(location).isLogin) throw InsufficientGpException()
+        location
     }
 
     suspend fun getPTokenListFromMpv(gid: Long, token: String) = ehRequest(EhUrl.getGalleryMultiPageViewerUrl(gid, token), EhUrl.referer)
