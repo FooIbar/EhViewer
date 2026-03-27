@@ -60,7 +60,7 @@ fun SecurityScreen(onError: () -> Unit, modifier: Modifier) {
         isAuthenticating = false
         when (result) {
             is AuthenticationResult.Success -> locked = false
-            is AuthenticationResult.Error -> onError()
+            else -> onError()
         }
     }
 
@@ -68,10 +68,7 @@ fun SecurityScreen(onError: () -> Unit, modifier: Modifier) {
     fun startAuthentication() {
         if (isAuthenticating) return
         isAuthenticating = true
-        val request = biometricRequest(
-            title = title,
-            authFallback = Biometric.Fallback.DeviceCredential,
-        ) {}
+        val request = biometricRequest(title, Biometric.Fallback.DeviceCredential) {}
         launcher.launch(request)
     }
 
