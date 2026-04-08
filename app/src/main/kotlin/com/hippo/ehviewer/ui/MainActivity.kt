@@ -66,7 +66,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberDrawerState2
 import androidx.compose.runtime.Composable
@@ -380,7 +380,7 @@ class MainActivity : AppCompatActivity() {
             var snackbarFabPadding by remember { mutableStateOf(0.dp) }
             val drawerEnabled = drawerHandle.isNotEmpty()
             val density = LocalDensity.current
-            val adaptiveInfo = currentWindowAdaptiveInfo()
+            val adaptiveInfo = currentWindowAdaptiveInfoV2()
             val needSignIn by Settings.needSignIn.collectAsState()
             val launchPage by Settings.launchPage.collectAsState()
             CompositionLocalProvider(
