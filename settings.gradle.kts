@@ -32,11 +32,7 @@ plugins {
 }
 
 android {
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 37
     minSdk = 23
     targetSdk = 36
     ndkVersion = "29.0.14206865"
