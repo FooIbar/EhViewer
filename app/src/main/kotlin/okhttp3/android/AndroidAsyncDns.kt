@@ -40,6 +40,7 @@ class AndroidAsyncDns(
     private val network: Network? = null,
 ) : AsyncDns {
     @RequiresApi(Build.VERSION_CODES.Q)
+    @Suppress("DEPRECATION")
     internal val resolver = DnsResolver.getInstance()
     private val executor = Executors.newSingleThreadExecutor()
 
