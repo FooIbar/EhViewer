@@ -80,7 +80,7 @@ jobs:
           mv app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip EhViewer-${{ github.ref_name }}-marshmallow-native-debug-symbols.zip
 
       - name: Releases
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body: Bump Version
           files: |
