@@ -131,10 +131,10 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
             None => {
                 let thumb = tag.query_selector(parser, "[src]")?.next()?;
                 (
-                get_node_handle_attr(&thumb, parser, "src")?,
-                parse_thumb_resolution(get_node_handle_attr(&thumb, parser, "style")?),
-            )
-            },
+                    get_node_handle_attr(&thumb, parser, "src")?,
+                    parse_thumb_resolution(get_node_handle_attr(&thumb, parser, "style")?),
+                )
+            }
             Some(thumb) => (
                 get_node_handle_attr(&thumb, parser, "data-src")?,
                 parse_thumb_resolution(get_node_handle_attr(&thumb, parser, "style")?),
