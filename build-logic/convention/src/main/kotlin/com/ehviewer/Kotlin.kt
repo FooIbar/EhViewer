@@ -6,7 +6,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
 // https://kotlinlang.org/docs/gradle-compiler-options.html#all-compiler-options
 internal fun KotlinCommonCompilerOptions.configureKotlin(includeKotlinX: Boolean) {
     progressiveMode = true
-    allWarningsAsErrors = true
+    // IDE support for context parameters without `-Xcontext-parameters` is not available yet.
+    // allWarningsAsErrors = true
     optIn.addAll(
         "kotlin.ExperimentalStdlibApi",
         "kotlin.concurrent.atomics.ExperimentalAtomicApi",
@@ -22,7 +23,9 @@ internal fun KotlinCommonCompilerOptions.configureKotlin(includeKotlinX: Boolean
     }
     freeCompilerArgs.addAll(
         "-Xcollection-literals",
+        "-Xcontext-parameters",
         "-Xwhen-expressions=indy",
+        "-Xannotation-default-target=param-property",
     )
 }
 
