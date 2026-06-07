@@ -30,7 +30,8 @@ gradlePlugin {
 }
 
 kotlin {
-    jvmToolchain(21)
+    val javaVersion = libs.versions.java.get().toInt()
+    jvmToolchain(javaVersion)
 }
 
 spotless {

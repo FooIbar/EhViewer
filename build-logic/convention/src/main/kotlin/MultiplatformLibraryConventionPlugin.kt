@@ -22,7 +22,8 @@ class MultiplatformLibraryConventionPlugin : Plugin<Project> {
         apply(plugin = libs.plugins.android.lint.get().pluginId)
 
         configure<KotlinMultiplatformExtension> {
-            jvmToolchain(21)
+            val javaVersion = libs.versions.java.get().toInt()
+            jvmToolchain(javaVersion)
             compilerOptions {
                 configureKotlin(includeKotlinX = path != ":core:i18n")
             }

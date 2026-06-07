@@ -21,7 +21,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         apply(plugin = libs.plugins.composeCompilerReportGenerator.get().pluginId)
 
         configure<KotlinAndroidExtension> {
-            jvmToolchain(21)
+            val javaVersion = libs.versions.java.get().toInt()
+            jvmToolchain(javaVersion)
             compilerOptions {
                 configureKotlin(includeKotlinX = true)
                 configureKotlinCompose()
