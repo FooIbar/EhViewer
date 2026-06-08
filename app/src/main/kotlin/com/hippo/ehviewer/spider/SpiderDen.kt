@@ -33,7 +33,6 @@ import com.ehviewer.core.files.sendTo
 import com.ehviewer.core.model.GalleryDetail
 import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.util.logcat
-import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -47,6 +46,7 @@ import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.image.PathSource
 import com.hippo.ehviewer.jni.archiveFdBatch
+import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.copyTo
 import com.hippo.ehviewer.util.sha1
@@ -57,6 +57,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import okio.Path
+import okio.Path.Companion.toOkioPath
+import splitties.init.appCtx
 
 class SpiderDen(val info: GalleryInfo) {
     private val gid = info.gid
@@ -149,6 +151,10 @@ class SpiderDen(val info: GalleryInfo) {
     fun removeIntermediateFiles(index: Int) {
         removeFromCache(index)
         removeTempFile(index)
+    }
+
+    fun clearCache() {
+        repeat(info.pages, ::removeFromCache)
     }
 
     private fun Path.findDownloadFileForIndex(index: Int, extension: String) = with(lock) {
@@ -342,6 +348,12 @@ class SpiderDen(val info: GalleryInfo) {
     }
 }
 
+private val sCache by lazy {
+    diskCache {
+        directory(appCtx.cacheDir.toOkioPath() / "image_cache")
+        maxSizeBytes(Settings.readCacheSize.value.coerceIn(320, 5120).toLong() * 1024 * 1024)
+    }
+}
 private const val TEMP_SUFFIX = ".tmp"
 private val FileNameRegex = Regex("^\\d{8}\\.\\w{3,4}")
 private val FileHashRegex = Regex("/h/([0-9a-f]{40})")

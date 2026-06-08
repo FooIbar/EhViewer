@@ -12,7 +12,7 @@ import com.ehviewer.core.files.isDirectory
 import com.ehviewer.core.files.isFile
 import com.ehviewer.core.files.sendTo
 import com.ehviewer.core.files.toUri
-import com.hippo.ehviewer.EhApplication.Companion.imageCache
+import com.hippo.ehviewer.EhApplication.Companion.thumbCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.getThumbKey
 import com.hippo.ehviewer.download.downloadLocation
@@ -53,7 +53,7 @@ object DownloadThumbInterceptor : Interceptor {
                 // Accessing the recreated file immediately after deleting it throws
                 // FileNotFoundException, so we just overwrite the existing file.
                 val key = requireNotNull(chain.request.memoryCacheKey)
-                imageCache.read(key) {
+                thumbCache.read(key) {
                     data sendTo thumb
                 }
                 if (thumb != v1Thumb) v1Thumb.delete()
