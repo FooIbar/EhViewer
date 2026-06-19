@@ -308,11 +308,14 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         autoCancel = !selectMode,
     ) {
         if (!selectMode) {
-            if (urlBuilder.isLocal) {
-                onClick(Icons.Default.Shuffle) {
+            onClick(Icons.Default.Shuffle) {
+                if (urlBuilder.isLocal) {
                     EhDB.randomLocalFav()?.let { info ->
                         withUIContext { navigate(info.asDst()) }
                     }
+                } else {
+                    val info = runSwallowingWithUI { viewModel.randomCloudFav() }.getOrNull()
+                    if (info != null) withUIContext { navigate(info.asDst()) }
                 }
             }
             onClick(EhIcons.Default.GoTo) {
