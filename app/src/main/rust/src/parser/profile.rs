@@ -1,6 +1,6 @@
+use crate::parser::utils::unescape;
 use crate::{EhError, get_node_handle_attr, get_tag_attr, select_first};
 use anyhow::{Context, Result};
-use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::{Parser, VDom};
 

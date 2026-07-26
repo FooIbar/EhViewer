@@ -1,10 +1,10 @@
 use crate::EhError;
+use crate::parser::utils::unescape;
 use crate::{EHGT_PREFIX, EX_PREFIX};
 use crate::{get_element_by_id, get_vdom_first_element_by_class_name};
 use crate::{get_first_element_by_class_name, query_childs_first_match_attr};
 use crate::{get_node_attr, get_node_handle_attr, regex};
 use anyhow::{Context, Result, bail};
-use quick_xml::escape::unescape;
 use serde::Serialize;
 use std::borrow::Cow;
 use std::ops::Index;

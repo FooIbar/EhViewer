@@ -1,9 +1,9 @@
 use crate::parser::list::{BaseGalleryInfo, get_thumb_key, parse_token_and_gid, to_category_i32};
+use crate::parser::utils::unescape;
 use crate::{EhError, get_first_child, get_first_element_by_class_name, get_node_handle_attr};
 use crate::{get_tag_attr, get_vdom_first_element_by_class_name, regex};
 use anyhow::{Context, Result, bail};
 use chrono::naive::NaiveDateTime;
-use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
 

@@ -1,6 +1,6 @@
+use crate::parser::utils::unescape;
 use crate::regex;
 use anyhow::{Context, Result};
-use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::{Parser, VDom};
 

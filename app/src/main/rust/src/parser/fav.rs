@@ -1,6 +1,6 @@
 use crate::parser::list::{GalleryListResult, parse_info_list};
+use crate::parser::utils::unescape;
 use anyhow::{Result, bail};
-use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::Parser;
 use tl::VDom;
