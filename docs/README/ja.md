@@ -66,16 +66,15 @@
 
 軽量で高性能な EhViewer のフォークです。
 
-[Material Design 3](https://m3.material.io/) と[ダイナミックカラー](https://m3.material.io/styles/color/dynamic-color/overview)のサポートを搭載しています。
+[Material Design 3](https://m3.material.io/)
+と[ダイナミックカラー](https://m3.material.io/styles/color/dynamic-color/overview)のサポートを搭載しています。
 
 # ダウンロード
 
-| フレーバー       | 最小の Android バージョン | 注意事項              |
-|-------------|-------------------|-------------------|
-| Default     | 8.0               | 完全なサポート           |
-| Marshmallow | 6.0*              | サポートは限定的、保証はできません |
-
-*Android 6 のデバイスは [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) 証明書のインストールが必要です
+| フレーバー   | 最小の Android バージョン | 注意事項              |
+|---------|-------------------|-------------------|
+| Default | 8.0               | 完全なサポート           |
+| Nougat  | 7.0               | サポートは限定的、保証はできません |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/FooIbar/EhViewer-art/blob/master/get-it-on-github.svg" width="200px"/>

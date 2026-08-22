@@ -69,12 +69,10 @@
 
 # 下载
 
-| 变种          | 最低 Android 版本 | 备注       |
-|-------------|---------------|----------|
-| Default     | 8.0           | 完全支持     |
-| Marshmallow | 6.0*          | 有限支持，无保证 |
-
-*运行 Android 6 的设备需安装 [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) 证书
+| 变种      | 最低 Android 版本 | 备注       |
+|---------|---------------|----------|
+| Default | 8.0           | 完全支持     |
+| Nougat  | 7.0           | 有限支持，无保证 |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/FooIbar/EhViewer-art/blob/master/get-it-on-github.svg" width="200px"/>

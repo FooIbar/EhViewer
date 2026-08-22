@@ -70,12 +70,10 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 
 # Download
 
-| Flavor      | Minimum Android Version | Notes                          |
-|-------------|-------------------------|--------------------------------|
-| Default     | 8.0                     | Full support                   |
-| Marshmallow | 6.0*                    | Limited support, no guarantees |
-
-*Devices running Android 6 need to have the [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) certificate installed
+| Flavor  | Minimum Android Version | Notes                          |
+|---------|-------------------------|--------------------------------|
+| Default | 8.0                     | Full support                   |
+| Nougat  | 7.0                     | Limited support, no guarantees |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/FooIbar/EhViewer-art/blob/master/get-it-on-github.svg" width="200px"/>
