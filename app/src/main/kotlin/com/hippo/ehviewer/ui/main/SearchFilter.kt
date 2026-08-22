@@ -193,9 +193,6 @@ fun SearchFilter(
                             }
                             if (error != null) {
                                 ListItem(
-                                    headlineContent = {
-                                        Text(text = error, style = MaterialTheme.typography.bodySmall)
-                                    },
                                     leadingContent = {
                                         Icon(imageVector = Icons.Default.Info, contentDescription = null)
                                     },
@@ -204,6 +201,9 @@ fun SearchFilter(
                                         headlineColor = MaterialTheme.colorScheme.error,
                                         leadingIconColor = MaterialTheme.colorScheme.error,
                                     ),
+                                    content = {
+                                        Text(text = error, style = MaterialTheme.typography.bodySmall)
+                                    },
                                 )
                             }
                         }

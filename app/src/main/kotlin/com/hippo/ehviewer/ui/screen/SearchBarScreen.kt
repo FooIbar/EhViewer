@@ -294,7 +294,6 @@ fun SearchBarScreen(
                 item {}
                 items(mSuggestionList, key = { it.keyword.hashCode() * 31 + it.canDelete.hashCode() }) {
                     ListItem(
-                        headlineContent = { Text(text = it.keyword) },
                         supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
                         leadingContent = it.canOpenDirectly.ifTrueThen {
                             Icon(
@@ -312,6 +311,7 @@ fun SearchBarScreen(
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         modifier = Modifier.clickable { it.onClick() }.thenIf(animateItems) { animateItem() },
+                        content = { Text(text = it.keyword) },
                     )
                 }
             }

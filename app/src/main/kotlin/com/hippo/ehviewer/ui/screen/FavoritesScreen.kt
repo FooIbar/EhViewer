@@ -159,7 +159,6 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         ) {
             faves.forEachIndexed { index, (name, count) ->
                 ListItem(
-                    headlineContent = { Text(text = name) },
                     trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
                     modifier = Modifier.clip(CardDefaults.shape).clickable {
                         val newCat = index - 2
@@ -169,6 +168,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
                         launch { sheetState.close() }
                     },
                     colors = listItemOnDrawerColor(urlBuilder.favCat == index - 2),
+                    content = { Text(text = name) },
                 )
             }
         }

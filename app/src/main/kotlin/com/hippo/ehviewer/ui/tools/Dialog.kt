@@ -42,6 +42,7 @@ import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -684,10 +685,10 @@ suspend fun awaitSelectItemWithIcon(
         }
         itemsIndexed(items) { index, (icon, text) ->
             ListItem(
-                headlineContent = { Text(text = stringResource(id = text), style = MaterialTheme.typography.titleMedium) },
                 modifier = Modifier.clickable { resume(index) }.padding(horizontal = 8.dp),
                 leadingContent = { Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor) },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                content = { Text(text = stringResource(id = text), style = MaterialTheme.typography.titleMedium) },
             )
         }
     }
@@ -756,17 +757,17 @@ private fun CheckableItem(text: String, checked: Boolean, modifier: Modifier = M
     val textStyle = MaterialTheme.typography.titleMedium
     val checkedColor = MaterialTheme.colorScheme.primary
     ListItem(
-        headlineContent = {
-            Text(
-                text = text,
-                style = if (checked) textStyle.copy(color = checkedColor) else textStyle,
-            )
-        },
         modifier = modifier,
         trailingContent = checked.ifTrueThen {
             Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = checkedColor)
         },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        content = {
+            Text(
+                text = text,
+                style = if (checked) textStyle.copy(color = checkedColor) else textStyle,
+            )
+        },
     )
 }
 

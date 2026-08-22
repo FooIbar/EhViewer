@@ -43,7 +43,7 @@ private val xml = XML {
     }
     xmlDeclMode = XmlDeclMode.Charset
     xmlVersion = XmlVersion.XML10
-    indent = 2
+    setIndent(2)
 }
 
 fun GalleryInfo.getComicInfo(): ComicInfo {

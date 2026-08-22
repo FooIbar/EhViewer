@@ -260,12 +260,8 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
             Column {
                 data.forEach { (name, vote) ->
                     ListItem(
-                        headlineContent = {
-                            Text(text = name)
-                        },
-                        trailingContent = {
-                            Text(text = vote)
-                        },
+                        trailingContent = { Text(text = vote) },
+                        content = { Text(text = name) },
                     )
                 }
             }

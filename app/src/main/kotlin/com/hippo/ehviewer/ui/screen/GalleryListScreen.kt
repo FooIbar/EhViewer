@@ -226,10 +226,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                         fabHidden = false
                         launch { sheetState.close() }
                     },
-                    headlineContent = {
-                        Text(text = name)
-                    },
                     colors = listItemOnDrawerColor(urlBuilder.keyword == keyword),
+                    content = { Text(text = name) },
                 )
             }
         }

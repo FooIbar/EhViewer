@@ -26,8 +26,10 @@ import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -251,7 +253,7 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
                     val blocked = page.status is PageStatus.Blocked
                     dialog { cont ->
                         fun dispose() = cont.resume(Unit)
-                        val state = rememberModalBottomSheetState()
+                        val state = rememberBottomSheetState(SheetValue.Hidden)
                         ModalBottomSheet(
                             onDismissRequest = { dispose() },
                             modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
