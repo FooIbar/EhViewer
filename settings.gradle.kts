@@ -28,12 +28,12 @@ dependencyResolutionManagement {
 }
 
 plugins {
-    id("com.android.settings") version "9.2.1"
+    id("com.android.settings") version "9.3.1"
 }
 
 android {
     compileSdk = 37
-    minSdk = 23
+    minSdk = 24
     targetSdk = 37
     ndkVersion = "29.0.14206865"
     buildToolsVersion = "37.0.0"
