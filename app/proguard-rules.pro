@@ -15,6 +15,10 @@
     java.nio.ByteBuffer source;
 }
 
+-assumevalues public class androidx.compose.runtime.ComposeRuntimeFlags {
+    static boolean isLinkBufferComposerEnabled() return true;
+}
+
 # Ktor logger
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 
