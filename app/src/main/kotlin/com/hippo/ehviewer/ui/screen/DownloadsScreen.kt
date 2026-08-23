@@ -24,8 +24,10 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
@@ -74,6 +76,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -137,13 +140,14 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import moe.tarsin.navigate
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = Screen(navigator) {
+fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator, scrollToGid: Long = -1L) = Screen(navigator) {
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
     val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
@@ -226,6 +230,23 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         DownloadsFilterMode.ARTIST -> artistList
     }
     val totalCount = remember(downloadsCountGroupByLabel) { downloadsCountGroupByLabel.values.sum() }
+
+    val listState = rememberLazyListState()
+    val gridState = rememberLazyStaggeredGridState()
+
+    LaunchedEffect(scrollToGid) {
+        if (scrollToGid == -1L) return@LaunchedEffect
+        snapshotFlow { isLoading }.first { !it }
+        delay(300)
+        val index = list.indexOfFirst { it.gid == scrollToGid }
+        if (index >= 0) {
+            if (gridView) {
+                gridState.animateScrollToItem(index)
+            } else {
+                listState.animateScrollToItem(index)
+            }
+        }
+    }
 
     fun switchLabel(label: String?) {
         Settings.recentDownloadLabel.value = label
@@ -584,6 +605,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 val gridInterval = dimensionResource(com.hippo.ehviewer.R.dimen.gallery_grid_interval)
                 val thumbColumns by Settings.thumbColumns.collectAsState()
                 FastScrollLazyVerticalStaggeredGrid(
+                    state = gridState,
                     columns = StaggeredGridCells.Fixed(thumbColumns),
                     modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
                     contentPadding = realPadding,
@@ -603,6 +625,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 }
             } else {
                 FastScrollLazyColumn(
+                    state = listState,
                     modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(com.hippo.ehviewer.R.dimen.gallery_list_interval)),

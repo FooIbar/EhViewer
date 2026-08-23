@@ -177,7 +177,7 @@ private val navItems = arrayOf<Triple<Direction, Int, ImageVector>>(
     Triple(ToplistScreenDestination, R.string.toplist, Icons.Default.FormatListNumbered),
     Triple(FavouritesScreenDestination, R.string.favourite, Icons.Default.Favorite),
     Triple(HistoryScreenDestination, R.string.history, Icons.Default.History),
-    Triple(DownloadsScreenDestination, R.string.downloads, Icons.Default.Download),
+    Triple(DownloadsScreenDestination(), R.string.downloads, Icons.Default.Download),
     Triple(SettingsScreenDestination, R.string.settings, Icons.Default.Settings),
 )
 
@@ -320,7 +320,12 @@ class MainActivity : AppCompatActivity() {
                             if (args.getString(DownloadService.KEY_ACTION) == DownloadService.ACTION_CLEAR_DOWNLOAD_SERVICE) {
                                 DownloadService.clear()
                             }
-                            navigator.navigate(DownloadsScreenDestination)
+                            val gid = args.getLong(DownloadService.KEY_GID, -1L)
+                            navigator.navigate(DownloadsScreenDestination(gid)) {
+                                popUpTo(navItems.first().first) {
+                                    inclusive = false
+                                }
+                            }
                         }
                     }
                 }
@@ -469,7 +474,7 @@ class MainActivity : AppCompatActivity() {
                                     val start = when {
                                         needSignIn -> SignInScreenDestination
                                         hasNetwork -> navItems[launchPage].first
-                                        else -> DownloadsScreenDestination
+                                        else -> DownloadsScreenDestination()
                                     }
                                     DestinationsNavHost(
                                         navGraph = NavGraphs.root,
