@@ -126,6 +126,10 @@
     <string name="rate_successfully">评分成功</string>
     <string name="rate_failed">评分失败</string>
     <string name="no_torrents">没有种子</string>
+    <string name="copy_torrent_magnet_links">复制种子磁力链接</string>
+    <string name="batch_torrent_pick_mode">批量种子选择规则</string>
+    <string name="torrent_pick_largest_size">体积最大</string>
+    <string name="torrent_pick_latest_time">时间最新</string>
     <string name="torrents">种子</string>
     <string name="not_favorited">未收藏</string>
     <string name="add_favorites_dialog_title">添加收藏</string>
