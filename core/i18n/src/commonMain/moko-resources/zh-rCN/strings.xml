@@ -80,6 +80,11 @@
     <string name="search_sft">标签</string>
     <string name="select_image">选择图片</string>
     <string name="select_image_first">请先选择图片</string>
+    <string name="batch_selection">批量选择</string>
+    <string name="batch_selection_title">已选择 %d 项</string>
+    <string name="select_loaded_galleries">全选已加载画廊</string>
+    <string name="exit_selection">退出选择</string>
+    <string name="no_selected_galleries">尚未选择画廊</string>
     <string name="add_to_favourites">收藏</string>
     <string name="remove_from_favourites">移除收藏</string>
     <string name="delete_downloads">删除下载</string>

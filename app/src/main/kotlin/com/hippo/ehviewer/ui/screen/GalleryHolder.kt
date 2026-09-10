@@ -1,11 +1,17 @@
 package com.hippo.ehviewer.ui.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -15,6 +21,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
@@ -29,16 +36,24 @@ import kotlinx.coroutines.flow.merge
 fun CheckableItem(
     checked: Boolean,
     modifier: Modifier = Modifier,
+    showPlaceholder: Boolean = false,
     content: @Composable (MutableInteractionSource) -> Unit,
 ) {
     val src = controlledInteractionSource(enabled = checked)
     Box(modifier) {
         content(src)
-        if (checked) {
+        if (checked || showPlaceholder) {
+            val colorScheme = MaterialTheme.colorScheme
             Icon(
-                imageVector = Icons.Default.CheckCircle,
+                imageVector = if (checked) Icons.Default.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
                 contentDescription = null,
-                modifier = Modifier.align(Alignment.TopEnd),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(colorScheme.surface.copy(alpha = 0.78f)),
+                tint = if (checked) colorScheme.primary else colorScheme.onSurfaceVariant,
             )
         }
     }

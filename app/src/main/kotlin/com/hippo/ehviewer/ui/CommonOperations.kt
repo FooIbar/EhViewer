@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -177,6 +178,35 @@ suspend fun startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGaller
 }
 
 context(_: DialogState)
+suspend fun awaitFavoriteSlot(): Int {
+    val localFav = appCtx.getString(R.string.local_favorites)
+    val items = buildList {
+        add(localFav)
+        if (Settings.hasSignedIn.value) {
+            addAll(Settings.favCat)
+        }
+    }
+    val selected = awaitSelectItem(items, R.string.add_favorites_dialog_title)
+    return if (selected == 0) LOCAL_FAVORITED else selected - 1
+}
+
+suspend fun addToFavorites(galleryInfo: GalleryInfo, slot: Int): Boolean {
+    val localFavorited = EhDB.containLocalFavorites(galleryInfo.gid)
+    return if (slot == LOCAL_FAVORITED) {
+        if (!localFavorited) {
+            EhDB.putLocalFavorites(galleryInfo)
+            if (galleryInfo.favoriteSlot == NOT_FAVORITED) {
+                galleryInfo.favoriteSlot = LOCAL_FAVORITED
+            }
+            FavouriteStatusRouter.notify(galleryInfo)
+        }
+        true
+    } else {
+        doModifyFavorites(galleryInfo, slot, localFavorited)
+    }
+}
+
+context(_: DialogState)
 suspend fun modifyFavorites(galleryInfo: GalleryInfo): Boolean {
     val localFavorited = EhDB.containLocalFavorites(galleryInfo.gid)
     if (Settings.hasSignedIn.value) {
@@ -275,7 +305,7 @@ context(nav: DestinationsNavigator)
 private fun navToReader(args: ReaderScreenArgs) = nav.navigate(ReaderScreenDestination(args)) { launchSingleTop = true }
 
 context(_: DialogState, _: MainActivity, _: DestinationsNavigator)
-suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
+suspend fun doGalleryInfoAction(info: BaseGalleryInfo, onEnterBatchSelection: (() -> Unit)? = null) {
     val downloaded = DownloadManager.getDownloadState(info.gid) != DownloadInfo.STATE_INVALID
     val favorited = info.favoriteSlot != NOT_FAVORITED
     val items = buildList {
@@ -295,19 +325,23 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
         if (downloaded) {
             add(Icons.AutoMirrored.Default.DriveFileMove to R.string.download_move_dialog_title)
         }
+        if (onEnterBatchSelection != null) {
+            add(Icons.Default.DoneAll to R.string.batch_selection)
+        }
     }
+    val batchSelectionIndex = if (onEnterBatchSelection != null) items.lastIndex else -1
     val selected = awaitSelectItemWithIcon(items, EhUtils.getSuitableTitle(info))
-    when (selected) {
-        0 -> {
+    when {
+        selected == 0 -> {
             EhDB.putHistoryInfo(info)
             navToReader(info)
         }
-        1 -> if (downloaded) {
+        selected == 1 -> if (downloaded) {
             confirmRemoveDownload(info)
         } else {
             startDownload(false, info)
         }
-        2 -> if (favorited) {
+        selected == 2 -> if (favorited) {
             runSuspendCatching {
                 removeFromFavorites(info)
                 tip(R.string.remove_from_favorite_success)
@@ -322,7 +356,8 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
                 tip(R.string.add_to_favorite_failure)
             }
         }
-        3 -> showMoveDownloadLabel(info)
+        selected == 3 && downloaded -> showMoveDownloadLabel(info)
+        selected == batchSelectionIndex -> onEnterBatchSelection?.invoke()
     }
 }
 
