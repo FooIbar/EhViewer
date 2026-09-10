@@ -219,6 +219,12 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 summary = stringResource(id = R.string.settings_eh_show_reading_progress_summary),
                 state = Settings.showReadingProgress.asMutableState(),
             )
+            SimpleMenuPreferenceInt(
+                title = stringResource(id = R.string.batch_torrent_pick_mode),
+                entry = com.hippo.ehviewer.R.array.batch_torrent_pick_mode_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.batch_torrent_pick_mode_values,
+                state = Settings.batchTorrentPickMode.asMutableState(),
+            )
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_vote_status),
                 state = Settings.showVoteStatus.asMutableState(),

@@ -74,6 +74,16 @@
         <item>1</item>
     </integer-array>
 
+    <string-array name="batch_torrent_pick_mode_entries" translatable="false">
+        <item>@string/torrent_pick_largest_size</item>
+        <item>@string/torrent_pick_latest_time</item>
+    </string-array>
+
+    <integer-array name="batch_torrent_pick_mode_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </integer-array>
+
     <string-array name="search_min_rating" translatable="false">
         <item>@string/any</item>
         <item>@string/star_2</item>

@@ -135,6 +135,7 @@ import com.hippo.ehviewer.ui.modifyFavorites
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.startDownload
+import com.hippo.ehviewer.ui.toMagnetLink
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitResult
@@ -151,7 +152,6 @@ import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import io.ktor.http.encodeURLParameter
 import kotlin.coroutines.resume
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
@@ -620,10 +620,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                         onItemClick = { resume(it) },
                     )
                 }
-                val hash = selected.url.dropLast(8).takeLast(40)
-                val name = selected.name.encodeURLParameter()
-                val tracker = EhUrl.getTrackerUrl(galleryDetail.gid, key).encodeURLParameter()
-                val link = "magnet:?xt=urn:btih:$hash&dn=$name&tr=$tracker"
+                val link = selected.toMagnetLink(galleryDetail.gid, key)
                 val intent = Intent(Intent.ACTION_VIEW, link.toUri())
                 try {
                     ctx.startActivity(intent)

@@ -90,6 +90,7 @@ object Settings : DataStorePreferences(null) {
     val showJpnTitle = boolPref("show_jpn_title", false)
     val requestNews = boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
     val hideHvEvents = boolPref("hide_hv_events", false)
+    val batchTorrentPickMode = intPref("batch_torrent_pick_mode", 0)
 
     // Download
     val mediaScan = boolPref("media_scan", false).observed(::updateWhenKeepMediaStatusChanges)
