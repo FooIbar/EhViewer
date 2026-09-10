@@ -25,6 +25,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Shuffle
@@ -46,6 +49,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -71,6 +75,7 @@ import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
 import com.ehviewer.core.database.model.QuickSearch
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.ui.component.FAB_ANIMATE_TIME
 import com.ehviewer.core.ui.component.FabLayout
 import com.ehviewer.core.ui.component.FastScrollLazyColumn
@@ -105,6 +110,8 @@ import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.Screen
+import com.hippo.ehviewer.ui.addToFavorites
+import com.hippo.ehviewer.ui.awaitFavoriteSlot
 import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
@@ -114,6 +121,7 @@ import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.SearchFilter
+import com.hippo.ehviewer.ui.removeFromFavorites
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitInputText
@@ -127,6 +135,7 @@ import com.ramcosta.composedestinations.spec.Direction
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.delay
+import moe.tarsin.coroutines.runSwallowingWithUI
 import moe.tarsin.navigate
 import moe.tarsin.snackbar
 import moe.tarsin.string
@@ -162,13 +171,15 @@ fun AnimatedVisibilityScope.GalleryListScreen(
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
+    var selectMode by rememberSaveable { mutableStateOf(false) }
+    val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
 
     val animateItems by Settings.animateItems.collectAsState()
 
     var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
     var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
 
-    DrawerHandle(!searchBarExpanded)
+    DrawerHandle(!searchBarExpanded && !selectMode)
 
     LaunchedEffect(urlBuilder) {
         if (urlBuilder.category != EhUtils.NONE) category = urlBuilder.category
@@ -196,6 +207,20 @@ fun AnimatedVisibilityScope.GalleryListScreen(
     ReportDrawnWhen { data.loadState.refresh !is LoadState.Loading }
     FavouriteStatusRouter.Observe(data)
     val listMode by Settings.listMode.collectAsState()
+
+    fun enterSelection(info: BaseGalleryInfo? = null) {
+        selectMode = true
+        info?.let { checkedInfoMap[it.gid] = it }
+        fabExpanded = true
+    }
+
+    fun toggleSelection(info: BaseGalleryInfo) {
+        if (info.gid in checkedInfoMap) {
+            checkedInfoMap.remove(info.gid)
+        } else {
+            checkedInfoMap[info.gid] = info
+        }
+    }
 
     val entries = stringArrayResource(id = com.hippo.ehviewer.R.array.toplist_entries)
     val values = stringArrayResource(id = com.hippo.ehviewer.R.array.toplist_values)
@@ -267,7 +292,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                                     snackbar(invalidImageQuickSearch)
                                 } else {
                                     // itemCount == 0 is treated as error, so no need to check here
-                                    val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
+                                    val firstItem = data.itemSnapshotList.items.getOrNull(getFirstVisibleItemIndex()) ?: return@launch
                                     val next = firstItem.gid + 1
                                     quickSearchList.fastForEach { q ->
                                         if (urlBuilder.equalsQuickSearch(q)) {
@@ -444,6 +469,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         override val destination = ProgressScreenDestination(gid, pToken, page)
     }
 
+    val title = if (selectMode) stringResource(R.string.batch_selection_title, checkedInfoMap.size) else suitableTitle
+
     fun onApplySearch(query: String) = launchIO {
         val builder = ListUrlBuilder()
         val oldMode = urlBuilder.mode
@@ -477,7 +504,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
             searchBarExpanded = it
             fabHidden = it
         },
-        title = suitableTitle,
+        title = title,
         searchFieldHint = searchBarHint,
         searchFieldState = searchFieldState,
         suggestionProvider = {
@@ -493,6 +520,9 @@ fun AnimatedVisibilityScope.GalleryListScreen(
             val sheetState = LocalSideSheetState.current
             IconButton(onClick = { launch { sheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
                 Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
+            }
+            IconButton(onClick = { enterSelection() }, shapes = IconButtonDefaults.shapes()) {
+                Icon(imageVector = Icons.Default.DoneAll, contentDescription = stringResource(id = R.string.batch_selection))
             }
             AvatarIcon()
         },
@@ -533,24 +563,64 @@ fun AnimatedVisibilityScope.GalleryListScreen(
             listMode = listMode,
             detailListState = listState,
             detailItemContent = { info ->
-                GalleryInfoListItem(
-                    onClick = { navigate(info.asDst()) },
-                    onLongClick = { launch { doGalleryInfoAction(info) } },
-                    info = info,
-                    showPages = showPages,
-                    showProgress = showProgress,
-                    modifier = Modifier.height(height),
-                )
+                val checked = info.gid in checkedInfoMap
+                CheckableItem(
+                    checked = checked,
+                    modifier = Modifier.thenIf(animateItems) { animateItem() },
+                    showPlaceholder = selectMode,
+                ) { interactionSource ->
+                    GalleryInfoListItem(
+                        onClick = {
+                            if (selectMode) {
+                                toggleSelection(info)
+                            } else {
+                                navigate(info.asDst())
+                            }
+                        },
+                        onLongClick = {
+                            if (selectMode) {
+                                toggleSelection(info)
+                            } else {
+                                launch { doGalleryInfoAction(info) { enterSelection(info) } }
+                            }
+                        },
+                        info = info,
+                        showPages = showPages,
+                        showProgress = showProgress,
+                        modifier = Modifier.height(height),
+                        interactionSource = interactionSource,
+                    )
+                }
             },
             thumbListState = gridState,
             thumbItemContent = { info ->
-                GalleryInfoGridItem(
-                    onClick = { navigate(info.asDst()) },
-                    onLongClick = { launch { doGalleryInfoAction(info) } },
-                    info = info,
-                    showPages = showPages,
-                    showProgress = showProgress,
-                )
+                val checked = info.gid in checkedInfoMap
+                CheckableItem(
+                    checked = checked,
+                    modifier = Modifier.thenIf(animateItems) { animateItem() },
+                    showPlaceholder = selectMode,
+                ) { interactionSource ->
+                    GalleryInfoGridItem(
+                        onClick = {
+                            if (selectMode) {
+                                toggleSelection(info)
+                            } else {
+                                navigate(info.asDst())
+                            }
+                        },
+                        onLongClick = {
+                            if (selectMode) {
+                                toggleSelection(info)
+                            } else {
+                                launch { doGalleryInfoAction(info) { enterSelection(info) } }
+                            }
+                        },
+                        info = info,
+                        showPages = showPages,
+                        showProgress = showProgress,
+                        interactionSource = interactionSource,
+                    )
+                }
             },
             searchBarOffsetY = { searchBarOffsetY },
             onRefresh = {
@@ -575,43 +645,83 @@ fun AnimatedVisibilityScope.GalleryListScreen(
     )
 
     FabLayout(
-        hidden = hideFab,
-        expanded = fabExpanded,
-        onExpandChanged = { fabExpanded = it },
-        autoCancel = true,
+        hidden = hideFab && !selectMode,
+        expanded = fabExpanded || selectMode,
+        onExpandChanged = {
+            fabExpanded = it
+            if (selectMode) {
+                selectMode = false
+                checkedInfoMap.clear()
+            }
+        },
+        autoCancel = !selectMode,
     ) {
-        if (urlBuilder.mode in arrayOf(MODE_NORMAL, MODE_UPLOADER, MODE_TAG)) {
-            onClick(Icons.Default.Shuffle) {
-                urlBuilder.setRange(Random.nextInt(100))
+        if (!selectMode) {
+            if (urlBuilder.mode in arrayOf(MODE_NORMAL, MODE_UPLOADER, MODE_TAG)) {
+                onClick(Icons.Default.Shuffle) {
+                    urlBuilder.setRange(Random.nextInt(100))
+                    data.refresh()
+                }
+            }
+            onClick(Icons.Default.Refresh) {
+                urlBuilder.setRange(0)
                 data.refresh()
             }
-        }
-        onClick(Icons.Default.Refresh) {
-            urlBuilder.setRange(0)
-            data.refresh()
-        }
-        if (urlBuilder.mode != MODE_WHATS_HOT) {
-            onClick(EhIcons.Default.GoTo) {
-                if (isTopList) {
-                    val hint = string(R.string.go_to_hint, urlBuilder.page, TOPLIST_PAGES)
-                    val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
-                        val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum }
-                        ensure(goto in 1..TOPLIST_PAGES) { outOfRange }
+            if (urlBuilder.mode != MODE_WHATS_HOT) {
+                onClick(EhIcons.Default.GoTo) {
+                    if (isTopList) {
+                        val hint = string(R.string.go_to_hint, urlBuilder.page, TOPLIST_PAGES)
+                        val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
+                            val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum }
+                            ensure(goto in 1..TOPLIST_PAGES) { outOfRange }
+                        }
+                        urlBuilder.page = text.trim().toInt()
+                    } else {
+                        val date = awaitSelectDate()
+                        urlBuilder.setSeek(date)
                     }
-                    urlBuilder.page = text.trim().toInt()
-                } else {
-                    val date = awaitSelectDate()
-                    urlBuilder.setSeek(date)
+                    data.refresh()
                 }
-                data.refresh()
+                onClick(Icons.AutoMirrored.Default.LastPage) {
+                    if (isTopList) {
+                        urlBuilder.page = TOPLIST_PAGES
+                    } else {
+                        urlBuilder.setIndex("1", false)
+                    }
+                    data.refresh()
+                }
             }
-            onClick(Icons.AutoMirrored.Default.LastPage) {
-                if (isTopList) {
-                    urlBuilder.page = TOPLIST_PAGES
+        } else {
+            onClick(Icons.Default.DoneAll, autoClose = false) {
+                checkedInfoMap.putAll(data.itemSnapshotList.items.associateBy { it.gid })
+            }
+            onClick(Icons.Default.Favorite) {
+                val info = checkedInfoMap.values.toList()
+                if (info.isEmpty()) {
+                    snackbar(string(R.string.no_selected_galleries))
                 } else {
-                    urlBuilder.setIndex("1", false)
+                    val slot = awaitFavoriteSlot()
+                    runSwallowingWithUI {
+                        info.forEach { addToFavorites(it, slot) }
+                        selectMode = false
+                        checkedInfoMap.clear()
+                    }
                 }
-                data.refresh()
+            }
+            onClick(Icons.Default.HeartBroken) {
+                val info = checkedInfoMap.values.toList()
+                if (info.isEmpty()) {
+                    snackbar(string(R.string.no_selected_galleries))
+                } else {
+                    awaitConfirmationOrCancel(title = R.string.remove_from_favourites) {
+                        Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
+                    }
+                    runSwallowingWithUI {
+                        info.forEach { removeFromFavorites(it) }
+                        selectMode = false
+                        checkedInfoMap.clear()
+                    }
+                }
             }
         }
     }

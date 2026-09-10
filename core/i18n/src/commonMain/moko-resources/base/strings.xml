@@ -96,6 +96,11 @@
     <string name="search_sft">Tags</string>
     <string name="select_image">Select image</string>
     <string name="select_image_first">Please select image first</string>
+    <string name="batch_selection">Batch select</string>
+    <string name="batch_selection_title">%d selected</string>
+    <string name="select_loaded_galleries">Select loaded galleries</string>
+    <string name="exit_selection">Exit selection</string>
+    <string name="no_selected_galleries">No galleries selected</string>
     <string name="add_to_favourites">Add to favourites</string>
     <string name="remove_from_favourites">Remove from favourites</string>
     <string name="delete_downloads">Delete downloads</string>
